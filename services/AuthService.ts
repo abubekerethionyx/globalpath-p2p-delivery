@@ -1,0 +1,70 @@
+import api from './api';
+import { User } from '../types';
+
+// We'll use a local transform since UserService uses this file
+const transformUserData = (userData: any): User => {
+    return {
+        id: userData.id,
+        name: userData.name,
+        email: userData.email,
+        role: userData.role,
+        avatar: userData.avatar,
+        rating: userData.rating,
+        completedDeliveries: userData.completed_deliveries,
+        earnings: userData.earnings,
+        walletBalance: userData.wallet_balance ?? 0,
+        currentPlanId: userData.current_plan_id,
+        itemsCountThisMonth: userData.items_count_this_month ?? 0,
+        verificationStatus: userData.verification_status,
+        idType: userData.id_type,
+        nationalId: userData.national_id,
+        passportNumber: userData.passport_number,
+        passportExpiry: userData.passport_expiry,
+        issuanceCountry: userData.issuance_country,
+        phoneNumber: userData.phone_number,
+        homeAddress: userData.home_address,
+        emergencyContact: userData.emergency_contact,
+        emergencyContactPhone: userData.emergency_contact_phone,
+        selfieUrl: userData.selfie_url,
+        idFrontUrl: userData.id_front_url,
+        idBackUrl: userData.id_back_url,
+        livenessVideo: userData.liveness_video,
+        createdAt: userData.created_at,
+    } as User;
+};
+
+export const AuthService = {
+    login: async (email: string, password: string): Promise<{ token: string; user: User }> => {
+        const response = await api.post('/users/login', { email, password });
+        if (response.data.token) {
+            localStorage.setItem('token', response.data.token);
+            // Transform snake_case to camelCase before storing
+            const transformedUser = transformUserData(response.data.user);
+            localStorage.setItem('user', JSON.stringify(transformedUser));
+            return { token: response.data.token, user: transformedUser };
+        }
+        return response.data;
+    },
+
+    register: async (data: Partial<User> & { password: string }): Promise<User> => {
+        const response = await api.post('/users/register', data);
+        return transformUserData(response.data);
+    },
+
+    logout: () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+    },
+
+    getCurrentUser: (): User | null => {
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+            return JSON.parse(userStr);
+        }
+        return null;
+    },
+
+    isAuthenticated: (): boolean => {
+        return !!localStorage.getItem('token');
+    }
+};

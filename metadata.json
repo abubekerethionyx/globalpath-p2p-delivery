@@ -1,0 +1,10 @@
+
+{
+  "name": "GlobalPath P2P Delivery",
+  "description": "A premium international peer-to-peer delivery platform connecting senders with travelers for fast, affordable global logistics.",
+  "requestFramePermissions": [
+    "geolocation",
+    "camera",
+    "microphone"
+  ]
+}
