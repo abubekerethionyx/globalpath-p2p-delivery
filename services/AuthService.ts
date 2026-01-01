@@ -5,8 +5,11 @@ import { User } from '../types';
 const transformUserData = (userData: any): User => {
     return {
         id: userData.id,
-        name: userData.name,
+        firstName: userData.first_name,
+        lastName: userData.last_name,
         email: userData.email,
+        isEmailVerified: userData.is_email_verified,
+        isPhoneVerified: userData.is_phone_verified,
         role: userData.role,
         avatar: userData.avatar,
         rating: userData.rating,
@@ -46,8 +49,15 @@ export const AuthService = {
         return response.data;
     },
 
-    register: async (data: Partial<User> & { password: string }): Promise<User> => {
-        const response = await api.post('/users/register', data);
+    register: async (data: Partial<User> & { password: string; is_phone_verified?: boolean }): Promise<User> => {
+        // Map camelCase to snake_case for backend
+        const payload = {
+            ...data,
+            first_name: data.firstName,
+            last_name: data.lastName,
+            phone_number: data.phoneNumber,
+        };
+        const response = await api.post('/users/register', payload);
         return transformUserData(response.data);
     },
 

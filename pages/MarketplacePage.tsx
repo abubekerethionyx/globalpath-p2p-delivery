@@ -74,7 +74,7 @@ const MarketplacePage: React.FC<MarketplacePageProps> = ({ user }) => {
 
   const handlePickAttempt = async (id: string) => {
     // 1. Check Verification
-    if (isUnverified && isPending) {
+    if (isUnverified) {
       navigate('/registration');
       return;
     }

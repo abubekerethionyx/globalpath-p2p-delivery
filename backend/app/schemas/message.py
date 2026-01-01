@@ -3,8 +3,8 @@ from app.models.message import Message, MessageThread
 from marshmallow import fields
 
 class MessageSchema(ma.SQLAlchemyAutoSchema):
-    sender = fields.Nested('UserSchema', only=('id', 'name', 'avatar'))
-    receiver = fields.Nested('UserSchema', only=('id', 'name', 'avatar'))
+    sender = fields.Nested('UserSchema', only=('id', 'first_name', 'last_name', 'name', 'avatar'))
+    receiver = fields.Nested('UserSchema', only=('id', 'first_name', 'last_name', 'name', 'avatar'))
     
     class Meta:
         model = Message
@@ -12,8 +12,8 @@ class MessageSchema(ma.SQLAlchemyAutoSchema):
         include_fk = True
 
 class MessageThreadSchema(ma.SQLAlchemyAutoSchema):
-    participant1 = fields.Nested('UserSchema', only=('id', 'name', 'avatar'))
-    participant2 = fields.Nested('UserSchema', only=('id', 'name', 'avatar'))
+    participant1 = fields.Nested('UserSchema', only=('id', 'first_name', 'last_name', 'name', 'avatar'))
+    participant2 = fields.Nested('UserSchema', only=('id', 'first_name', 'last_name', 'name', 'avatar'))
     last_message = fields.Method("get_last_message_content")
     shipment = fields.Nested('ShipmentItemSchema', only=('id', 'status', 'pickup_country', 'dest_country', 'category'))
 

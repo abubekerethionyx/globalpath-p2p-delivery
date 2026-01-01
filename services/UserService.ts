@@ -5,8 +5,11 @@ import { User } from '../types';
 export const transformUserData = (userData: any): User => {
     return {
         id: userData.id,
-        name: userData.name,
+        firstName: userData.first_name,
+        lastName: userData.last_name,
         email: userData.email,
+        isEmailVerified: userData.is_email_verified,
+        isPhoneVerified: userData.is_phone_verified,
         role: userData.role,
         avatar: userData.avatar,
         rating: userData.rating,

@@ -26,7 +26,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
         setLoading(true);
         try {
             const updated = await UserService.updateUser(user.id, {
-                name: editedUser.name,
+                first_name: editedUser.firstName,
+                last_name: editedUser.lastName,
                 email: editedUser.email,
                 phone_number: editedUser.phoneNumber,
                 home_address: editedUser.homeAddress,
@@ -77,7 +78,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
             {isEditing && isEditable && field ? (
                 <input
                     type={type}
-                    value={editedUser[field] as string || ''}
+                    value={(editedUser[field] as string) || ''}
                     onChange={(e) => setEditedUser({ ...editedUser, [field]: e.target.value })}
                     className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-[#009E49] focus:ring-2 focus:ring-[#009E49]/20 transition outline-none font-medium"
                 />
@@ -191,8 +192,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
                                 </div>
                             )}
                             <img
-                                src={user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.name}
-                                alt={user.name}
+                                src={user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.firstName}
+                                alt={user.firstName}
                                 className="w-full h-full object-cover"
                             />
                         </div>
@@ -212,9 +213,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
 
                     <div className="flex-1 text-center md:text-left pt-2">
                         <div className="flex flex-col md:flex-row items-center gap-4 mb-4">
-                            <h2 className="text-4xl font-black text-slate-900 tracking-tight">{user.name}</h2>
+                            <h2 className="text-4xl font-black text-slate-900 tracking-tight">{user.firstName} {user.lastName}</h2>
                             <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-sm ${user.role === UserRole.PICKER ? 'bg-indigo-600 text-white' :
-                                    user.role === UserRole.SENDER ? 'bg-[#009E49] text-white' : 'bg-slate-900 text-white'
+                                user.role === UserRole.SENDER ? 'bg-[#009E49] text-white' : 'bg-slate-900 text-white'
                                 }`}>
                                 {user.role} Partner
                             </span>
@@ -282,7 +283,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
-                    <InfoField label="Protocol Handlename" value={user.name} field="name" />
+                    <InfoField label="First Name" value={user.firstName} field="firstName" />
+                    <InfoField label="Last Name" value={user.lastName} field="lastName" />
                     <InfoField label="Network Node (Email)" value={user.email} field="email" type="email" />
                     <InfoField label="Secure Line (Phone)" value={user.phoneNumber} field="phoneNumber" type="tel" />
                     <InfoField label="Residential Artifact (Address)" value={user.homeAddress} field="homeAddress" />

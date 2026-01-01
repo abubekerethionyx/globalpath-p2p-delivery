@@ -10,9 +10,10 @@ class Config:
 
     # Chapa Configuration
     BACKEND_BASE_URL = os.environ.get('BACKEND_BASE_URL') or 'http://localhost:5000'
-    CHAPA_SECRET_KEY = os.environ.get('CHAPA_SECRET_KEY') or "CHASECK_TEST-N5nTwIsv2PAtDrefhfk42OKhaSWRlsxF"
-    CHAPA_PUBLIC_KEY = os.environ.get('CHAPA_PUBLIC_KEY') or "CHAPUBK_TEST-Bq0DcJlxmDKUzI4rJ44S3t1jdaV44OmU"
+    FRONTEND_BASE_URL = os.environ.get('FRONTEND_BASE_URL') or 'http://localhost:3000'
+    CHAPA_SECRET_KEY = os.environ.get('CHAPA_SECRET_KEY') or "CHASECK_TEST-YNLcpxXgbqbm7U47PTjvbfw6CA3f7XZj"
+    CHAPA_PUBLIC_KEY = os.environ.get('CHAPA_PUBLIC_KEY') or "CHAPUBK_TEST-4Lg9EORISl9A89R0FwgLWcpJt3TRkAx8"
     CHAPA_BASE_URL = "https://api.chapa.co/v1"
     CHAPA_CALLBACK_URL = f"{BACKEND_BASE_URL}/api/subscriptions/callbacks/chapa"
-    CHAPA_RETURN_URL = f"{BACKEND_BASE_URL}/api/subscriptions/callbacks/chapa"
-    CHAPA_WEBHOOK_SECRET = os.environ.get('CHAPA_WEBHOOK_SECRET') or "CHASECK_TEST-N5nTwIsv2PAtDrefhfk42OKhaSWRlsxF"
+    CHAPA_RETURN_URL = f"{FRONTEND_BASE_URL}/billing"
+    CHAPA_WEBHOOK_SECRET = os.environ.get('CHAPA_WEBHOOK_SECRET') or "CHASECK_TEST-YNLcpxXgbqbm7U47PTjvbfw6CA3f7XZj"

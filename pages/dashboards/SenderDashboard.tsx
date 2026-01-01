@@ -152,7 +152,7 @@ const SenderDashboard: React.FC<SenderDashboardProps> = ({ user }) => {
                 <div className="space-y-1">
                     <p className="text-[#009E49] text-[10px] font-black uppercase tracking-[0.3em]">Operational Panel</p>
                     <h1 className="text-4xl font-black text-slate-900 tracking-tight">Sender Dashboard</h1>
-                    <p className="text-slate-500 font-medium text-lg">Managing logistics for <span className="text-slate-900 font-bold">{user.name}</span></p>
+                    <p className="text-slate-500 font-medium text-lg">Managing logistics for <span className="text-slate-900 font-bold">{user.firstName} {user.lastName}</span></p>
                 </div>
                 <button
                     onClick={() => navigate('/post-item')}
@@ -270,13 +270,13 @@ const SenderDashboard: React.FC<SenderDashboardProps> = ({ user }) => {
                                     <img
                                         src={selectedPicker.avatar}
                                         className="w-32 h-32 rounded-[2.5rem] object-cover border-4 border-white shadow-xl"
-                                        alt={selectedPicker.name}
+                                        alt={selectedPicker.firstName}
                                     />
                                     <div className="absolute -bottom-2 -right-2 bg-[#009E49] text-white p-2 rounded-xl shadow-lg">
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                     </div>
                                 </div>
-                                <h3 className="text-2xl font-black text-slate-900">{selectedPicker.name}</h3>
+                                <h3 className="text-2xl font-black text-slate-900">{selectedPicker.firstName} {selectedPicker.lastName}</h3>
                                 <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.2em] mt-1">Verified Logistics Partner</p>
 
                                 <div className="flex items-center gap-2 mt-4 bg-amber-50 px-4 py-2 rounded-full">

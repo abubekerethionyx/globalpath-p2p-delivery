@@ -158,12 +158,23 @@ const PickerDashboard: React.FC<PickerDashboardProps> = ({ user }) => {
                         </div>
                     </div>
                     {user.verificationStatus === VerificationStatus.UNVERIFIED && (
-                        <button
-                            onClick={() => navigate('/registration')}
-                            className="bg-red-600 text-white px-10 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-red-700 shadow-xl shadow-red-100 transition-all hover:-translate-y-1"
-                        >
-                            Complete Protocol Now
-                        </button>
+                        <div className="flex flex-col gap-3">
+                            <button
+                                onClick={() => navigate('/registration')}
+                                className="bg-red-600 text-white px-10 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-red-700 shadow-xl shadow-red-100 transition-all hover:-translate-y-1 flex items-center justify-center gap-2"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                Start Identity Registry
+                            </button>
+                            <p className="text-[10px] font-black text-red-400 uppercase tracking-widest text-center">Protocol 1.0 Not Initiated</p>
+                        </div>
+                    )}
+                    {user.verificationStatus === VerificationStatus.PENDING && (
+                        <div className="flex flex-col items-center gap-3">
+                            <div className="bg-amber-100 text-amber-700 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-amber-200">
+                                Intercepted: Under Review
+                            </div>
+                        </div>
                     )}
                 </div>
             )}
@@ -173,7 +184,7 @@ const PickerDashboard: React.FC<PickerDashboardProps> = ({ user }) => {
                 <div className="space-y-1">
                     <p className="text-[#009E49] text-[10px] font-black uppercase tracking-[0.3em]">Logistics Command</p>
                     <h1 className="text-4xl font-black text-slate-900 tracking-tight">Picker Dashboard</h1>
-                    <p className="text-slate-500 font-medium text-lg">Partner Node: <span className="text-slate-900 font-bold">{user.name}</span></p>
+                    <p className="text-slate-500 font-medium text-lg">Partner Node: <span className="text-slate-900 font-bold">{user.firstName} {user.lastName}</span></p>
                 </div>
                 <button
                     onClick={() => navigate('/marketplace')}

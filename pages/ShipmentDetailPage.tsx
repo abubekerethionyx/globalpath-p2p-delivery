@@ -266,10 +266,10 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser }) 
             {item.sender ? (
               <div className="space-y-6">
                 <div className="flex items-center gap-4">
-                  <img src={item.sender.avatar} className="w-14 h-14 rounded-2xl border border-slate-100 object-cover shadow-sm" alt={item.sender.name} />
+                  <img src={item.sender.avatar} className="w-14 h-14 rounded-2xl border border-slate-100 object-cover shadow-sm" alt={item.sender.firstName} />
                   <div className="space-y-0.5">
                     <p className="font-black text-slate-900 flex items-center gap-1.5 uppercase tracking-tighter text-sm">
-                      {item.sender.name}
+                      {item.sender.firstName} {item.sender.lastName}
                       {item.sender.verificationStatus === VerificationStatus.VERIFIED && (
                         <svg className="w-3.5 h-3.5 text-[#009E49]" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
                       )}
@@ -300,10 +300,10 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser }) 
             {item.partner ? (
               <div className="space-y-6">
                 <div className="flex items-center gap-4">
-                  <img src={item.partner.avatar} className="w-14 h-14 rounded-2xl border border-slate-100 object-cover shadow-sm" alt={item.partner.name} />
+                  <img src={item.partner.avatar} className="w-14 h-14 rounded-2xl border border-slate-100 object-cover shadow-sm" alt={item.partner.firstName} />
                   <div className="space-y-0.5">
                     <p className="font-black text-slate-900 flex items-center gap-1.5 uppercase tracking-tighter text-sm">
-                      {item.partner.name}
+                      {item.partner.firstName} {item.partner.lastName}
                       {item.partner.verificationStatus === VerificationStatus.VERIFIED && (
                         <svg className="w-3.5 h-3.5 text-indigo-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M2.166 4.9L9.03 9.15c.567.347 1.343.347 1.91 0l6.863-4.25A2 2 0 0015.937 3H4.063c-.833 0-1.545.51-1.897 1.9zm15.734 2.8L11.03 11.95a3 3 0 01-3.09 0L1.1 7.7A2 2 0 001 9v7a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-.1-.3z" /></svg>
                       )}

@@ -1,6 +1,6 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, UserRole } from '../types';
+import { NotificationService, Notification } from '../services/NotificationService';
 
 interface NavbarProps {
   user: User | null;
@@ -11,6 +11,42 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onNavigate, currentPage }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      loadNotifications();
+      const interval = setInterval(loadNotifications, 30000); // 30s refresh
+      return () => clearInterval(interval);
+    }
+  }, [user]);
+
+  const loadNotifications = async () => {
+    try {
+      const [notifs, count] = await Promise.all([
+        NotificationService.getNotifications(),
+        NotificationService.getUnreadCount()
+      ]);
+      setNotifications(notifs.slice(0, 5)); // Only show last 5 in dropdown
+      setUnreadCount(count);
+    } catch (e) { console.error(e); }
+  };
+
+  const handleMarkAsRead = async (id: string) => {
+    try {
+      await NotificationService.markAsRead(id);
+      loadNotifications();
+    } catch (e) { console.error(e); }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      await NotificationService.markAllAsRead();
+      loadNotifications();
+    } catch (e) { console.error(e); }
+  };
 
   const navLinks = [
     { id: 'dashboard', label: 'Dashboard', roles: [UserRole.PICKER, UserRole.SENDER] },
@@ -49,7 +85,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onNavigate, currentPage
             {/* Desktop Navigation Links */}
             {user && user.role !== UserRole.ADMIN && (
               <div className="hidden lg:ml-10 lg:flex lg:space-x-4">
-                {navLinks.filter(link => link.roles.includes(user.role) && link.id !== 'packaging').map(link => (
+                {navLinks.filter(link => link.roles.includes(user.role)).map(link => (
                   <button
                     key={link.id}
                     onClick={() => handleNavigate(link.id)}
@@ -94,13 +130,85 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onNavigate, currentPage
             ) : (
               <div className="flex items-center gap-2 sm:gap-4 lg:border-l lg:pl-6 border-slate-100">
                 <div className="flex flex-col items-end hidden sm:flex">
-                  <span className="text-xs font-black text-slate-900 leading-tight">{user.name.split(' ')[0]}</span>
+                  <span className="text-xs font-black text-slate-900 leading-tight">{user.firstName}</span>
                   <span className="text-[8px] text-[#009E49] font-black uppercase tracking-widest">{user.role} Partner</span>
                 </div>
+
+                {/* Notifications */}
+                <div className="relative">
+                  <button
+                    onClick={() => setIsNotifOpen(!isNotifOpen)}
+                    className={`relative p-2.5 rounded-xl transition-all ${isNotifOpen ? 'bg-slate-900 text-white shadow-lg' : 'bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-900'}`}
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                    {unreadCount > 0 && (
+                      <span className="absolute top-1.5 right-1.5 flex h-4 w-4">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-4 w-4 bg-[#EF3340] text-white text-[8px] font-black items-center justify-center border border-white">
+                          {unreadCount}
+                        </span>
+                      </span>
+                    )}
+                  </button>
+
+                  {isNotifOpen && (
+                    <>
+                      <div className="fixed inset-0 z-10" onClick={() => setIsNotifOpen(false)}></div>
+                      <div className="absolute right-0 mt-3 w-80 bg-white rounded-[2rem] shadow-2xl border border-slate-100 z-20 overflow-hidden animate-in slide-in-from-top-2">
+                        <div className="p-5 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+                          <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-900">Notification Hub</h4>
+                          {unreadCount > 0 && (
+                            <button onClick={handleMarkAllRead} className="text-[9px] font-black text-[#009E49] uppercase tracking-widest hover:underline">Clear Protocol</button>
+                          )}
+                        </div>
+                        <div className="max-h-[350px] overflow-y-auto">
+                          {notifications.length === 0 ? (
+                            <div className="p-10 text-center">
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-relaxed">System frequency clear. No pending transmissions.</p>
+                            </div>
+                          ) : (
+                            notifications.map(notif => (
+                              <div
+                                key={notif.id}
+                                onClick={() => {
+                                  if (notif.link) handleNavigate(notif.link.replace('/', ''));
+                                  handleMarkAsRead(notif.id);
+                                  setIsNotifOpen(false);
+                                }}
+                                className={`p-5 hover:bg-slate-50 cursor-pointer transition-colors border-b border-slate-50 last:border-0 relative ${!notif.is_read ? 'bg-green-50/30' : ''}`}
+                              >
+                                {!notif.is_read && <div className="absolute top-6 left-2 w-1.5 h-1.5 rounded-full bg-[#009E49]"></div>}
+                                <div className="ml-2">
+                                  <p className="text-[10px] font-black uppercase tracking-tight text-slate-900 mb-1">{notif.title}</p>
+                                  <p className="text-xs text-slate-500 font-medium leading-tight">{notif.message}</p>
+                                  <p className="text-[8px] font-bold text-slate-300 uppercase tracking-widest mt-2">
+                                    {new Date(notif.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                  </p>
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                        <button
+                          onClick={() => {
+                            handleNavigate('notifications');
+                            setIsNotifOpen(false);
+                          }}
+                          className="w-full py-4 bg-slate-50 text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-colors border-t border-slate-100"
+                        >
+                          See All Transmissions
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+
                 <div className="relative group/profile">
                   <img
                     className="h-10 w-10 rounded-2xl border-2 border-slate-50 shadow-sm cursor-pointer hover:border-[#009E49] transition-all object-cover"
-                    src={user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.name}
+                    src={user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.firstName}
                     alt="Profile"
                     onClick={() => handleNavigate('profile')}
                   />
@@ -151,11 +259,11 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onNavigate, currentPage
                   <div className="mb-8 p-6 bg-slate-50 rounded-[2rem] flex items-center gap-4 border border-slate-100">
                     <img
                       className="h-14 w-14 rounded-2xl object-cover border-4 border-white shadow-md"
-                      src={user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.name}
+                      src={user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.firstName}
                       alt="Profile"
                     />
                     <div>
-                      <h4 className="text-lg font-black text-slate-900 leading-tight">{user.name}</h4>
+                      <h4 className="text-lg font-black text-slate-900 leading-tight">{user.firstName} {user.lastName}</h4>
                       <p className="text-[9px] font-black text-[#009E49] uppercase tracking-widest mt-1">{user.role} Partner</p>
                     </div>
                   </div>

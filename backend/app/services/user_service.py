@@ -16,8 +16,11 @@ def create_user(data):
         return None # User already exists
     
     user = User(
-        name=data['name'],
+        first_name=data['first_name'],
+        last_name=data['last_name'],
         email=data['email'],
+        phone_number=data.get('phone_number'),
+        is_phone_verified=data.get('is_phone_verified', False),
         role=data.get('role', 'SENDER')
     )
     if 'password' in data:

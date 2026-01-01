@@ -67,5 +67,18 @@ def create_message(data):
     thread.updated_at = message.timestamp
     
     db.session.add(message)
+    
+    # Create notification for receiver
+    from app.models.notification import create_notification
+    from app.models.user import User
+    sender = User.query.get(sender_id)
+    create_notification(
+        user_id=receiver_id,
+        title="New Message",
+        message=f"{sender.name} sent you a message.",
+        type='MESSAGE',
+        link=f"/messages"
+    )
+    
     db.session.commit()
     return message

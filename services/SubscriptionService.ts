@@ -36,8 +36,10 @@ export const SubscriptionService = {
         return response.data;
     },
 
-    createTransaction: async (data: Partial<SubscriptionTransaction>): Promise<SubscriptionTransaction> => {
-        const response = await api.post('/subscriptions/transactions', data);
+    createTransaction: async (data: any): Promise<SubscriptionTransaction> => {
+        // If data is FormData, we let the browser/axios set the correct Content-Type (multipart/form-data)
+        const config = data instanceof FormData ? { headers: { 'Content-Type': undefined } } : {};
+        const response = await api.post('/subscriptions/transactions', data, config);
         return response.data;
     }
 };

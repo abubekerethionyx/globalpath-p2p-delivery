@@ -19,6 +19,7 @@ import AdminPage from './pages/AdminPage';
 import AuthPage from './pages/AuthPage';
 import ProfilePage from './pages/ProfilePage';
 import SupportPage from './pages/SupportPage';
+import NotificationsPage from './pages/NotificationsPage';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -83,6 +84,7 @@ const App: React.FC = () => {
     if (path.includes('post-item')) return 'post-item';
     if (path.includes('profile')) return 'profile';
     if (path.includes('support')) return 'support';
+    if (path.includes('notifications')) return 'notifications';
     if (path.includes('login')) return 'login';
     return '';
   };
@@ -116,6 +118,7 @@ const App: React.FC = () => {
           <Route path="/post-item" element={user ? <PostShipmentPage user={user} /> : <Navigate to="/login" />} />
           <Route path="/messages" element={user ? <MessagesPage user={user} /> : <Navigate to="/login" />} />
           <Route path="/support" element={user ? <SupportPage user={user} /> : <Navigate to="/login" />} />
+          <Route path="/notifications" element={user ? <NotificationsPage user={user} /> : <Navigate to="/login" />} />
           <Route path="/profile" element={user ? <ProfilePage user={user} onUserUpdate={(updatedUser) => setUser(updatedUser)} /> : <Navigate to="/login" />} />
           <Route path="/registration" element={user ? <PickerRegistrationPage user={user} onSubmit={(data) => {
             const updatedUser = { ...user, ...data };

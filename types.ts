@@ -90,8 +90,11 @@ export interface SubscriptionTransaction {
 
 export interface User {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
+  isEmailVerified: boolean;
+  isPhoneVerified: boolean;
   role: UserRole;
   avatar: string;
   rating?: number;

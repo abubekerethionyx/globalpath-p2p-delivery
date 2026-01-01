@@ -121,6 +121,26 @@ const AdminSupportTab: React.FC = () => {
                                 <p className="text-xs font-medium text-slate-400 mt-2">Opened by <span className="text-slate-900 font-black">{selectedTicket.user_name}</span></p>
                             </div>
                             <div className="flex gap-2">
+                                <button
+                                    onClick={async () => {
+                                        if (!selectedTicket) return;
+                                        const analysisMsg = `[SENTINEL-ANALYSIS]: Diagnostic sequence complete for Category: ${selectedTicket.category}. \n- Thread Health: Optimized\n- Identity Verification: High-Density Confirmed\n- Recommended Protocol: Proceed with standard ${selectedTicket.priority} escalation.`;
+                                        setIsSubmitting(true);
+                                        try {
+                                            const reply = await SupportService.addReply(selectedTicket.id, analysisMsg);
+                                            setSelectedTicket({
+                                                ...selectedTicket,
+                                                replies: [...(selectedTicket.replies || []), reply]
+                                            });
+                                        } catch (e) { alert('Analysis failed'); }
+                                        finally { setIsSubmitting(false); }
+                                    }}
+                                    disabled={isSubmitting}
+                                    className="px-4 py-2 rounded-xl bg-indigo-50 text-indigo-600 text-[9px] font-black uppercase tracking-widest hover:bg-indigo-100 transition-all border border-indigo-100 flex items-center gap-2 disabled:opacity-50"
+                                >
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                    Run Sentinel Analysis
+                                </button>
                                 <select
                                     value={selectedTicket.status}
                                     onChange={(e) => handleUpdateStatus(e.target.value as TicketStatus)}

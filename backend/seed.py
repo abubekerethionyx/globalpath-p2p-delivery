@@ -55,50 +55,62 @@ def seed_data():
         # Create some users
         users = [
             User(
-                name="Alice Johnson",
+                first_name="Alice",
+                last_name="Johnson",
                 email="alice@example.com",
                 role=UserRole.SENDER,
                 verification_status=VerificationStatus.VERIFIED,
+                is_phone_verified=True,
                 wallet_balance=150.00,
                 home_address="123 Maple St, New York, NY"
             ),
             User(
-                name="Bob Smith",
+                first_name="Bob",
+                last_name="Smith",
                 email="bob@example.com",
                 role=UserRole.SENDER,
                 verification_status=VerificationStatus.VERIFIED,
+                is_phone_verified=True,
                 wallet_balance=50.00,
                 home_address="456 Oak Rd, Chicago, IL"
             ),
             User(
-                name="Charlie Brown",
+                first_name="Charlie",
+                last_name="Brown",
                 email="charlie@example.com",
                 role=UserRole.PICKER,
                 verification_status=VerificationStatus.VERIFIED,
+                is_phone_verified=True,
                 rating=4.8,
                 completed_deliveries=12,
                 earnings=1200.00
             ),
             User(
-                name="Diana Prince",
+                first_name="Diana",
+                last_name="Prince",
                 email="diana@example.com",
                 role=UserRole.PICKER,
                 verification_status=VerificationStatus.PENDING,
+                is_phone_verified=False,
                 rating=4.5,
                 completed_deliveries=3
             ),
             User(
-                name="Evan Wright",
+                first_name="Evan",
+                last_name="Wright",
                 email="evan@example.com",
                 role=UserRole.SENDER,
                 verification_status=VerificationStatus.UNVERIFIED,
+                is_phone_verified=False,
                 wallet_balance=0.00
             ),
             User(
-                name="GlobalPath Admin",
+                first_name="GlobalPath",
+                last_name="Admin",
                 email="admin@example.com",
                 role=UserRole.ADMIN,
                 verification_status=VerificationStatus.VERIFIED,
+                is_phone_verified=True,
                 wallet_balance=0.00
             )
         ]

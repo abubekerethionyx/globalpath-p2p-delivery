@@ -7,8 +7,12 @@ class User(db.Model):
     __tablename__ = 'users'
 
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    name = db.Column(db.String(100), nullable=False)
+    first_name = db.Column(db.String(50), nullable=False)
+    last_name = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
+    is_email_verified = db.Column(db.Boolean, default=False)
+    email_verification_token = db.Column(db.String(100), unique=True)
+    is_phone_verified = db.Column(db.Boolean, default=False)
     password_hash = db.Column(db.String(128))
     role = db.Column(db.Enum(UserRole), nullable=False, default=UserRole.SENDER)
     avatar = db.Column(db.String(255))
@@ -35,6 +39,10 @@ class User(db.Model):
     id_back_url = db.Column(db.String(255))
     liveness_video = db.Column(db.String(255))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    @property
+    def name(self):
+        return f"{self.first_name} {self.last_name}"
 
     # Relationships
     plan = db.relationship('SubscriptionPlan', backref='users')

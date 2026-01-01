@@ -170,7 +170,7 @@ const MessagesPage: React.FC<MessagesPageProps> = ({ user }) => {
                 </div>
                 <div className="ml-4 flex-1 min-w-0">
                   <div className="flex justify-between items-start mb-1">
-                    <p className={`font-black truncate text-sm ${isActive ? 'text-slate-900' : 'text-slate-600'}`}>{otherParty?.name}</p>
+                    <p className={`font-black truncate text-sm ${isActive ? 'text-slate-900' : 'text-slate-600'}`}>{otherParty?.firstName} {otherParty?.lastName}</p>
                     <span className="text-[9px] font-bold text-slate-400 whitespace-nowrap ml-2">
                       {thread.updated_at ? new Date(thread.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                     </span>
@@ -207,7 +207,7 @@ const MessagesPage: React.FC<MessagesPageProps> = ({ user }) => {
                   <img src={getOtherParty(activeThread)?.avatar} className="w-12 h-12 rounded-2xl border-2 border-slate-50" alt="" />
                 </div>
                 <div>
-                  <h4 className="font-black text-slate-900 text-base">{getOtherParty(activeThread)?.name}</h4>
+                  <h4 className="font-black text-slate-900 text-base">{getOtherParty(activeThread)?.firstName} {getOtherParty(activeThread)?.lastName}</h4>
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-green-500"></span>
                     <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">

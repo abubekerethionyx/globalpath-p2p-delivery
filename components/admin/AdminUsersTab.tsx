@@ -14,7 +14,8 @@ const AdminUsersTab: React.FC<AdminUsersTabProps> = ({ users, onVerify }) => {
   const [filterRole, setFilterRole] = useState<string>('ALL');
 
   const filteredUsers = users.filter(u => {
-    const matchesSearch = u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = u.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       u.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = filterRole === 'ALL' || u.role === filterRole;
     return matchesSearch && matchesRole;
@@ -86,7 +87,7 @@ const AdminUsersTab: React.FC<AdminUsersTabProps> = ({ users, onVerify }) => {
                       <div className="flex items-center">
                         <img src={u.avatar} className="w-10 h-10 rounded-xl mr-3 border border-slate-200" alt="" />
                         <div>
-                          <p className="font-bold text-slate-900 text-sm">{u.name}</p>
+                          <p className="font-bold text-slate-900 text-sm">{u.firstName} {u.lastName}</p>
                           <p className="text-xs text-slate-500">{u.email}</p>
                         </div>
                       </div>
@@ -105,6 +106,18 @@ const AdminUsersTab: React.FC<AdminUsersTabProps> = ({ users, onVerify }) => {
                           }`}>
                           {u.verificationStatus}
                         </span>
+                        <div className="flex gap-1 mt-1">
+                          {u.isEmailVerified ? (
+                            <span className="text-[8px] font-black text-green-600 bg-green-50 px-1.5 rounded uppercase" title="Email Verified">Email</span>
+                          ) : (
+                            <span className="text-[8px] font-black text-slate-400 bg-slate-100 px-1.5 rounded uppercase" title="Email Not Verified">Email</span>
+                          )}
+                          {u.isPhoneVerified ? (
+                            <span className="text-[8px] font-black text-green-600 bg-green-50 px-1.5 rounded uppercase" title="Phone Verified">Phone</span>
+                          ) : (
+                            <span className="text-[8px] font-black text-slate-400 bg-slate-100 px-1.5 rounded uppercase" title="Phone Not Verified">Phone</span>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-xs text-slate-500">{u.createdAt || 'N/A'}</td>
@@ -288,7 +301,7 @@ const AdminUsersTab: React.FC<AdminUsersTabProps> = ({ users, onVerify }) => {
                               </div>
                               <div>
                                 <h3 className="text-xl font-black text-slate-900 leading-tight">Verification Decision</h3>
-                                <p className="text-sm text-slate-500 font-medium">Review the manifest above before finalizing security status for {u.name}.</p>
+                                <p className="text-sm text-slate-500 font-medium">Review the manifest above before finalizing security status for {u.firstName} {u.lastName}.</p>
                               </div>
                             </div>
                             <div className="flex gap-4 w-full lg:w-auto">

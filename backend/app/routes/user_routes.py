@@ -17,9 +17,23 @@ def register():
     if not data or not data.get('email') or not data.get('password'):
         return jsonify({'message': 'Email and password are required'}), 400
     
+    first_name = data.get('first_name')
+    last_name = data.get('last_name')
+    if not first_name or not last_name or not data.get('phone_number'):
+        return jsonify({'message': 'First name, last name, and phone number are required'}), 400
+    
     user = user_service.create_user(data)
     if not user:
         return jsonify({'message': 'User already exists'}), 400
+    
+    # Trigger verification email
+    import secrets
+    token = secrets.token_urlsafe(32)
+    user.email_verification_token = token
+    db.session.commit()
+    
+    verification_link = f"{request.host_url}api/users/verify-email?token={token}"
+    print(f"AUTO-VERIFICATION EMAIL for {user.email}: {verification_link}")
     
     return jsonify(user_schema.dump(user)), 201
 
@@ -189,6 +203,17 @@ def verify_user(user_id):
 
     # Admin Action: Approve User
     updated_user = user_service.update_user(user_id, {'verification_status': VerificationStatus.VERIFIED})
+    
+    # Notify User
+    from app.models.notification import create_notification
+    create_notification(
+        user_id=user_id,
+        title="Identity Verified",
+        message="Your protocol verification is complete. You now have full access to node fulfillment.",
+        type='SUCCESS',
+        link='/profile'
+    )
+    
     return jsonify(user_schema.dump(updated_user)), 200
 @bp.route('/<user_id>/avatar', methods=['POST'])
 @jwt_required()
@@ -216,3 +241,38 @@ def update_avatar(user_id):
     
     user = user_service.update_user(user_id, {'avatar': file_url})
     return jsonify(user_schema.dump(user)), 200
+    
+@bp.route('/request-email-verification', methods=['POST'])
+@jwt_required()
+def request_email_verification():
+    user_id = get_jwt_identity()
+    user = user_service.get_user(user_id)
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+        
+    import secrets
+    token = secrets.token_urlsafe(32)
+    user_service.update_user(user_id, {'email_verification_token': token})
+    
+    # In a real app, send actual email. Here we log it.
+    verification_link = f"{request.host_url}api/users/verify-email?token={token}"
+    print(f"VERIFICATION EMAIL for {user.email}: {verification_link}")
+    
+    return jsonify({'message': 'Verification email sent (simulated). Check console logs.'}), 200
+
+@bp.route('/verify-email', methods=['GET'])
+def verify_email():
+    token = request.args.get('token')
+    if not token:
+        return jsonify({'message': 'Token is required'}), 400
+        
+    user = User.query.filter_by(email_verification_token=token).first()
+    if not user:
+        return jsonify({'message': 'Invalid or expired token'}), 400
+        
+    user.is_email_verified = True
+    user.email_verification_token = None
+    db.session.commit()
+    
+    # Return a simple HTML or redirect to frontend
+    return "<h1>Email Verified!</h1><p>Your email has been successfully verified. You can now close this window.</p>", 200

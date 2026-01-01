@@ -30,7 +30,7 @@ class SupportTicket(db.Model):
             'category': self.category,
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat(),
-            'user_name': self.user.name if self.user else "Unknown"
+            'user_name': f"{self.user.first_name} {self.user.last_name}" if self.user else "Unknown"
         }
 
 class TicketReply(db.Model):
@@ -51,7 +51,7 @@ class TicketReply(db.Model):
             'id': self.id,
             'ticket_id': self.ticket_id,
             'user_id': self.user_id,
-            'user_name': self.user.name,
+            'user_name': f"{self.user.first_name} {self.user.last_name}",
             'user_role': self.user.role.value,
             'message': self.message,
             'created_at': self.created_at.isoformat()

@@ -15,9 +15,11 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [role, setRole] = useState<UserRole | null>(null);
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
-    password: ''
+    password: '',
+    phoneNumber: ''
   });
   const [error, setError] = useState('');
 
@@ -38,17 +40,15 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete }) => {
           return;
         }
         const user = await AuthService.register({
-          name: formData.name,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
           email: formData.email,
           password: formData.password,
+          phoneNumber: formData.phoneNumber,
+          is_phone_verified: true, // Auto-verify for demo/registry purposes
           role: role
         });
         // Auto login or just complete
-        // Assuming register returns user but not token (typically backend returns user)
-        // Ideally we should auto-login or ask to login.
-        // For now, let's assume we need to login or just pass user if existing flow allows.
-        // But AuthService.register doesn't set token.
-        // Let's try to login after register.
         const loginResponse = await AuthService.login(formData.email, formData.password);
         onAuthComplete(loginResponse.user);
       }
@@ -137,16 +137,40 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete }) => {
 
             <div className="space-y-4">
               {!isLogin && (
-                <div>
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Full Name</label>
-                  <input
-                    type="text" required
-                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-[#009E49] outline-none transition-all"
-                    placeholder="e.g. Dawit Mekonnen"
-                    value={formData.name}
-                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                  />
-                </div>
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">First Name</label>
+                      <input
+                        type="text" required
+                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-[#009E49] outline-none transition-all"
+                        placeholder="Dawit"
+                        value={formData.firstName}
+                        onChange={e => setFormData({ ...formData, firstName: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Last Name</label>
+                      <input
+                        type="text" required
+                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-[#009E49] outline-none transition-all"
+                        placeholder="Mekonnen"
+                        value={formData.lastName}
+                        onChange={e => setFormData({ ...formData, lastName: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Phone Number</label>
+                    <input
+                      type="tel" required
+                      className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-[#009E49] outline-none transition-all"
+                      placeholder="0911 22 33 44"
+                      value={formData.phoneNumber}
+                      onChange={e => setFormData({ ...formData, phoneNumber: e.target.value })}
+                    />
+                  </div>
+                </>
               )}
               <div>
                 <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Email Address</label>
@@ -188,7 +212,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete }) => {
                     onClick={() => { setFormData({ ...formData, email: u.email, password: 'password' }); }}
                     className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold text-slate-600 hover:bg-[#009E49]/10 hover:border-[#009E49] transition"
                   >
-                    {u.name.split(' ')[0]} ({u.role})
+                    {u.firstName} ({u.role})
                   </button>
                 ))}
               </div>

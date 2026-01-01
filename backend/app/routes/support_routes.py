@@ -26,7 +26,52 @@ def create_ticket():
 
     db.session.add(ticket)
     db.session.commit()
+
+    # Trigger Bot Response for quick investigation/acknowledgment
+    trigger_bot_response(ticket.id)
+
     return jsonify(ticket.to_dict()), 201
+
+def trigger_bot_response(ticket_id):
+    """Simple bot logic to provide immediate feedback based on category"""
+    ticket = SupportTicket.query.get(ticket_id)
+    if not ticket:
+        return
+
+    # Find or use a system admin identity for the bot
+    bot_user = User.query.filter_by(role=UserRole.ADMIN).first()
+    if not bot_user:
+        return # Fallback if no admin exists yet
+
+    bot_messages = {
+        'TECHNICAL': "Sentinel Protocol initialized. I'm scanning our network logs for latency or sync errors related to your account. Please ensure your browser cache is cleared and you are using the latest version of our Gateway.",
+        'PAYMENT': "Financial Node detected. I've flagged your transaction ID for escrow verification. If this is regarding a failed refill, please check if your bank has authorized the Chapa/Telebirr gateway request.",
+        'SHIPMENT': "Logistics Trace active. I'm cross-referencing your shipment ID with our traveler GPS metadata. Our protocol indicates high verify-density in your region; an agent will confirm the node status shortly.",
+        'GENERAL': "Transmission received. Our core specialists have been notified of your inquiry. Our current processing time for priority {} is approximately 2-4 standard hours.".format(ticket.priority.value)
+    }
+
+    message = bot_messages.get(ticket.category.upper(), bot_messages['GENERAL'])
+    
+    bot_reply = TicketReply(
+        ticket_id=ticket_id,
+        user_id=bot_user.id,
+        message=f"[SENTINEL-BOT]: {message}"
+    )
+    
+    ticket.status = TicketStatus.PENDING
+    db.session.add(bot_reply)
+    
+    # Notify user of bot response
+    from app.models.notification import create_notification
+    create_notification(
+        user_id=ticket.user_id,
+        title="Sentinel Protocol Initialized",
+        message="A sentinel-bot has analyzed your transmission and provided initial diagnostics.",
+        type='INFO',
+        link='/support'
+    )
+
+    db.session.commit()
 
 @bp.route('/tickets', methods=['GET'])
 @jwt_required()
@@ -88,6 +133,30 @@ def reply_to_ticket(ticket_id):
         ticket.status = TicketStatus.OPEN
 
     db.session.add(reply)
+    
+    # Notify relevant party
+    from app.models.notification import create_notification
+    if user.role == UserRole.ADMIN:
+        # Notify ticket owner
+        create_notification(
+            user_id=ticket.user_id,
+            title="Support Update",
+            message=f"A support specialist has responded to your ticket: {ticket.subject}",
+            type='SUCCESS',
+            link='/support'
+        )
+    else:
+        # Notify all admins
+        admins = User.query.filter_by(role=UserRole.ADMIN).all()
+        for admin in admins:
+            create_notification(
+                user_id=admin.id,
+                title="Ticket Activity",
+                message=f"User {user.first_name} {user.last_name} replied to ticket: {ticket.subject}",
+                type='INFO',
+                link='/admin'
+            )
+
     db.session.commit()
     return jsonify(reply.to_dict()), 201
 

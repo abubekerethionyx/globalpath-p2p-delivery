@@ -27,7 +27,8 @@ export const PICKER_PLANS: SubscriptionPlan[] = [
 export const MOCK_USERS: User[] = [
   {
     id: 'u1',
-    name: 'Alice Johnson',
+    firstName: 'Alice',
+    lastName: 'Johnson',
     email: 'alice@example.com',
     role: UserRole.SENDER,
     avatar: 'https://i.pravatar.cc/150?u=alice@example.com',
@@ -35,12 +36,15 @@ export const MOCK_USERS: User[] = [
     currentPlanId: '',
     itemsCountThisMonth: 0,
     verificationStatus: VerificationStatus.VERIFIED,
+    isEmailVerified: true,
+    isPhoneVerified: true,
     homeAddress: "123 Maple St, New York, NY",
     createdAt: '2023-01-15'
   },
   {
     id: 'u2',
-    name: 'Bob Smith',
+    firstName: 'Bob',
+    lastName: 'Smith',
     email: 'bob@example.com',
     role: UserRole.SENDER,
     avatar: 'https://i.pravatar.cc/150?u=bob@example.com',
@@ -48,12 +52,15 @@ export const MOCK_USERS: User[] = [
     currentPlanId: '',
     itemsCountThisMonth: 0,
     verificationStatus: VerificationStatus.VERIFIED,
+    isEmailVerified: true,
+    isPhoneVerified: true,
     homeAddress: "456 Oak Rd, Chicago, IL",
     createdAt: '2023-02-20'
   },
   {
     id: 'u3',
-    name: 'Charlie Brown',
+    firstName: 'Charlie',
+    lastName: 'Brown',
     email: 'charlie@example.com',
     role: UserRole.PICKER,
     avatar: 'https://i.pravatar.cc/150?u=charlie@example.com',
@@ -64,11 +71,14 @@ export const MOCK_USERS: User[] = [
     currentPlanId: '',
     itemsCountThisMonth: 0,
     verificationStatus: VerificationStatus.VERIFIED,
+    isEmailVerified: true,
+    isPhoneVerified: true,
     createdAt: '2023-03-10'
   },
   {
     id: 'u4',
-    name: 'Diana Prince',
+    firstName: 'Diana',
+    lastName: 'Prince',
     email: 'diana@example.com',
     role: UserRole.PICKER,
     avatar: 'https://i.pravatar.cc/150?u=diana@example.com',
@@ -79,11 +89,14 @@ export const MOCK_USERS: User[] = [
     currentPlanId: '',
     itemsCountThisMonth: 0,
     verificationStatus: VerificationStatus.PENDING,
+    isEmailVerified: true,
+    isPhoneVerified: false,
     createdAt: '2023-04-05'
   },
   {
     id: 'u5',
-    name: 'Evan Wright',
+    firstName: 'Evan',
+    lastName: 'Wright',
     email: 'evan@example.com',
     role: UserRole.SENDER,
     avatar: 'https://i.pravatar.cc/150?u=evan@example.com',
@@ -91,17 +104,22 @@ export const MOCK_USERS: User[] = [
     currentPlanId: '',
     itemsCountThisMonth: 0,
     verificationStatus: VerificationStatus.UNVERIFIED,
+    isEmailVerified: false,
+    isPhoneVerified: false,
     createdAt: '2023-05-12'
   },
   {
     id: 'admin1',
-    name: 'GlobalPath Admin',
+    firstName: 'GlobalPath',
+    lastName: 'Admin',
     email: 'admin@example.com',
     role: UserRole.ADMIN,
     avatar: 'https://i.pravatar.cc/150?u=admin@example.com',
     walletBalance: 0,
     itemsCountThisMonth: 0,
     verificationStatus: VerificationStatus.VERIFIED,
+    isEmailVerified: true,
+    isPhoneVerified: true,
     createdAt: '2022-10-01'
   }
 ];

@@ -129,23 +129,23 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                                         <div className="flex items-center gap-3">
                                             <img src={u.avatar} className="w-10 h-10 rounded-xl border border-slate-200" alt="" />
                                             <div>
-                                                <p className="font-bold text-slate-900">{u.name}</p>
+                                                <p className="font-bold text-slate-900">{u.firstName} {u.lastName}</p>
                                                 <p className="text-xs text-slate-500">{u.email}</p>
                                             </div>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
                                         <span className={`px-3 py-1 rounded-full text-xs font-bold ${u.role === UserRole.ADMIN ? 'bg-slate-900 text-white' :
-                                                u.role === UserRole.PICKER ? 'bg-indigo-100 text-indigo-700' :
-                                                    'bg-green-100 text-green-700'
+                                            u.role === UserRole.PICKER ? 'bg-indigo-100 text-indigo-700' :
+                                                'bg-green-100 text-green-700'
                                             }`}>
                                             {u.role}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4">
                                         <span className={`px-3 py-1 rounded-full text-xs font-bold ${u.verificationStatus === VerificationStatus.VERIFIED ? 'bg-green-100 text-green-700' :
-                                                u.verificationStatus === VerificationStatus.PENDING ? 'bg-amber-100 text-amber-700' :
-                                                    'bg-slate-100 text-slate-500'
+                                            u.verificationStatus === VerificationStatus.PENDING ? 'bg-amber-100 text-amber-700' :
+                                                'bg-slate-100 text-slate-500'
                                             }`}>
                                             {u.verificationStatus}
                                         </span>

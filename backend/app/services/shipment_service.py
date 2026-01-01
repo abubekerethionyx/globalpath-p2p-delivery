@@ -49,7 +49,19 @@ def update_shipment_status(shipment_id, status):
         # If rejected/reset to POSTED, clear partner so it can be picked again
         if status == ItemStatus.POSTED:
             shipment.partner_id = None
+        
         db.session.commit()
+
+        # Notify Partner of status change
+        if shipment.partner_id:
+            from app.models.notification import create_notification
+            create_notification(
+                user_id=shipment.partner_id,
+                title="Node Status Sync",
+                message=f"Transmission {shipment.id[:8]} updated to {status.value}.",
+                type='INFO',
+                link='/dashboard'
+            )
     return shipment
 
 def pick_shipment(shipment_id, partner_id):
@@ -76,5 +88,17 @@ def pick_shipment(shipment_id, partner_id):
         active_sub.remaining_usage -= 1
         
         db.session.commit()
+
+        # Notify Sender that someone wants to pick it up
+        from app.models.notification import create_notification
+        from app.models.user import User
+        partner = User.query.get(partner_id)
+        create_notification(
+            user_id=shipment.sender_id,
+            title="Node Requested",
+            message=f"{partner.name} has requested to fulfill your shipment {shipment.id[:8]}.",
+            type='MESSAGE',
+            link='/dashboard'
+        )
         return shipment
     return None
