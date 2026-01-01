@@ -22,6 +22,7 @@ class User(db.Model):
     wallet_balance = db.Column(db.Float, default=0.0)
     current_plan_id = db.Column(db.String(36), db.ForeignKey('subscription_plans.id'))
     items_count_this_month = db.Column(db.Integer, default=0)
+    average_delivery_time = db.Column(db.Float, default=0.0) # In Days or Hours
     
     # Security Fields
     verification_status = db.Column(db.Enum(VerificationStatus), default=VerificationStatus.UNVERIFIED)

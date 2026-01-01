@@ -89,19 +89,20 @@ def update_shipment_status(shipment_id, status):
         # Notify Partner
         if shipment.partner_id:
             if status == ItemStatus.DELIVERED:
+                # Update Picker Stats
+                from app.models.user import User
+                picker = User.query.get(shipment.partner_id)
+                if picker:
+                    # Increment rating (capped at 5.0) and completed deliveries
+                    picker.rating = min(5.0, (picker.rating or 0.0) + 0.2)
+                    picker.completed_deliveries = (picker.completed_deliveries or 0) + 1
+                    db.session.add(picker)
+
                 create_notification(
                     user_id=shipment.partner_id,
                     title="Protocol Complete",
                     message=f"Transmission {shipment.id[:8]} confirmed delivered. Funds released.",
                     type='SUCCESS',
-                    link='/dashboard'
-                )
-            elif status != ItemStatus.WAITING_CONFIRMATION: # Don't notify picker if THEY set it to WAITING
-                 create_notification(
-                    user_id=shipment.partner_id,
-                    title="Node Status Sync",
-                    message=f"Transmission {shipment.id[:8]} updated to {status.value}.",
-                    type='INFO',
                     link='/dashboard'
                 )
 

@@ -104,6 +104,7 @@ export interface User {
   walletBalance: number;
   currentPlanId?: string;
   itemsCountThisMonth: number;
+  averageDeliveryTime?: number;
   // Expanded Security Fields
   verificationStatus: VerificationStatus;
   idType?: 'NATIONAL_ID' | 'PASSPORT';

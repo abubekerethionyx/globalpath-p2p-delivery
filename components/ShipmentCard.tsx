@@ -97,19 +97,22 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
       onClick={handleViewDetails}
     >
       {/* Bulk Selection Checkbox */}
-      {role === UserRole.PICKER && onSelect && item.status !== ItemStatus.POSTED && item.status !== ItemStatus.REQUESTED && item.status !== ItemStatus.DELIVERED && (
-        <div
-          className="absolute top-0 left-0 p-5 z-20"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <input
-            type="checkbox"
-            checked={isSelected}
-            onChange={(e) => onSelect(item.id, e.target.checked)}
-            className="w-5 h-5 rounded-md border-slate-300 text-[#009E49] focus:ring-[#009E49] cursor-pointer shadow-sm"
-          />
-        </div>
-      )}
+      {onSelect && (
+        (role === UserRole.PICKER && item.status !== ItemStatus.POSTED && item.status !== ItemStatus.REQUESTED && item.status !== ItemStatus.DELIVERED) ||
+        (role === UserRole.SENDER && item.status === ItemStatus.WAITING_CONFIRMATION)
+      ) && (
+          <div
+            className="absolute top-0 left-0 p-5 z-20"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={(e) => onSelect(item.id, e.target.checked)}
+              className="w-5 h-5 rounded-md border-slate-300 text-[#009E49] focus:ring-[#009E49] cursor-pointer shadow-sm"
+            />
+          </div>
+        )}
 
       {/* Simplified Card Body (No Image Header) */}
       <div className={`p-5 ${onSelect ? 'pt-12' : ''}`}>
