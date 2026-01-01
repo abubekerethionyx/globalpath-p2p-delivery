@@ -20,6 +20,7 @@ import AuthPage from './pages/AuthPage';
 import ProfilePage from './pages/ProfilePage';
 import SupportPage from './pages/SupportPage';
 import NotificationsPage from './pages/NotificationsPage';
+import PickerProfilePage from './pages/PickerProfilePage';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -133,6 +134,7 @@ const App: React.FC = () => {
             navigate('/marketplace');
           }} onCancel={() => navigate('/marketplace')} /> : <Navigate to="/login" />} />
           <Route path="/admin" element={user && user.role === UserRole.ADMIN ? <AdminPage /> : <Navigate to="/dashboard" />} />
+          <Route path="/picker-profile/:id" element={user ? <PickerProfilePage /> : <Navigate to="/login" />} />
 
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

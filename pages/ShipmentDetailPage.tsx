@@ -68,6 +68,7 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser }) 
     { status: ItemStatus.PICKED, label: 'Partner Validated', desc: 'Handover sequence approved by sender' },
     { status: ItemStatus.IN_TRANSIT, label: 'Active Transit', desc: 'Shipment currently in global motion' },
     { status: ItemStatus.ARRIVED, label: 'Dest. Arrived', desc: 'Package reached the target local hub' },
+    { status: ItemStatus.WAITING_CONFIRMATION, label: 'Pending Signature', desc: 'Partner awaiting final sign-off' },
     { status: ItemStatus.DELIVERED, label: 'Final Handover', desc: 'Protocol complete - Item delivered' },
   ];
 

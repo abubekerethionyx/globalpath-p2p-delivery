@@ -13,6 +13,9 @@ interface ShipmentCardProps {
   onSelect?: (id: string, selected: boolean) => void;
   isSelected?: boolean;
   compact?: boolean;
+  isRequested?: boolean;
+  requestStatus?: string | null;
+  currentUserId?: string;
 }
 
 const ShipmentCard: React.FC<ShipmentCardProps> = ({
@@ -23,7 +26,10 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
   onChat,
   onSelect,
   isSelected = false,
-  compact = false
+  compact = false,
+  isRequested = false,
+  requestStatus = null,
+  currentUserId
 }) => {
   const navigate = useNavigate();
 
@@ -65,6 +71,7 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
       case ItemStatus.PICKED: return 'bg-indigo-500 text-white';
       case ItemStatus.IN_TRANSIT: return 'bg-purple-500 text-white';
       case ItemStatus.ARRIVED: return 'bg-[#009E49] text-white';
+      case ItemStatus.WAITING_CONFIRMATION: return 'bg-orange-500 text-white';
       case ItemStatus.DELIVERED: return 'bg-green-600 text-white';
       default: return 'bg-slate-500 text-white';
     }
@@ -76,6 +83,7 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
     [ItemStatus.PICKED]: 40,
     [ItemStatus.IN_TRANSIT]: 65,
     [ItemStatus.ARRIVED]: 85,
+    [ItemStatus.WAITING_CONFIRMATION]: 90,
     [ItemStatus.DELIVERED]: 100,
   };
 
@@ -90,12 +98,15 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
     >
       {/* Bulk Selection Checkbox */}
       {role === UserRole.PICKER && onSelect && item.status !== ItemStatus.POSTED && item.status !== ItemStatus.REQUESTED && item.status !== ItemStatus.DELIVERED && (
-        <div className="absolute top-4 left-4 z-10">
+        <div
+          className="absolute top-0 left-0 p-5 z-20"
+          onClick={(e) => e.stopPropagation()}
+        >
           <input
             type="checkbox"
             checked={isSelected}
-            onChange={(e) => { e.stopPropagation(); onSelect(item.id, e.target.checked); }}
-            className="w-5 h-5 rounded-md border-slate-300 text-[#009E49] focus:ring-[#009E49] cursor-pointer"
+            onChange={(e) => onSelect(item.id, e.target.checked)}
+            className="w-5 h-5 rounded-md border-slate-300 text-[#009E49] focus:ring-[#009E49] cursor-pointer shadow-sm"
           />
         </div>
       )}
@@ -186,7 +197,7 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
           {role === UserRole.PICKER && (
             <button
               onClick={handleViewDetails}
-              className="flex-1 bg-slate-900 text-white px-4 py-3 rounded-xl text-xs font-bold hover:bg-black transition flex items-center justify-center shadow-lg group/btn"
+              className="flex-1 bg-slate-900 text-white px-3 py-2 rounded-xl text-xs font-bold hover:bg-black transition flex items-center justify-center shadow-lg group/btn"
             >
               <svg className="w-4 h-4 mr-2 group-hover/btn:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -199,7 +210,7 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
           {showChat && (
             <button
               onClick={handleMessage}
-              className="flex-none bg-white border-2 border-slate-200 text-slate-700 p-3 rounded-xl text-xs font-bold hover:bg-slate-50 hover:border-[#009E49] transition flex items-center justify-center shadow-sm"
+              className="flex-none bg-white border-2 border-slate-200 text-slate-700 p-2 rounded-xl text-xs font-bold hover:bg-slate-50 hover:border-[#009E49] transition flex items-center justify-center shadow-sm"
               title="Chat with sender"
             >
               <svg className="w-4 h-4 text-[#009E49]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -209,27 +220,58 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
           )}
 
           {role === UserRole.PICKER && item.status === ItemStatus.POSTED && onPick && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onPick(item.id); }}
-              className="flex-1 bg-[#009E49] text-white px-4 py-3 rounded-xl text-xs font-black hover:bg-[#007A38] transition shadow-lg shadow-green-200 uppercase tracking-wider flex items-center justify-center group/pick"
-            >
-              <svg className="w-4 h-4 mr-2 group-hover/pick:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-              </svg>
-              Pick Up
-            </button>
+            (isRequested || requestStatus === 'PENDING') ? (
+              <button
+                disabled
+                className="flex-1 bg-amber-100 text-amber-600 px-3 py-2 rounded-xl text-xs font-black border-2 border-amber-200 cursor-not-allowed uppercase tracking-wider flex items-center justify-center"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Request Pending
+              </button>
+            ) : requestStatus === 'REJECTED' ? (
+              <button
+                disabled
+                className="flex-1 bg-red-50 text-red-500 px-3 py-2 rounded-xl text-xs font-black border-2 border-red-100 cursor-not-allowed uppercase tracking-wider flex items-center justify-center"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Rejected
+              </button>
+            ) : (
+              <button
+                onClick={(e) => { e.stopPropagation(); onPick(item.id); }}
+                className="flex-1 bg-[#009E49] text-white px-3 py-2 rounded-xl text-xs font-black hover:bg-[#007A38] transition shadow-lg shadow-green-200 uppercase tracking-wider flex items-center justify-center group/pick"
+              >
+                <svg className="w-4 h-4 mr-2 group-hover/pick:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                </svg>
+                Pick Up
+              </button>
+            )
           )}
 
           {role === UserRole.PICKER && item.status === ItemStatus.REQUESTED && (
-            <button
-              disabled
-              className="flex-1 bg-amber-50 text-amber-600 border-2 border-amber-200 px-4 py-3 rounded-xl text-xs font-bold cursor-wait flex items-center justify-center"
-            >
-              <svg className="w-4 h-4 mr-2 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Awaiting
-            </button>
+            (currentUserId && item.partnerId === currentUserId) || requestStatus === 'APPROVED' ? (
+              <button
+                className="flex-1 bg-green-600 text-white px-3 py-2 rounded-xl text-xs font-black border-2 border-green-600 uppercase tracking-wider flex items-center justify-center shadow-lg shadow-green-200"
+                onClick={handleViewDetails}
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                </svg>
+                Ready for Pickup
+              </button>
+            ) : (
+              <button
+                disabled
+                className="flex-1 bg-slate-100 text-slate-500 px-3 py-2 rounded-xl text-xs font-bold border-2 border-slate-200 cursor-not-allowed flex items-center justify-center uppercase tracking-wider"
+              >
+                Taken
+              </button>
+            )
           )}
 
           {role === UserRole.PICKER && item.status !== ItemStatus.POSTED && item.status !== ItemStatus.REQUESTED && item.status !== ItemStatus.DELIVERED && onUpdateStatus && (
@@ -237,13 +279,16 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
               value={item.status}
               onClick={(e) => e.stopPropagation()}
               onChange={(e) => onUpdateStatus(item.id, e.target.value as ItemStatus)}
-              className="flex-1 bg-white border-2 border-slate-200 text-slate-900 px-3 py-3 rounded-xl text-xs font-bold focus:ring-2 focus:ring-[#009E49] appearance-none text-center cursor-pointer shadow-sm"
+              className="flex-1 bg-white border-2 border-slate-200 text-slate-900 px-3 py-2 rounded-xl text-xs font-bold focus:ring-2 focus:ring-[#009E49] appearance-none text-center cursor-pointer shadow-sm"
             >
-              {Object.values(ItemStatus).map(s => (
-                <option key={s} value={s} disabled={statusProgress[s] <= statusProgress[item.status]}>
-                  {s.replace('_', ' ')}
-                </option>
-              ))}
+              {Object.values(ItemStatus).map(s => {
+                if (role === UserRole.PICKER && s === ItemStatus.DELIVERED) return null;
+                return (
+                  <option key={s} value={s} disabled={statusProgress[s] <= statusProgress[item.status]}>
+                    {s.replace('_', ' ')}
+                  </option>
+                );
+              })}
             </select>
           )}
         </div>

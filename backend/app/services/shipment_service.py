@@ -84,16 +84,46 @@ def update_shipment_status(shipment_id, status):
         
         db.session.commit()
 
-        # Notify Partner of status change
+        from app.models.notification import create_notification
+
+        # Notify Partner
         if shipment.partner_id:
-            from app.models.notification import create_notification
-            create_notification(
-                user_id=shipment.partner_id,
-                title="Node Status Sync",
-                message=f"Transmission {shipment.id[:8]} updated to {status.value}.",
-                type='INFO',
+            if status == ItemStatus.DELIVERED:
+                create_notification(
+                    user_id=shipment.partner_id,
+                    title="Protocol Complete",
+                    message=f"Transmission {shipment.id[:8]} confirmed delivered. Funds released.",
+                    type='SUCCESS',
+                    link='/dashboard'
+                )
+            elif status != ItemStatus.WAITING_CONFIRMATION: # Don't notify picker if THEY set it to WAITING
+                 create_notification(
+                    user_id=shipment.partner_id,
+                    title="Node Status Sync",
+                    message=f"Transmission {shipment.id[:8]} updated to {status.value}.",
+                    type='INFO',
+                    link='/dashboard'
+                )
+
+        # Notify Sender
+        if status == ItemStatus.WAITING_CONFIRMATION:
+             create_notification(
+                user_id=shipment.sender_id,
+                title="Action Required: Confirm Delivery",
+                message=f"Partner reports delivery of {shipment.description[:20] or 'Shipment'}. Please confirm.",
+                type='WARNING',
                 link='/dashboard'
             )
+        elif status != ItemStatus.DELIVERED and status != ItemStatus.POSTED: 
+             # Notify sender of progress (Picked, In Transit, Arrived)
+             create_notification(
+                user_id=shipment.sender_id,
+                title="Status Update",
+                message=f"Shipment {shipment.description[:20] or 'Item'} is now {status.value}.",
+                type='INFO',
+                link=f'/shipment-detail/{shipment.id}'
+            )
+
     return shipment
 
 def pick_shipment(shipment_id, picker_id):
@@ -157,11 +187,19 @@ def approve_request(request_id):
 
     # Deduct Quota
     active_sub.remaining_usage -= 1
+    db.session.add(active_sub)
+
+    # Update Picker Rating on Approval
+    from app.models.user import User
+    picker = User.query.get(req.picker_id)
+    if picker:
+        picker.rating = min(5.0, (picker.rating or 0) + 0.1)
+        db.session.add(picker)
 
     # Approve
     req.status = 'APPROVED'
     shipment.partner_id = req.picker_id
-    shipment.status = ItemStatus.REQUESTED
+    shipment.status = ItemStatus.PICKED
     shipment.picked_at = datetime.utcnow()
 
     # Reject others
@@ -172,6 +210,15 @@ def approve_request(request_id):
     ).all()
     for other in other_requests:
         other.status = 'REJECTED'
+        # Notify other pickers
+        from app.models.notification import create_notification
+        create_notification(
+            user_id=other.picker_id,
+            title="Application Update",
+            message=f"Another traveler was selected for {shipment.description[:20]}...",
+            type='INFO',
+            link='/dashboard'
+        )
 
     db.session.commit()
 
@@ -188,10 +235,20 @@ def approve_request(request_id):
 
 def reject_request(request_id):
     from app.models.shipment import ShipmentRequest
+    from app.models.notification import create_notification
+    
     req = ShipmentRequest.query.get(request_id)
     if req and req.status == 'PENDING':
         req.status = 'REJECTED'
         db.session.commit()
+        
+        create_notification(
+            user_id=req.picker_id,
+            title="Application Declined",
+            message=f"Sender has declined your request for {req.shipment.description[:20]}...",
+            type='WARNING',
+            link='/dashboard'
+        )
     return req
 
 def get_picker_requests(picker_id):

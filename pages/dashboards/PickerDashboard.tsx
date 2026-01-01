@@ -13,6 +13,7 @@ type PickerTab = 'REQUESTS' | 'LOCKED' | 'TRANSIT' | 'COMPLETED';
 
 const PickerDashboard: React.FC<PickerDashboardProps> = ({ user }) => {
     const navigate = useNavigate();
+    const [items, setItems] = useState<ShipmentItem[]>([]);
     const [requests, setRequests] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -46,15 +47,18 @@ const PickerDashboard: React.FC<PickerDashboardProps> = ({ user }) => {
         [ItemStatus.PICKED]: items.filter(i => i.status === ItemStatus.PICKED),
         [ItemStatus.IN_TRANSIT]: items.filter(i => i.status === ItemStatus.IN_TRANSIT),
         [ItemStatus.ARRIVED]: items.filter(i => i.status === ItemStatus.ARRIVED),
+        [ItemStatus.WAITING_CONFIRMATION]: items.filter(i => i.status === ItemStatus.WAITING_CONFIRMATION),
         [ItemStatus.DELIVERED]: items.filter(i => i.status === ItemStatus.DELIVERED),
     };
 
-    const pendingRequests = requests.filter(r => r.status === 'PENDING').map(r => r.shipment);
+    const pendingRequests = requests
+        .filter(r => r.status === 'PENDING' || r.status === 'REJECTED')
+        .map(r => ({ ...r.shipment, requestStatus: r.status }));
 
     const pendingCount = pendingRequests.length;
     const requestedCount = groupedItems[ItemStatus.REQUESTED].length;
     const lockedCount = groupedItems[ItemStatus.PICKED].length;
-    const transitCount = groupedItems[ItemStatus.IN_TRANSIT].length + groupedItems[ItemStatus.ARRIVED].length;
+    const transitCount = groupedItems[ItemStatus.IN_TRANSIT].length + groupedItems[ItemStatus.ARRIVED].length + groupedItems[ItemStatus.WAITING_CONFIRMATION].length;
     const historyCount = groupedItems[ItemStatus.DELIVERED].length;
 
     const totalEarned = items.reduce((acc, curr) => acc + curr.fee, 0);
@@ -110,6 +114,8 @@ const PickerDashboard: React.FC<PickerDashboardProps> = ({ user }) => {
                             onUpdateStatus={onUpdateStatus}
                             onSelect={handleSelect}
                             isSelected={selectedIds.has(item.id)}
+                            currentUserId={user.id}
+                            requestStatus={(item as any).requestStatus}
                         />
                         <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button
@@ -120,13 +126,23 @@ const PickerDashboard: React.FC<PickerDashboardProps> = ({ user }) => {
                             </button>
                         </div>
                         {isRequest && (
-                            <div className="mt-4 p-4 bg-amber-50 rounded-2xl border border-amber-100 flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></div>
-                                    <span className="text-[10px] font-black text-amber-700 uppercase tracking-widest">Awaiting Approval</span>
+                            (item as any).requestStatus === 'REJECTED' ? (
+                                <div className="mt-4 p-4 bg-red-50 rounded-2xl border border-red-100 flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                                        <span className="text-[10px] font-black text-red-700 uppercase tracking-widest">Application Declined</span>
+                                    </div>
+                                    <span className="text-[10px] font-bold text-slate-400">Closed</span>
                                 </div>
-                                <span className="text-[10px] font-bold text-slate-400">Step 1/2</span>
-                            </div>
+                            ) : (
+                                <div className="mt-4 p-4 bg-amber-50 rounded-2xl border border-amber-100 flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></div>
+                                        <span className="text-[10px] font-black text-amber-700 uppercase tracking-widest">Awaiting Approval</span>
+                                    </div>
+                                    <span className="text-[10px] font-bold text-slate-400">Step 1/2</span>
+                                </div>
+                            )
                         )}
                         {isAction && (
                             <div className="mt-4 p-4 bg-[#009E49]/10 rounded-2xl border border-[#009E49]/20 flex items-center justify-between">
@@ -309,7 +325,8 @@ const PickerDashboard: React.FC<PickerDashboardProps> = ({ user }) => {
                 {activeTab === 'TRANSIT' && (
                     <StatusGrid statusItems={[
                         ...groupedItems[ItemStatus.IN_TRANSIT],
-                        ...groupedItems[ItemStatus.ARRIVED]
+                        ...groupedItems[ItemStatus.ARRIVED],
+                        ...groupedItems[ItemStatus.WAITING_CONFIRMATION]
                     ]} emptyMessage="No shipments currently in the global flow" />
                 )}
                 {activeTab === 'COMPLETED' && (
@@ -341,7 +358,7 @@ const PickerDashboard: React.FC<PickerDashboardProps> = ({ user }) => {
                             <option value={ItemStatus.PICKED}>Locked (Ready)</option>
                             <option value={ItemStatus.IN_TRANSIT}>In Transit</option>
                             <option value={ItemStatus.ARRIVED}>Arrived at Dest.</option>
-                            <option value={ItemStatus.DELIVERED}>Finalized (Delivered)</option>
+                            <option value={ItemStatus.WAITING_CONFIRMATION}>Report Delivered (Wait Confirm)</option>
                         </select>
                         <button
                             onClick={handleBulkUpdate}

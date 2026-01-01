@@ -14,6 +14,7 @@ interface MarketplacePageProps {
 const MarketplacePage: React.FC<MarketplacePageProps> = ({ user }) => {
   const navigate = useNavigate();
   const [items, setItems] = useState<ShipmentItem[]>([]);
+  const [myRequestsStatus, setMyRequestsStatus] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [activeSub, setActiveSub] = useState<SubscriptionTransaction | null>(null);
@@ -37,11 +38,17 @@ const MarketplacePage: React.FC<MarketplacePageProps> = ({ user }) => {
     fetchItems();
     const loadData = async () => {
       try {
-        const [fetchedPlans, txs] = await Promise.all([
+        const [fetchedPlans, txs, myReqs] = await Promise.all([
           SubscriptionService.getPlans(),
-          SubscriptionService.getUserTransactions(user.id)
+          SubscriptionService.getUserTransactions(user.id),
+          ShipmentService.getMyRequests()
         ]);
         setPlans(fetchedPlans);
+        const statusMap: Record<string, string> = {};
+        myReqs.forEach((r: any) => {
+          statusMap[r.shipment.id] = r.status;
+        });
+        setMyRequestsStatus(statusMap);
         const active = txs.find(t => t.is_active);
         setActiveSub(active || null);
       } catch (e) {
@@ -101,6 +108,7 @@ const MarketplacePage: React.FC<MarketplacePageProps> = ({ user }) => {
     try {
       await ShipmentService.pickShipment(id);
       alert("You have requested to pick this shipment! The sender will be notified.");
+      setMyRequestsStatus(prev => ({ ...prev, [id]: 'PENDING' }));
       fetchItems();
     } catch (e) {
       alert("Failed to pick shipment. It might be already taken.");
@@ -220,7 +228,13 @@ const MarketplacePage: React.FC<MarketplacePageProps> = ({ user }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {availableItems.map(item => (
               <div key={item.id} className="relative">
-                <ShipmentCard item={item} role={user.role} onPick={handlePickAttempt} />
+                <ShipmentCard
+                  item={item}
+                  role={user.role}
+                  onPick={handlePickAttempt}
+                  requestStatus={myRequestsStatus[item.id]}
+                  currentUserId={user.id}
+                />
                 {(!hasPaid) && (
                   <div className="absolute top-14 right-4 bg-slate-900/10 p-2 rounded-xl backdrop-blur-md border border-white/20 z-10">
                     <svg className="w-5 h-5 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>

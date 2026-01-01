@@ -11,6 +11,7 @@ class ItemStatus(enum.Enum):
     PICKED = 'PICKED'
     IN_TRANSIT = 'IN_TRANSIT'
     ARRIVED = 'ARRIVED'
+    WAITING_CONFIRMATION = 'WAITING_CONFIRMATION'
     DELIVERED = 'DELIVERED'
 
 class VerificationStatus(enum.Enum):

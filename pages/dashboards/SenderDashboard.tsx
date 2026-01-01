@@ -18,6 +18,29 @@ const SenderDashboard: React.FC<SenderDashboardProps> = ({ user }) => {
     const [requestsMap, setRequestsMap] = useState<{ [key: string]: any[] }>({});
     const [loading, setLoading] = useState(true);
     const [selectedPicker, setSelectedPicker] = useState<User | null>(null);
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+    const handleSelect = (id: string, selected: boolean) => {
+        const newSelected = new Set(selectedIds);
+        if (selected) newSelected.add(id);
+        else newSelected.delete(id);
+        setSelectedIds(newSelected);
+    };
+
+    const handleBulkConfirm = async () => {
+        if (!window.confirm(`Confirm delivery for ${selectedIds.size} shipments?`)) return;
+        try {
+            await Promise.all(Array.from(selectedIds).map(id =>
+                ShipmentService.updateStatus(id as string, ItemStatus.DELIVERED)
+            ));
+            fetchItems();
+            setSelectedIds(new Set());
+            alert("Deliveries Confirmed!");
+        } catch (e) {
+            console.error(e);
+            alert("Error confirming deliveries");
+        }
+    };
 
     const fetchItems = async () => {
         try {
@@ -59,11 +82,13 @@ const SenderDashboard: React.FC<SenderDashboardProps> = ({ user }) => {
         [ItemStatus.PICKED]: items.filter(i => i.status === ItemStatus.PICKED),
         [ItemStatus.IN_TRANSIT]: items.filter(i => i.status === ItemStatus.IN_TRANSIT),
         [ItemStatus.ARRIVED]: items.filter(i => i.status === ItemStatus.ARRIVED),
+        [ItemStatus.WAITING_CONFIRMATION]: items.filter(i => i.status === ItemStatus.WAITING_CONFIRMATION),
         [ItemStatus.DELIVERED]: items.filter(i => i.status === ItemStatus.DELIVERED),
     };
 
     const pendingRequestCount = Object.keys(requestsMap).length;
-    const actionCount = pendingRequestCount + groupedItems[ItemStatus.REQUESTED].length;
+    const waitingConfirmationCount = groupedItems[ItemStatus.WAITING_CONFIRMATION].length;
+    const actionCount = pendingRequestCount + groupedItems[ItemStatus.REQUESTED].length + waitingConfirmationCount;
     const pipelineCount = groupedItems[ItemStatus.PICKED].length + groupedItems[ItemStatus.IN_TRANSIT].length + groupedItems[ItemStatus.ARRIVED].length;
     const marketplaceCount = groupedItems[ItemStatus.POSTED].length;
     const historyCount = groupedItems[ItemStatus.DELIVERED].length;
@@ -237,6 +262,45 @@ const SenderDashboard: React.FC<SenderDashboardProps> = ({ user }) => {
             <div className="min-h-[400px]">
                 {activeTab === 'ACTION' && (
                     <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+
+                        {/* Waiting Confirmation Section */}
+                        {groupedItems[ItemStatus.WAITING_CONFIRMATION].length > 0 && (
+                            <div className="bg-white p-8 rounded-[2.5rem] border border-amber-100 shadow-sm relative overflow-hidden">
+                                <div className="absolute top-0 left-0 w-full h-2 bg-amber-400"></div>
+                                <div className="flex justify-between items-center mb-6">
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-3 bg-amber-50 text-amber-600 rounded-xl">
+                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                        </div>
+                                        <div>
+                                            <h3 className="text-xl font-black text-slate-900">Confirm Deliveries</h3>
+                                            <p className="text-slate-500 font-medium text-sm">Partners have reported delivery. Please confirm receipt.</p>
+                                        </div>
+                                    </div>
+                                    {selectedIds.size > 0 && (
+                                        <button
+                                            onClick={handleBulkConfirm}
+                                            className="px-6 py-3 bg-amber-500 text-white font-black uppercase text-xs tracking-widest rounded-xl hover:bg-amber-600 shadow-lg shadow-amber-200 transition-all animate-in zoom-in"
+                                        >
+                                            Confirm ({selectedIds.size})
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {groupedItems[ItemStatus.WAITING_CONFIRMATION].map(item => (
+                                        <ShipmentCard
+                                            key={item.id}
+                                            item={item}
+                                            role={user.role}
+                                            onUpdateStatus={onUpdateStatus}
+                                            onSelect={handleSelect}
+                                            isSelected={selectedIds.has(item.id)}
+                                            isRequested={false} // Should be false as it's active
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                         {/* Pending Requests Section */}
                         {Object.entries(requestsMap).map(([itemId, reqs]) => {
                             const item = items.find(i => i.id === itemId);
@@ -253,7 +317,7 @@ const SenderDashboard: React.FC<SenderDashboardProps> = ({ user }) => {
                                         </div>
                                     </div>
                                     <div className="space-y-4">
-                                        {reqs.map((req: any) => (
+                                        {(Array.isArray(reqs) ? reqs : []).map((req: any) => (
                                             <div key={req.id} className="flex flex-col md:flex-row md:items-center justify-between p-6 bg-slate-50 rounded-2xl gap-4">
                                                 <div className="flex items-center gap-4">
                                                     <div className="w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 font-bold">
@@ -265,7 +329,7 @@ const SenderDashboard: React.FC<SenderDashboardProps> = ({ user }) => {
                                                     </div>
                                                 </div>
                                                 <div className="flex gap-3 w-full md:w-auto">
-                                                    <button onClick={() => setSelectedPicker(req.picker as any)} className="px-6 py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl text-xs hover:bg-slate-100">Review Profile</button>
+                                                    <button onClick={() => navigate(`/picker-profile/${req.picker.id}`)} className="px-6 py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl text-xs hover:bg-slate-100">Review Profile</button>
                                                     <button onClick={() => handleRejectRequest(req.id)} className="px-6 py-3 bg-red-50 text-red-600 font-bold rounded-xl text-xs hover:bg-red-100">Decline</button>
                                                     <button onClick={() => handleApproveRequest(req.id)} className="px-6 py-3 bg-[#009E49] text-white font-bold rounded-xl text-xs hover:bg-[#007A38] shadow-lg shadow-green-900/20">Approve & Assign</button>
                                                 </div>
