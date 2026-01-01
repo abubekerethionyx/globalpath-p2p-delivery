@@ -76,5 +76,31 @@ export const AuthService = {
 
     isAuthenticated: (): boolean => {
         return !!localStorage.getItem('token');
+    },
+
+    forgotPassword: async (email: string) => {
+        const response = await api.post('/users/forgot-password', { email });
+        return response.data;
+    },
+
+    resetPassword: async (token: string, newPassword: string) => {
+        const response = await api.post('/users/reset-password', { token, new_password: newPassword });
+        return response.data;
+    },
+
+    verifyOTP: async (email: string, otp: string) => {
+        const response = await api.post('/users/verify-otp', { email, otp });
+        return response.data;
+    },
+
+    googleLogin: async (token: string, role?: string): Promise<{ token?: string; user?: User; needs_role?: boolean; email?: string }> => {
+        const response = await api.post('/users/google-login', { token, role });
+        if (response.data.token) {
+            localStorage.setItem('token', response.data.token);
+            const transformedUser = transformUserData(response.data.user);
+            localStorage.setItem('user', JSON.stringify(transformedUser));
+            return { token: response.data.token, user: transformedUser };
+        }
+        return response.data;
     }
 };

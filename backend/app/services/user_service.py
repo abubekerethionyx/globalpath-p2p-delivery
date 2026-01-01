@@ -17,13 +17,23 @@ def create_user(data):
     if get_user_by_email(data.get('email')):
         return None # User already exists
     
+    import secrets
+    import string
+    from datetime import datetime, timedelta
+    
+    # Generate 6-digit OTP
+    otp = ''.join(secrets.choice(string.digits) for _ in range(6))
+    
     user = User(
         first_name=data['first_name'],
         last_name=data['last_name'],
         email=data['email'],
         phone_number=data.get('phone_number'),
         is_phone_verified=data.get('is_phone_verified', False),
-        role=data.get('role', 'SENDER')
+        role=data.get('role', 'SENDER'),
+        email_verification_token=secrets.token_urlsafe(32),
+        email_otp=otp,
+        email_otp_expiry=datetime.utcnow() + timedelta(minutes=10)
     )
     if 'password' in data:
         user.set_password(data['password'])
@@ -76,6 +86,9 @@ def create_user(data):
 def authenticate_user(email, password):
     user = User.query.filter_by(email=email).first()
     if user and user.check_password(password):
+        if not user.is_email_verified:
+           pass
+            # return {"unverified": True, "message": "Email not verified. Please check your inbox."}
         access_token = create_access_token(identity=user.id)
         return {"token": access_token, "user": user}
     return None
@@ -97,3 +110,111 @@ def delete_user(user_id):
         db.session.delete(user)
         db.session.commit()
     return user
+
+def initiate_password_reset(email):
+    import secrets
+    from datetime import datetime, timedelta
+    
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return False
+    
+    token = secrets.token_urlsafe(32)
+    user.reset_token = token
+    user.reset_token_expiry = datetime.utcnow() + timedelta(hours=1)
+    db.session.commit()
+    
+    # Send Actual Email
+    from app.services.email_service import send_password_reset_email
+    send_password_reset_email(email, token)
+    
+    return True
+
+def complete_password_reset(token, new_password):
+    from datetime import datetime
+    user = User.query.filter_by(reset_token=token).first()
+    
+    if not user or not user.reset_token_expiry or user.reset_token_expiry < datetime.utcnow():
+        return False
+        
+    user.set_password(new_password)
+    user.reset_token = None
+    user.reset_token_expiry = None
+    db.session.commit()
+    return True
+
+def verify_email_otp(email, otp):
+    from datetime import datetime
+    from app.models.enums import VerificationStatus
+    user = User.query.filter_by(email=email).first()
+    
+    if not user or not user.email_otp or not user.email_otp_expiry:
+        return False, "User or OTP not found"
+        
+    if user.email_otp_expiry < datetime.utcnow():
+        return False, "OTP has expired"
+        
+    if user.email_otp != otp:
+        return False, "Invalid OTP code"
+        
+    user.is_email_verified = True
+    user.email_otp = None
+    user.email_otp_expiry = None
+    user.verification_status = VerificationStatus.VERIFIED
+    db.session.commit()
+    
+    return True, "Email verified successfully"
+
+def google_login(token, role=None):
+    from google.oauth2 import id_token
+    from google.auth.transport import requests
+    from flask import current_app
+    from app.models.enums import UserRole, VerificationStatus
+
+    try:
+        # Verify Google Token
+        idinfo = id_token.verify_oauth2_token(token, requests.Request(), current_app.config['GOOGLE_CLIENT_ID'])
+
+        if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+            raise ValueError('Wrong issuer.')
+
+        google_id = idinfo['sub']
+        email = idinfo['email']
+        first_name = idinfo.get('given_name', '')
+        last_name = idinfo.get('family_name', '')
+        avatar = idinfo.get('picture', '')
+
+        user = User.query.filter_by(email=email).first()
+
+        if not user:
+            # If it's a new user but no role was provided, tell the frontend to ask for a role
+            if not role:
+                return {"needs_role": True, "email": email}
+                
+            # Create new user with provided role
+            user = User(
+                email=email,
+                first_name=first_name,
+                last_name=last_name,
+                google_id=google_id,
+                avatar=avatar,
+                is_email_verified=True,
+                role=role,
+                verification_status=VerificationStatus.VERIFIED
+            )
+            db.session.add(user)
+            db.session.commit()
+        elif not user.google_id:
+            # Link Google ID to existing account
+            user.google_id = google_id
+            if not user.avatar:
+                user.avatar = avatar
+            user.is_email_verified = True
+            db.session.commit()
+
+        access_token = create_access_token(identity=user.id)
+        return {"token": access_token, "user": user}
+
+    except Exception as e:
+        print(f"Google login failed: {str(e)}")
+        return None

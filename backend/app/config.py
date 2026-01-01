@@ -17,3 +17,16 @@ class Config:
     CHAPA_CALLBACK_URL = f"{BACKEND_BASE_URL}/api/subscriptions/callbacks/chapa"
     CHAPA_RETURN_URL = f"{FRONTEND_BASE_URL}/billing"
     CHAPA_WEBHOOK_SECRET = os.environ.get('CHAPA_WEBHOOK_SECRET') or "CHASECK_TEST-YNLcpxXgbqbm7U47PTjvbfw6CA3f7XZj"
+
+    # Email Configuration
+    MAIL_SERVER = os.environ.get('MAIL_SERVER') or 'smtp.gmail.com'
+    MAIL_PORT = int(os.environ.get('MAIL_PORT') or 587)
+    MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'true').lower() == 'true'
+    MAIL_USE_SSL = os.environ.get('MAIL_USE_SSL', 'false').lower() == 'true'
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME') or 'abubekermubarek7545@gmail.com'
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD') or 'vfnn snpl dibp uzzr'
+    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER') or 'abubekermubarek7545@gmail.com'
+    MAIL_FROM_NAME = os.environ.get('MAIL_FROM_NAME') or 'GlobalPath Logistics'
+    
+    # Google OAuth
+    GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID') or "40182803174-dijfcrlpuu2du8ptq8hiha4e57h7pirf.apps.googleusercontent.com"

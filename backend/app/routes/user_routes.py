@@ -26,13 +26,27 @@ def register():
     user = user_service.create_user(data)
     if not user:
         return jsonify({'message': 'User already exists'}), 400
-    
-    # Auto-verify the user immediately since email uniqueness is checked
-    user.is_email_verified = True
-    user.verification_status = VerificationStatus.VERIFIED
-    db.session.commit()
+        
+    # Send Actual OTP Email
+    from app.services.email_service import send_otp_email
+    send_otp_email(user.email, user.email_otp)
     
     return jsonify(user_schema.dump(user)), 201
+
+@bp.route('/verify-otp', methods=['POST'])
+def verify_otp():
+    data = request.get_json()
+    email = data.get('email')
+    otp = data.get('otp')
+    
+    if not email or not otp:
+        return jsonify({'message': 'Email and OTP are required'}), 400
+        
+    success, message = user_service.verify_email_otp(email, otp)
+    if success:
+        return jsonify({'message': message}), 200
+    else:
+        return jsonify({'message': message}), 400
 
 @bp.route('/login', methods=['POST'])
 def login():
@@ -44,6 +58,30 @@ def login():
     if not result:
         return jsonify({'message': 'Invalid credentials'}), 401
     
+    if result.get('unverified'):
+        return jsonify({'message': result['message']}), 403
+    
+    return jsonify({
+        'token': result['token'],
+        'user': user_schema.dump(result['user'])
+    }), 200
+
+@bp.route('/google-login', methods=['POST'])
+def google_login():
+    data = request.get_json()
+    token = data.get('token')
+    role = data.get('role')
+    
+    if not token:
+        return jsonify({'message': 'Google token is required'}), 400
+        
+    result = user_service.google_login(token, role)
+    if not result:
+        return jsonify({'message': 'Google authentication failed'}), 401
+        
+    if result.get('needs_role'):
+        return jsonify(result), 200
+        
     return jsonify({
         'token': result['token'],
         'user': user_schema.dump(result['user'])
@@ -247,15 +285,14 @@ def request_email_verification():
     if not user:
         return jsonify({'message': 'User not found'}), 404
         
-    import secrets
     token = secrets.token_urlsafe(32)
     user_service.update_user(user_id, {'email_verification_token': token})
     
-    # In a real app, send actual email. Here we log it.
-    verification_link = f"{request.host_url}api/users/verify-email?token={token}"
-    print(f"VERIFICATION EMAIL for {user.email}: {verification_link}")
+    # Send Actual Email
+    from app.services.email_service import send_verification_email
+    send_verification_email(user.email, token)
     
-    return jsonify({'message': 'Verification email sent (simulated). Check console logs.'}), 200
+    return jsonify({'message': 'Verification email sent. Please check your inbox.'}), 200
 
 @bp.route('/verify-email', methods=['GET'])
 def verify_email():
@@ -273,3 +310,36 @@ def verify_email():
     
     # Return a simple HTML or redirect to frontend
     return "<h1>Email Verified!</h1><p>Your email has been successfully verified. You can now close this window.</p>", 200
+
+@bp.route('/forgot-password', methods=['POST'])
+def forgot_password():
+    data = request.get_json()
+    email = data.get('email')
+    
+    if not email:
+        return jsonify({'message': 'Email is required'}), 400
+        
+    # We return generic message for security (don't reveal user existence)
+    # But for debugging currently we trust initiate_password_reset returns False if not found.
+    # Actually standard practice: "If email exists, link sent."
+    
+    if user_service.initiate_password_reset(email):
+        return jsonify({'message': 'Password reset link sent to your email.'}), 200
+    else:
+        # For better UX in dev, maybe say not found? Or stick to secure generic.
+        # User asked to "fors the user to use working email". So valid email check is crucial.
+        return jsonify({'message': 'If an account exists with this email, a reset link has been sent.'}), 200
+
+@bp.route('/reset-password', methods=['POST'])
+def reset_password():
+    data = request.get_json()
+    token = data.get('token')
+    new_password = data.get('new_password')
+    
+    if not token or not new_password:
+        return jsonify({'message': 'Token and new password are required'}), 400
+        
+    if user_service.complete_password_reset(token, new_password):
+        return jsonify({'message': 'Password successfully reset.'}), 200
+    else:
+        return jsonify({'message': 'Invalid or expired token.'}), 400
