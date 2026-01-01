@@ -33,6 +33,7 @@ export const transformUserData = (userData: any): User => {
         idBackUrl: userData.id_back_url,
         livenessVideo: userData.liveness_video,
         createdAt: userData.created_at,
+        averageDeliveryTime: userData.average_delivery_time,
     } as User;
 };
 

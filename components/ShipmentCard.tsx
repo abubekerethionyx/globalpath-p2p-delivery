@@ -222,7 +222,7 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
             </button>
           )}
 
-          {role === UserRole.PICKER && item.status === ItemStatus.POSTED && onPick && (
+          {role === UserRole.PICKER && item.status === ItemStatus.POSTED && (onPick || (requestStatus && requestStatus !== 'REJECTED')) && (
             (isRequested || requestStatus === 'PENDING') ? (
               <button
                 disabled
@@ -243,7 +243,7 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
                 </svg>
                 Rejected
               </button>
-            ) : (
+            ) : onPick && (
               <button
                 onClick={(e) => { e.stopPropagation(); onPick(item.id); }}
                 className="flex-1 bg-[#009E49] text-white px-3 py-2 rounded-xl text-xs font-black hover:bg-[#007A38] transition shadow-lg shadow-green-200 uppercase tracking-wider flex items-center justify-center group/pick"

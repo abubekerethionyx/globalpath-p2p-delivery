@@ -90,9 +90,23 @@ def update_shipment_status(shipment_id, status):
         if shipment.partner_id:
             if status == ItemStatus.DELIVERED:
                 # Update Picker Stats
+                # Update Picker Stats
                 from app.models.user import User
+                from datetime import datetime
+                
                 picker = User.query.get(shipment.partner_id)
                 if picker:
+                    # Calculate Average Delivery Time
+                    if shipment.picked_at:
+                        duration_hours = (datetime.utcnow() - shipment.picked_at).total_seconds() / 3600.0
+                        current_avg = picker.average_delivery_time or 0.0
+                        completed_count = picker.completed_deliveries or 0
+                        
+                        if completed_count == 0:
+                            picker.average_delivery_time = duration_hours
+                        else:
+                            picker.average_delivery_time = ((current_avg * completed_count) + duration_hours) / (completed_count + 1)
+                    
                     # Increment rating (capped at 5.0) and completed deliveries
                     picker.rating = min(5.0, (picker.rating or 0.0) + 0.2)
                     picker.completed_deliveries = (picker.completed_deliveries or 0) + 1
