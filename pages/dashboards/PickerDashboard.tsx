@@ -13,17 +13,21 @@ type PickerTab = 'REQUESTS' | 'LOCKED' | 'TRANSIT' | 'COMPLETED';
 
 const PickerDashboard: React.FC<PickerDashboardProps> = ({ user }) => {
     const navigate = useNavigate();
-    const [items, setItems] = useState<ShipmentItem[]>([]);
+    const [requests, setRequests] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [bulkStatus, setBulkStatus] = useState<ItemStatus>(ItemStatus.IN_TRANSIT);
-    const [activeTab, setActiveTab] = useState<PickerTab>('REQUESTS');
+    const [activeTab, setActiveTab] = useState<PickerTab>('APPLICATIONS');
 
     const fetchItems = async () => {
         try {
-            const allItems = await ShipmentService.getAllShipments();
+            const [allItems, myReqs] = await Promise.all([
+                ShipmentService.getAllShipments(),
+                ShipmentService.getMyRequests()
+            ]);
             const myItems = allItems.filter(item => item.partnerId === user.id);
             setItems(myItems);
+            setRequests(myReqs);
             setLoading(false);
         } catch (error) {
             console.error("Failed to fetch shipments", error);
@@ -45,6 +49,9 @@ const PickerDashboard: React.FC<PickerDashboardProps> = ({ user }) => {
         [ItemStatus.DELIVERED]: items.filter(i => i.status === ItemStatus.DELIVERED),
     };
 
+    const pendingRequests = requests.filter(r => r.status === 'PENDING').map(r => r.shipment);
+
+    const pendingCount = pendingRequests.length;
     const requestedCount = groupedItems[ItemStatus.REQUESTED].length;
     const lockedCount = groupedItems[ItemStatus.PICKED].length;
     const transitCount = groupedItems[ItemStatus.IN_TRANSIT].length + groupedItems[ItemStatus.ARRIVED].length;
@@ -84,7 +91,7 @@ const PickerDashboard: React.FC<PickerDashboardProps> = ({ user }) => {
         </div>
     );
 
-    const StatusGrid = ({ statusItems, emptyMessage, isRequest = false }: { statusItems: ShipmentItem[], emptyMessage: string, isRequest?: boolean }) => {
+    const StatusGrid = ({ statusItems, emptyMessage, isRequest = false, isAction = false }: { statusItems: ShipmentItem[], emptyMessage: string, isRequest?: boolean, isAction?: boolean }) => {
         if (statusItems.length === 0) return (
             <div className="bg-white rounded-[3rem] border border-slate-100 p-20 text-center animate-in fade-in duration-500">
                 <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -121,6 +128,15 @@ const PickerDashboard: React.FC<PickerDashboardProps> = ({ user }) => {
                                 <span className="text-[10px] font-bold text-slate-400">Step 1/2</span>
                             </div>
                         )}
+                        {isAction && (
+                            <div className="mt-4 p-4 bg-[#009E49]/10 rounded-2xl border border-[#009E49]/20 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-2 h-2 rounded-full bg-[#009E49] animate-pulse"></div>
+                                    <span className="text-[10px] font-black text-[#009E49] uppercase tracking-widest">Ready for Pickup</span>
+                                </div>
+                                <span className="text-[10px] font-bold text-slate-400">Step 2/2</span>
+                            </div>
+                        )}
                     </div>
                 ))}
             </div>
@@ -129,7 +145,7 @@ const PickerDashboard: React.FC<PickerDashboardProps> = ({ user }) => {
 
     return (
         <div className="max-w-[1600px] mx-auto space-y-12 animate-in fade-in duration-700 pb-24 px-4">
-            {/* Security Alerts */}
+            {/* Security Alerts - UNCHANGED */}
             {user.verificationStatus !== VerificationStatus.VERIFIED && (
                 <div className={`p-8 rounded-[2.5rem] border-2 flex items-center justify-between shadow-xl ${user.verificationStatus === VerificationStatus.PENDING
                     ? 'bg-amber-50 border-amber-100 text-amber-900'
@@ -203,8 +219,8 @@ const PickerDashboard: React.FC<PickerDashboardProps> = ({ user }) => {
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         </div>
                     </div>
-                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Awaiting Approval</p>
-                    <p className="text-4xl font-black text-slate-900 mt-2">{requestedCount}</p>
+                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Pending Applications</p>
+                    <p className="text-4xl font-black text-slate-900 mt-2">{pendingCount}</p>
                 </div>
 
                 <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
@@ -227,23 +243,29 @@ const PickerDashboard: React.FC<PickerDashboardProps> = ({ user }) => {
 
                 <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
                     <div className="flex justify-between items-start mb-4">
-                        <div className="p-3 bg-amber-50 rounded-2xl text-amber-500">
-                            <svg className="w-6 h-6 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3-.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                        <div className="p-3 bg-green-50 rounded-2xl text-green-500">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         </div>
                     </div>
-                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Partner Reliability</p>
-                    <p className="text-4xl font-black text-slate-900 mt-2">{user.rating?.toFixed(1) || '0.0'}</p>
+                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Approved Jobs</p>
+                    <p className="text-4xl font-black text-slate-900 mt-2">{requestedCount}</p>
                 </div>
             </div>
 
             {/* Granular Navigation Tabs */}
             <div className="flex flex-wrap gap-2 bg-slate-100 p-2 rounded-[2rem] w-fit">
                 <button
-                    onClick={() => setActiveTab('REQUESTS')}
-                    className={`px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-3 ${activeTab === 'REQUESTS' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    onClick={() => setActiveTab('APPLICATIONS')}
+                    className={`px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-3 ${activeTab === 'APPLICATIONS' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                 >
-                    <span className={`w-2 h-2 rounded-full ${requestedCount > 0 ? 'bg-amber-500 animate-pulse' : 'bg-slate-300'}`}></span>
-                    Claim Requests ({requestedCount})
+                    <span className={`w-2 h-2 rounded-full ${pendingCount > 0 ? 'bg-amber-500 animate-pulse' : 'bg-slate-300'}`}></span>
+                    Applications ({pendingCount})
+                </button>
+                <button
+                    onClick={() => setActiveTab('REQUESTS')}
+                    className={`px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'REQUESTS' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                    Action Required ({requestedCount})
                 </button>
                 <button
                     onClick={() => setActiveTab('LOCKED')}
@@ -267,11 +289,18 @@ const PickerDashboard: React.FC<PickerDashboardProps> = ({ user }) => {
 
             {/* Filtered Content */}
             <div className="min-h-[400px]">
+                {activeTab === 'APPLICATIONS' && (
+                    <StatusGrid
+                        statusItems={pendingRequests}
+                        emptyMessage="No pending applications"
+                        isRequest={true}
+                    />
+                )}
                 {activeTab === 'REQUESTS' && (
                     <StatusGrid
                         statusItems={groupedItems[ItemStatus.REQUESTED]}
-                        emptyMessage="No active requests pending sender approval"
-                        isRequest={true}
+                        emptyMessage="No approved jobs awaiting pickup"
+                        isAction={true}
                     />
                 )}
                 {activeTab === 'LOCKED' && (

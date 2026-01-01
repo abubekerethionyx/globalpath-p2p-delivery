@@ -138,9 +138,19 @@ export interface ShipmentItem {
   notes: string;
   status: ItemStatus;
   createdAt: string;
+  imageUrls?: string[];
+  image_urls?: string[];
+  pickedAt?: string;
+  picked_at?: string;
+  availablePickupTime?: string;
+  available_pickup_time?: string;
   // User objects populated from backend
   sender?: User;
   partner?: User;
+}
+// Extend for loose typing if needed
+export interface ShipmentItemAny extends ShipmentItem {
+  [key: string]: any;
 }
 
 

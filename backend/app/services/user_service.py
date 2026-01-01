@@ -1,3 +1,5 @@
+from app.models.subscription import SubscriptionPlan, SubscriptionTransaction
+from datetime import datetime, timedelta
 from app.models.user import User
 from app.extensions import db
 from flask_jwt_extended import create_access_token
@@ -27,7 +29,48 @@ def create_user(data):
         user.set_password(data['password'])
     
     db.session.add(user)
-    db.session.commit()
+    db.session.commit() # Commit first to get user.id
+
+    # Auto-subscribe to "6 Month Free Starter" plan based on Role
+    promo_plan_id = 's-free-promo-6mo'
+    if user.role == 'PICKER' or (hasattr(user.role, 'value') and user.role.value == 'PICKER'):
+        promo_plan_id = 'p-free-promo-6mo'
+    
+    promo_plan = SubscriptionPlan.query.get(promo_plan_id)
+    
+    # Fallback lookup if ID not found (e.g. if seed not run yet or IDs changed)
+    if not promo_plan:
+        target_name = "6 Month Free Traveler" if 'p-free' in promo_plan_id else "6 Month Free Starter"
+        promo_plan = SubscriptionPlan.query.filter_by(name=target_name).first()
+    
+    if promo_plan:
+        sub = SubscriptionTransaction(
+            user_id=user.id,
+            plan_id=promo_plan.id,
+            plan_name=promo_plan.name,
+            amount=0.0,
+            payment_method='system_promo',
+            status='COMPLETED',
+            is_active=True,
+            remaining_usage=promo_plan.limit,
+            end_date=datetime.utcnow() + timedelta(days=180) # 6 months
+        )
+        user.current_plan_id = promo_plan.id
+        db.session.add(sub)
+        db.session.commit()
+
+        # Notify User of Free Plan
+        from app.models.notification import create_notification
+        action_type = "pickups" if 'p-free' in promo_plan_id else "shipments"
+        
+        create_notification(
+            user_id=user.id,
+            title="Welcome Gift Unlocked!",
+            message=f"Welcome to GlobalPath! You have been automatically upgraded to the '{promo_plan.name}'. Enjoy {promo_plan.limit} free {action_type}/month for 6 months.",
+            type='SUCCESS',
+            link='/packaging'
+        )
+
     return user
 
 def authenticate_user(email, password):

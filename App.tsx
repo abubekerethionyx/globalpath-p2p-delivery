@@ -65,8 +65,12 @@ const App: React.FC = () => {
     setUser(u);
     if (u.role === UserRole.ADMIN) {
       navigate('/admin');
-    } else if (u.role === UserRole.PICKER && u.verificationStatus === VerificationStatus.UNVERIFIED) {
-      navigate('/registration');
+    } else if (u.role === UserRole.PICKER) {
+      if (u.verificationStatus === VerificationStatus.UNVERIFIED) {
+        navigate('/registration');
+      } else {
+        navigate('/marketplace');
+      }
     } else {
       navigate('/dashboard');
     }
@@ -116,6 +120,7 @@ const App: React.FC = () => {
           <Route path="/marketplace" element={user ? <MarketplacePage user={user} /> : <Navigate to="/login" />} />
           <Route path="/billing" element={user ? <BillingPage user={user} /> : <Navigate to="/login" />} />
           <Route path="/post-item" element={user ? <PostShipmentPage user={user} /> : <Navigate to="/login" />} />
+          <Route path="/post-shipment/:id" element={user ? <PostShipmentPage user={user} /> : <Navigate to="/login" />} />
           <Route path="/messages" element={user ? <MessagesPage user={user} /> : <Navigate to="/login" />} />
           <Route path="/support" element={user ? <SupportPage user={user} /> : <Navigate to="/login" />} />
           <Route path="/notifications" element={user ? <NotificationsPage user={user} /> : <Navigate to="/login" />} />
@@ -125,8 +130,8 @@ const App: React.FC = () => {
             setUser(updatedUser);
             // Optionally update local storage here if needed, though AuthService might handle login persistence
             localStorage.setItem('user', JSON.stringify(updatedUser));
-            navigate('/dashboard');
-          }} onCancel={() => navigate('/dashboard')} /> : <Navigate to="/login" />} />
+            navigate('/marketplace');
+          }} onCancel={() => navigate('/marketplace')} /> : <Navigate to="/login" />} />
           <Route path="/admin" element={user && user.role === UserRole.ADMIN ? <AdminPage /> : <Navigate to="/dashboard" />} />
 
           <Route path="*" element={<Navigate to="/" />} />

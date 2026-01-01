@@ -4,7 +4,7 @@ from app.models.user import User
 from app.models.shipment import ShipmentItem
 from app.models.subscription import SubscriptionPlan
 from app.models.enums import UserRole, ItemStatus, VerificationStatus
-from datetime import datetime
+from datetime import datetime, timedelta
 import uuid
 import random
 
@@ -45,6 +45,22 @@ def seed_data():
                 limit=20,
                 role=UserRole.PICKER,
                 description="Earn more by delivering more. Access to high-value items."
+            ),
+            SubscriptionPlan(
+                id="s-free-promo-6mo", # Fixed ID for easy reference
+                name="6 Month Free Starter",
+                price=0.0,
+                limit=150, # Posts limit
+                role=UserRole.SENDER, 
+                description="Special Promotion: 150 shipments/month free for 6 months."
+            ),
+             SubscriptionPlan(
+                id="p-free-promo-6mo", # Fixed ID for Picker
+                name="6 Month Free Traveler",
+                price=0.0,
+                limit=150, # Picks limit
+                role=UserRole.PICKER, 
+                description="Special Promotion: 150 pickups/month free for 6 months."
             )
         ]
         db.session.add_all(plans)
@@ -142,7 +158,12 @@ def seed_data():
                 "receiver_phone": "+44 7700 900000",
                 "weight": 0.5,
                 "fee": 40.0,
-                "notes": "Fragile, handle with care."
+                "notes": "Fragile, handle with care.",
+                "image_urls": [
+                    "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-15-pro-max-natural-titanium-select?wid=5120&hei=2880&fmt=p-jpg&qlt=80&.v=1692875661318",
+                    "https://cdn.mos.cms.futurecdn.net/y833325wRk833325y833325.jpg"
+                ],
+                "available_pickup_time": datetime.utcnow() + timedelta(days=2)
             },
             {
                 "category": "Documents",
@@ -154,7 +175,9 @@ def seed_data():
                 "receiver_phone": "+49 151 12345678",
                 "weight": 0.2,
                 "fee": 25.0,
-                "notes": "Urgent delivery required."
+                "notes": "Urgent delivery required.",
+                "image_urls": ["https://images.unsplash.com/photo-1562240020-ce31ccb0fa7d?auto=format&fit=crop&q=80&w=1000"],
+                "available_pickup_time": datetime.utcnow() + timedelta(days=1)
             },
             {
                 "category": "Clothing",
@@ -166,7 +189,9 @@ def seed_data():
                 "receiver_phone": "+1 416 555 0199",
                 "weight": 2.5,
                 "fee": 60.0,
-                "notes": ""
+                "notes": "",
+                "image_urls": ["https://images.unsplash.com/photo-1539533018447-63fcce2678e3?auto=format&fit=crop&q=80&w=1000"],
+                "available_pickup_time": datetime.utcnow() + timedelta(days=5)
             },
             {
                 "category": "Gifts",
@@ -178,7 +203,9 @@ def seed_data():
                 "receiver_phone": "+1 555 7334",
                 "weight": 3.0,
                 "fee": 85.0,
-                "notes": "Very fragile!"
+                "notes": "Very fragile!",
+                "image_urls": ["https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&q=80&w=1000"],
+                "available_pickup_time": datetime.utcnow() + timedelta(days=3)
             },
             {
                 "category": "Books",
@@ -190,7 +217,9 @@ def seed_data():
                 "receiver_phone": "+234 803 123 4567",
                 "weight": 5.0,
                 "fee": 50.0,
-                "notes": "Donate to library."
+                "notes": "Donate to library.",
+                "image_urls": ["https://images.unsplash.com/photo-1495446815901-a7297e633e8d?auto=format&fit=crop&q=80&w=1000"],
+                "available_pickup_time": datetime.utcnow() + timedelta(hours=12)
             },
             {
                 "category": "Electronics",
@@ -202,7 +231,9 @@ def seed_data():
                 "receiver_phone": "+55 11 99999-9999",
                 "weight": 4.5,
                 "fee": 120.0,
-                "notes": "Gift wrapper if possible."
+                "notes": "Gift wrapper if possible.",
+                "image_urls": ["https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?auto=format&fit=crop&q=80&w=1000"],
+                "available_pickup_time": datetime.utcnow() + timedelta(days=7)
             },
             {
                 "category": "Medicine",
@@ -214,7 +245,9 @@ def seed_data():
                 "receiver_phone": "+91 98765 43210",
                 "weight": 1.0,
                 "fee": 30.0,
-                "notes": "Keep cool."
+                "notes": "Keep cool.",
+                "image_urls": ["https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&q=80&w=1000"],
+                "available_pickup_time": datetime.utcnow() + timedelta(days=1)
             },
              {
                 "category": "Food",
@@ -226,7 +259,9 @@ def seed_data():
                 "receiver_phone": "+971 50 123 4567",
                 "weight": 1.2,
                 "fee": 35.0,
-                "notes": "Do not melt."
+                "notes": "Do not melt.",
+                "image_urls": ["https://images.unsplash.com/photo-1549007994-cb92caebd54b?auto=format&fit=crop&q=80&w=1000"],
+                "available_pickup_time": datetime.utcnow() + timedelta(hours=6)
             },
              {
                 "category": "Accessories",
@@ -238,7 +273,9 @@ def seed_data():
                 "receiver_phone": "+1 212 555 1234",
                 "weight": 0.3,
                 "fee": 150.0,
-                "notes": "High value, insurance needed."
+                "notes": "High value, insurance needed.",
+                "image_urls": ["https://images.unsplash.com/photo-1523170335258-f5ed11844a49?auto=format&fit=crop&q=80&w=1000"],
+                "available_pickup_time": datetime.utcnow() + timedelta(days=10)
             },
             {
                 "category": "Clothing",
@@ -250,7 +287,9 @@ def seed_data():
                 "receiver_phone": "+61 2 9250 7111",
                 "weight": 4.0,
                 "fee": 100.0,
-                "notes": "Hang upright."
+                "notes": "Hang upright.",
+                "image_urls": ["https://images.unsplash.com/photo-1594552072238-b8a33785b261?auto=format&fit=crop&q=80&w=1000"],
+                "available_pickup_time": datetime.utcnow() + timedelta(days=20)
             },
             {
                 "category": "Auto Parts",
@@ -262,7 +301,9 @@ def seed_data():
                 "receiver_phone": "+1 313 555 6789",
                 "weight": 2.0,
                 "fee": 70.0,
-                "notes": "Rare part."
+                "notes": "Rare part.",
+                "image_urls": ["https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&q=80&w=1000"],
+                "available_pickup_time": datetime.utcnow() + timedelta(days=14)
             },
             {
                 "category": "Electronics",
@@ -274,7 +315,9 @@ def seed_data():
                 "receiver_phone": "+33 1 44 55 66 77",
                 "weight": 1.5,
                 "fee": 55.0,
-                "notes": ""
+                "notes": "",
+                "image_urls": ["https://images.unsplash.com/photo-1617005082133-548c4dd27f35?auto=format&fit=crop&q=80&w=1000"],
+                "available_pickup_time": datetime.utcnow() + timedelta(days=4)
             },
             {
                 "category": "Toys",
@@ -286,7 +329,9 @@ def seed_data():
                 "receiver_phone": "+1 760 555 9999",
                 "weight": 3.0,
                 "fee": 45.0,
-                "notes": "Keep box pristine."
+                "notes": "Keep box pristine.",
+                "image_urls": ["https://images.unsplash.com/photo-1585366119957-e9730b6d0f60?auto=format&fit=crop&q=80&w=1000"],
+                "available_pickup_time": datetime.utcnow() + timedelta(days=2)
             },
             {
                 "category": "Musical Instruments",
@@ -298,7 +343,9 @@ def seed_data():
                 "receiver_phone": "+86 21 6437 0137",
                 "weight": 0.4,
                 "fee": 40.0,
-                "notes": "Extremely fragile."
+                "notes": "Extremely fragile.",
+                "image_urls": ["https://images.unsplash.com/photo-1612225330812-01a9c6b355ec?auto=format&fit=crop&q=80&w=1000"],
+                "available_pickup_time": datetime.utcnow() + timedelta(days=8)
             },
             {
                 "category": "Shoes",
@@ -310,7 +357,9 @@ def seed_data():
                 "receiver_phone": "+82 2 555 1234",
                 "weight": 1.0,
                 "fee": 50.0,
-                "notes": "Double box."
+                "notes": "Double box.",
+                "image_urls": ["https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&q=80&w=1000"],
+                "available_pickup_time": datetime.utcnow() + timedelta(days=1)
             }
         ]
 

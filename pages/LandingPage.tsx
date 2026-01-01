@@ -16,7 +16,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
             </div>
 
             {/* Hero Section */}
-            <section className="relative pt-4 pb-20 lg:pt-8 lg:pb-40 px-6 max-w-7xl mx-auto">
+            <section className="relative z-10 pt-4 pb-20 lg:pt-8 lg:pb-40 px-6 max-w-7xl mx-auto">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
                     {/* Left: Content */}
                     <div className="lg:col-span-7 space-y-6">
@@ -240,6 +240,15 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                     </div>
                 </div>
             </section>
+
+            {/* Hero Background Image - Shipment Bag */}
+            <div className="absolute top-1/2 -right-40 -translate-y-1/2 w-[900px] h-[900px] pointer-events-none z-0 hidden lg:block select-none">
+                <img
+                    src="https://img.freepik.com/premium-photo/shopping-bag-minimal-style_198067-10103.jpg"
+                    alt="Shipment Bag"
+                    className="w-full h-full object-contain opacity-40 mix-blend-multiply"
+                />
+            </div>
 
             <style>{`
                 @keyframes bounce-slow {

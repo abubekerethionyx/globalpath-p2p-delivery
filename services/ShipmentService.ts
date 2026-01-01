@@ -20,6 +20,9 @@ const transformShipmentData = (data: any): ShipmentItem => {
         notes: data.notes,
         status: data.status,
         createdAt: data.created_at,
+        imageUrls: data.image_urls,
+        pickedAt: data.picked_at,
+        availablePickupTime: data.available_pickup_time,
         // Transform nested user objects
         sender: data.sender ? transformUserData(data.sender) : undefined,
         partner: data.partner ? transformUserData(data.partner) : undefined
@@ -38,8 +41,21 @@ export const ShipmentService = {
         return transformShipmentData(response.data);
     },
 
-    createShipment: async (data: Partial<ShipmentItem>): Promise<ShipmentItem> => {
-        const response = await api.post('/shipments/', data);
+    createShipment: async (data: FormData | Partial<ShipmentItem>): Promise<ShipmentItem> => {
+        const response = await api.post('/shipments/', data, {
+            headers: data instanceof FormData ? {
+                'Content-Type': 'multipart/form-data'
+            } : undefined
+        });
+        return transformShipmentData(response.data);
+    },
+
+    updateShipment: async (id: string, data: FormData | Partial<ShipmentItem>): Promise<ShipmentItem> => {
+        const response = await api.put(`/shipments/${id}`, data, {
+            headers: data instanceof FormData ? {
+                'Content-Type': 'multipart/form-data'
+            } : undefined
+        });
         return transformShipmentData(response.data);
     },
 
@@ -48,8 +64,31 @@ export const ShipmentService = {
         return transformShipmentData(response.data);
     },
 
-    pickShipment: async (id: string): Promise<ShipmentItem> => {
+    pickShipment: async (id: string): Promise<any> => {
         const response = await api.post(`/shipments/${id}/pick`, {});
+        return response.data;
+    },
+
+    getRequests: async (id: string): Promise<any[]> => {
+        const response = await api.get(`/shipments/${id}/requests`);
+        return response.data;
+    },
+
+    approveRequest: async (requestId: string): Promise<ShipmentItem> => {
+        const response = await api.post(`/shipments/request/${requestId}/approve`, {});
         return transformShipmentData(response.data);
+    },
+
+    rejectRequest: async (requestId: string): Promise<any> => {
+        const response = await api.post(`/shipments/request/${requestId}/reject`, {});
+        return response.data;
+    },
+
+    getMyRequests: async (): Promise<any[]> => {
+        const response = await api.get('/shipments/my-requests');
+        return response.data.map((r: any) => ({
+            ...r,
+            shipment: transformShipmentData(r.shipment)
+        }));
     }
 };

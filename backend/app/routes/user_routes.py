@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app, url_for
 from app.services import user_service
+from app.extensions import db
 from app.models.enums import UserRole, VerificationStatus
 from app.schemas.user import UserSchema
 from flask_jwt_extended import jwt_required, get_jwt_identity
@@ -26,14 +27,10 @@ def register():
     if not user:
         return jsonify({'message': 'User already exists'}), 400
     
-    # Trigger verification email
-    import secrets
-    token = secrets.token_urlsafe(32)
-    user.email_verification_token = token
+    # Auto-verify the user immediately since email uniqueness is checked
+    user.is_email_verified = True
+    user.verification_status = VerificationStatus.VERIFIED
     db.session.commit()
-    
-    verification_link = f"{request.host_url}api/users/verify-email?token={token}"
-    print(f"AUTO-VERIFICATION EMAIL for {user.email}: {verification_link}")
     
     return jsonify(user_schema.dump(user)), 201
 

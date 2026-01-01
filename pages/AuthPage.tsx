@@ -23,23 +23,37 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete }) => {
   });
   const [error, setError] = useState('');
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
     try {
       if (isLogin) {
         const response = await AuthService.login(formData.email, formData.password);
         if (response.user) {
           onAuthComplete(response.user);
         } else {
+          // Fallback if no user object, though catch block usually handles this
           setError("Login failed. Please check credentials.");
         }
       } else {
         if (!role) {
           setError("Please select a role first.");
+          setIsLoading(false);
           return;
         }
-        const user = await AuthService.register({
+
+        // Strict Email Validation
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(formData.email)) {
+          setError("Please enter a valid email address (e.g., user@example.com).");
+          setIsLoading(false);
+          return;
+        }
+
+        await AuthService.register({
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
@@ -48,12 +62,30 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete }) => {
           is_phone_verified: true, // Auto-verify for demo/registry purposes
           role: role
         });
-        // Auto login or just complete
+
+        // Auto login after registration
         const loginResponse = await AuthService.login(formData.email, formData.password);
         onAuthComplete(loginResponse.user);
       }
-    } catch (err) {
-      setError("Authentication failed. Try again.");
+    } catch (err: any) {
+      console.error("Auth error:", err);
+      // Extract detailed error message from backend response
+      let backendError = "Authentication failed. Try again.";
+      if (err.response) {
+        if (err.response.data) {
+          if (typeof err.response.data === 'string') backendError = err.response.data;
+          else if (err.response.data.message) backendError = err.response.data.message;
+          else if (err.response.data.error) backendError = err.response.data.error;
+          else backendError = JSON.stringify(err.response.data);
+        } else {
+          backendError = err.response.statusText;
+        }
+      } else if (err.message) {
+        backendError = err.message;
+      }
+      setError(backendError);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -196,9 +228,10 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete }) => {
 
             <button
               type="submit"
-              className="w-full bg-slate-900 text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:bg-black shadow-xl transition-all duration-300 active:scale-95"
+              disabled={isLoading}
+              className={`w-full bg-slate-900 text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:bg-black shadow-xl transition-all duration-300 active:scale-95 ${isLoading ? 'opacity-75 cursor-not-allowed' : ''}`}
             >
-              {isLogin ? 'Enter Platform' : 'Create My Account'}
+              {isLoading ? (isLogin ? 'Signing In...' : 'Creating Account...') : (isLogin ? 'Enter Platform' : 'Create My Account')}
             </button>
           </form>
 

@@ -4,6 +4,16 @@ import { User, ShipmentItem, ItemStatus, VerificationStatus } from '../types';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ShipmentService } from '../services/ShipmentService';
 import { MessageService } from '../services/MessageService';
+import { BASE_URL } from '../config';
+
+// Helper to get full image URL
+const getImageUrl = (url: string) => {
+  if (!url) return '';
+  // If already absolute URL, return as is
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  // Otherwise prepend BASE_URL
+  return `${BASE_URL}${url}`;
+};
 
 interface ShipmentDetailPageProps {
   currentUser: User;
@@ -72,7 +82,17 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser }) 
           <svg className="w-3.5 h-3.5 mr-2 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
           Dashboard
         </button>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          {/* Edit Button - Only for sender and POSTED status */}
+          {item.senderId === currentUser.id && (item.status === ItemStatus.POSTED || item.status === ItemStatus.REQUESTED) && (
+            <button
+              onClick={() => navigate(`/post-shipment/${item.id}`)}
+              className="bg-[#009E49] text-white text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-tighter flex items-center gap-1 shadow-lg shadow-green-100 hover:bg-[#007A38] transition"
+            >
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+              Edit
+            </button>
+          )}
           <p className="text-slate-300 font-mono text-[9px] bg-slate-50 px-2 py-1 rounded border border-slate-100 uppercase">NODE: {item.id.split('-')[0]}</p>
           {isDelivered && (
             <span className="bg-[#009E49] text-white text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-tighter flex items-center gap-1 shadow-lg shadow-green-100">
@@ -107,6 +127,15 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser }) 
                 </div>
               </div>
 
+              {/* Picked Time Display */}
+              {(item.picked_at || item.pickedAt) && (
+                <div className="mb-8 text-center bg-green-50/50 p-2 rounded-xl border border-green-100">
+                  <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest">
+                    Shipment Picked: {new Date(item.picked_at || item.pickedAt || '').toLocaleString()}
+                  </p>
+                </div>
+              )}
+
               <div className="flex flex-col md:flex-row justify-between items-start gap-10">
                 <div className="flex-1 space-y-6">
                   <div>
@@ -118,7 +147,7 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser }) 
                     </h1>
                   </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-6 pt-4 border-t border-slate-100">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-4 border-t border-slate-100">
                     <div>
                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Net Weight</p>
                       <p className="text-lg font-black text-slate-900">{item.weight} <span className="text-xs font-bold opacity-30">KG</span></p>
@@ -131,7 +160,34 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser }) 
                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Security Seal</p>
                       <p className="text-sm font-black text-indigo-600">P2P ENCRYPTED</p>
                     </div>
+                    {(item.available_pickup_time || item.availablePickupTime) && (
+                      <div>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Pickup Available</p>
+                        <p className="text-xs font-black text-slate-900 leading-tight">
+                          {new Date(item.available_pickup_time || item.availablePickupTime || '').toLocaleDateString()}
+                          <br />
+                          <span className="text-[10px] text-slate-500">{new Date(item.available_pickup_time || item.availablePickupTime || '').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        </p>
+                      </div>
+                    )}
                   </div>
+
+                  {/* Image Gallery */}
+                  {(item.image_urls || item.imageUrls) && (item.image_urls || item.imageUrls)!.length > 0 && (
+                    <div className="pt-6">
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3">Item Visuals</p>
+                      <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+                        {(item.image_urls || item.imageUrls)!.map((url, idx) => (
+                          <img
+                            key={idx}
+                            src={getImageUrl(url)}
+                            alt={`Item preview ${idx + 1}`}
+                            className="h-32 w-32 object-cover rounded-2xl border border-slate-200 shadow-sm hover:scale-105 transition-transform cursor-pointer"
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Progress Vertical */}

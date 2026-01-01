@@ -40,6 +40,38 @@ def create_shipment(data):
     db.session.commit()
     return shipment
 
+def update_shipment(shipment_id, data):
+    shipment = ShipmentItem.query.get(shipment_id)
+    if not shipment:
+        return None
+    
+    # Fields that should not be updated via this method
+    protected_fields = ['id', 'sender_id', 'created_at', 'status', 'partner_id', 'picked_at']
+    
+    # Update only provided fields that have meaningful values
+    for key, value in data.items():
+        # Skip protected fields
+        if key in protected_fields:
+            continue
+        # Skip if field doesn't exist on model
+        if not hasattr(shipment, key):
+            continue
+        # Skip None values
+        if value is None:
+            continue
+        # For strings, skip empty strings (but allow 0 for numbers)
+        if isinstance(value, str) and value.strip() == '':
+            continue
+        # Special handling for image_urls - always update if provided
+        if key == 'image_urls':
+            setattr(shipment, key, value)
+            continue
+        # Update the field
+        setattr(shipment, key, value)
+    
+    db.session.commit()
+    return shipment
+
 from app.models.enums import ItemStatus
 
 def update_shipment_status(shipment_id, status):
@@ -64,41 +96,104 @@ def update_shipment_status(shipment_id, status):
             )
     return shipment
 
-def pick_shipment(shipment_id, partner_id):
+def pick_shipment(shipment_id, picker_id):
+    from app.models.shipment import ShipmentRequest
+    from datetime import datetime
+
+    shipment = ShipmentItem.query.get(shipment_id)
+    if not shipment or shipment.status != ItemStatus.POSTED:
+        raise ValueError("Shipment not available for requests")
+
+    # Check if already requested
+    existing = ShipmentRequest.query.filter_by(shipment_id=shipment_id, picker_id=picker_id).first()
+    if existing:
+        return existing
+
+    # Create Request
+    req = ShipmentRequest(shipment_id=shipment_id, picker_id=picker_id, status='PENDING')
+    db.session.add(req)
+    db.session.commit()
+
+    # Notify Sender
+    from app.models.notification import create_notification
+    from app.models.user import User
+    partner = User.query.get(picker_id)
+    create_notification(
+        user_id=shipment.sender_id,
+        title="New Pickup Request",
+        message=f"{partner.first_name} has requested to deliver {shipment.description[:20]}...",
+        type='MESSAGE',
+        link='/dashboard'
+    )
+    return req
+
+def get_shipment_requests(shipment_id):
+    from app.models.shipment import ShipmentRequest
+    return ShipmentRequest.query.filter_by(shipment_id=shipment_id).all()
+
+def approve_request(request_id):
+    from app.models.shipment import ShipmentRequest
     from app.models.subscription import SubscriptionTransaction
     from datetime import datetime
 
-    # Check Quota
+    req = ShipmentRequest.query.get(request_id)
+    if not req or req.status != 'PENDING':
+        raise ValueError("Invalid request")
+    
+    shipment = req.shipment
+    if shipment.status != ItemStatus.POSTED:
+        raise ValueError("Shipment already taken")
+
+    # Check Picker Quota NOW (on approval)
     active_sub = SubscriptionTransaction.query.filter(
-        SubscriptionTransaction.user_id == partner_id,
+        SubscriptionTransaction.user_id == req.picker_id,
         SubscriptionTransaction.is_active == True,
         SubscriptionTransaction.remaining_usage > 0,
         SubscriptionTransaction.end_date > datetime.utcnow()
     ).first()
-    
+
     if not active_sub:
-        return None
+        raise ValueError("Picker has no active quota")
 
-    shipment = ShipmentItem.query.get(shipment_id)
-    if shipment and shipment.status == ItemStatus.POSTED:
-        shipment.status = ItemStatus.REQUESTED
-        shipment.partner_id = partner_id
-        
-        # Decrement usage
-        active_sub.remaining_usage -= 1
-        
+    # Deduct Quota
+    active_sub.remaining_usage -= 1
+
+    # Approve
+    req.status = 'APPROVED'
+    shipment.partner_id = req.picker_id
+    shipment.status = ItemStatus.REQUESTED
+    shipment.picked_at = datetime.utcnow()
+
+    # Reject others
+    other_requests = ShipmentRequest.query.filter(
+        ShipmentRequest.shipment_id == shipment.id,
+        ShipmentRequest.id != req.id,
+        ShipmentRequest.status == 'PENDING'
+    ).all()
+    for other in other_requests:
+        other.status = 'REJECTED'
+
+    db.session.commit()
+
+    # Notify Picker
+    from app.models.notification import create_notification
+    create_notification(
+        user_id=req.picker_id,
+        title="Request Approved!",
+        message=f"You have been selected to deliver {shipment.description[:20]}...",
+        type='SUCCESS',
+        link=f'/shipment-detail/{shipment.id}'
+    )
+    return shipment
+
+def reject_request(request_id):
+    from app.models.shipment import ShipmentRequest
+    req = ShipmentRequest.query.get(request_id)
+    if req and req.status == 'PENDING':
+        req.status = 'REJECTED'
         db.session.commit()
+    return req
 
-        # Notify Sender that someone wants to pick it up
-        from app.models.notification import create_notification
-        from app.models.user import User
-        partner = User.query.get(partner_id)
-        create_notification(
-            user_id=shipment.sender_id,
-            title="Node Requested",
-            message=f"{partner.name} has requested to fulfill your shipment {shipment.id[:8]}.",
-            type='MESSAGE',
-            link='/dashboard'
-        )
-        return shipment
-    return None
+def get_picker_requests(picker_id):
+    from app.models.shipment import ShipmentRequest
+    return ShipmentRequest.query.filter_by(picker_id=picker_id).all()

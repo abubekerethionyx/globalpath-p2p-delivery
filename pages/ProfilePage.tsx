@@ -33,6 +33,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
                 home_address: editedUser.homeAddress,
                 emergency_contact: editedUser.emergencyContact,
                 emergency_contact_phone: editedUser.emergencyContactPhone,
+                id_type: editedUser.idType,
+                national_id: editedUser.nationalId,
+                passport_number: editedUser.passportNumber,
             } as any);
             onUserUpdate(updated);
             setIsEditing(false);
@@ -160,10 +163,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
                     </div>
                     {user.verificationStatus === VerificationStatus.UNVERIFIED && (
                         <button
-                            onClick={() => navigate('/registration')}
+                            onClick={() => setIsEditing(true)}
                             className="bg-[#EF3340] text-white px-8 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-[#D62832] transition shadow-xl shadow-red-100"
                         >
-                            Complete Protocol
+                            Update Info
                         </button>
                     )}
                 </div>
@@ -308,7 +311,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
             </div>
 
             {/* Advanced Verification Manifest - Only for Pickers */}
-            {needsVerification && user.verificationStatus !== VerificationStatus.UNVERIFIED && (
+            {needsVerification && (
                 <div className="bg-slate-900 rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-10 opacity-10 pointer-events-none">
                         <svg className="w-48 h-48" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" /></svg>
@@ -325,11 +328,42 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
                         <div className="space-y-6">
                             <div className="p-6 bg-white/5 rounded-2xl border border-white/10">
                                 <p className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2">Identification Type</p>
-                                <p className="text-lg font-black">{user.idType?.replace('_', ' ')}</p>
+                                {isEditing ? (
+                                    <select
+                                        value={editedUser.idType || 'NATIONAL_ID'}
+                                        onChange={(e) => setEditedUser({ ...editedUser, idType: e.target.value as any })}
+                                        className="w-full bg-slate-800 text-white px-4 py-3 rounded-xl border border-slate-700 focus:border-[#009E49] focus:ring-1 focus:ring-[#009E49] outline-none font-bold"
+                                    >
+                                        <option value="NATIONAL_ID">National Identifier</option>
+                                        <option value="PASSPORT">Passport</option>
+                                    </select>
+                                ) : (
+                                    <p className="text-lg font-black">{user.idType?.replace('_', ' ') || 'Not Set'}</p>
+                                )}
                             </div>
                             <div className="p-6 bg-white/5 rounded-2xl border border-white/10">
-                                <p className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2">{user.idType === 'NATIONAL_ID' ? 'National Identifier' : 'Passport Serial'}</p>
-                                <p className="text-lg font-black tracking-widest font-mono">{user.idType === 'NATIONAL_ID' ? user.nationalId : user.passportNumber}</p>
+                                <p className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2">
+                                    {(editedUser.idType || user.idType) === 'NATIONAL_ID' ? 'National Identifier' : 'Passport Serial'}
+                                </p>
+                                {isEditing ? (
+                                    <input
+                                        type="text"
+                                        value={((editedUser.idType || user.idType) === 'NATIONAL_ID' ? editedUser.nationalId : editedUser.passportNumber) || ''}
+                                        onChange={(e) => {
+                                            if ((editedUser.idType || user.idType) === 'NATIONAL_ID') {
+                                                setEditedUser({ ...editedUser, nationalId: e.target.value });
+                                            } else {
+                                                setEditedUser({ ...editedUser, passportNumber: e.target.value });
+                                            }
+                                        }}
+                                        className="w-full bg-slate-800 text-white px-4 py-3 rounded-xl border border-slate-700 focus:border-[#009E49] focus:ring-1 focus:ring-[#009E49] outline-none font-mono font-bold tracking-widest"
+                                        placeholder="ENTER ID NUMBER"
+                                    />
+                                ) : (
+                                    <p className="text-lg font-black tracking-widest font-mono">
+                                        {((user.idType) === 'NATIONAL_ID' ? user.nationalId : user.passportNumber) || 'UNSET'}
+                                    </p>
+                                )}
                             </div>
                         </div>
 

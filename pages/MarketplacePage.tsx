@@ -73,23 +73,23 @@ const MarketplacePage: React.FC<MarketplacePageProps> = ({ user }) => {
   }, [items, search, from, to, activeCategory]);
 
   const handlePickAttempt = async (id: string) => {
-    // 1. Check Verification
-    if (isUnverified) {
-      navigate('/registration');
-      return;
-    }
+    // 1. Check Verification (Optional for now)
+    // if (isUnverified) {
+    //   navigate('/registration');
+    //   return;
+    // }
 
     if (isPending) {
       setShowPendingModal(true);
       return;
     }
 
-    // 2. Check Subscription
-    if (!hasPaid) {
-      alert("Detail View & Pick actions are locked. Please upgrade your plan to access this item.");
-      navigate('/packaging');
-      return;
-    }
+    // 2. Check Subscription - DISABLED PER USER REQUEST to allow detail viewing
+    // if (!hasPaid) {
+    //   alert("Detail View & Pick actions are locked. Please upgrade your plan to access this item.");
+    //   navigate('/packaging');
+    //   return;
+    // }
 
     // 3. Check Quota
     if (remainingPicks <= 0) {
@@ -140,13 +140,13 @@ const MarketplacePage: React.FC<MarketplacePageProps> = ({ user }) => {
         </div>
 
         <div className="flex flex-wrap gap-3">
-          {(!isVerified || !hasPaid) && (
+          {(!hasPaid) && (
             <button
-              onClick={() => navigate(isUnverified ? '/registration' : '/packaging')}
+              onClick={() => navigate('/packaging')}
               className="bg-amber-50 border border-amber-200 px-6 py-3 rounded-2xl text-amber-700 text-xs font-black uppercase tracking-widest hover:bg-amber-100 transition flex items-center"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-              {isPending ? 'Verification Pending' : 'Limited Access'}
+              Limited Access
             </button>
           )}
           <div className="bg-slate-900 px-6 py-3 rounded-2xl text-white text-xs font-black uppercase tracking-widest shadow-xl shadow-slate-100 flex items-center">
@@ -221,8 +221,8 @@ const MarketplacePage: React.FC<MarketplacePageProps> = ({ user }) => {
             {availableItems.map(item => (
               <div key={item.id} className="relative">
                 <ShipmentCard item={item} role={user.role} onPick={handlePickAttempt} />
-                {(!isVerified || !hasPaid) && (
-                  <div className="absolute top-4 right-4 bg-slate-900/10 p-2 rounded-xl backdrop-blur-md border border-white/20">
+                {(!hasPaid) && (
+                  <div className="absolute top-14 right-4 bg-slate-900/10 p-2 rounded-xl backdrop-blur-md border border-white/20 z-10">
                     <svg className="w-5 h-5 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                   </div>
                 )}
