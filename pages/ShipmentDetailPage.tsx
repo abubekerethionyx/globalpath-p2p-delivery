@@ -42,7 +42,8 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser, pu
     fetchItem();
 
     // Check if user is allowed to see the details based on subscription settings
-    if (publicSettings?.require_subscription_for_details && !currentUser.isSubscriptionActive && currentUser.role !== 'ADMIN') {
+    const subActive = currentUser.isSubscriptionActive !== false;
+    if (publicSettings?.require_subscription_for_details && !subActive && currentUser.role !== 'ADMIN') {
       alert("Viewing detailed shipment analytics requires an active protocol subscription. Please upgrade your plan.");
       navigate('/packaging');
     }

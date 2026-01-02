@@ -48,5 +48,24 @@ export const AdminService = {
         location?: string;
     }): Promise<void> => {
         await api.post('/admin/notifications/broadcast', data);
+    },
+
+    getCountries: async (): Promise<any[]> => {
+        const response = await api.get('/admin/countries');
+        return response.data;
+    },
+
+    addCountry: async (name: string): Promise<any> => {
+        const response = await api.post('/admin/countries', { name });
+        return response.data;
+    },
+
+    deleteCountry: async (id: string): Promise<void> => {
+        await api.delete(`/admin/countries/${id}`);
+    },
+
+    toggleCountry: async (id: string): Promise<any> => {
+        const response = await api.post(`/admin/countries/${id}/toggle`);
+        return response.data;
     }
 };

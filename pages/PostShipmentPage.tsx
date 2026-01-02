@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { User } from '../types';
-import { COUNTRIES, CATEGORIES } from '../constants';
+import { CATEGORIES } from '../constants';
 import { ShipmentService } from '../services/ShipmentService';
 import { SubscriptionService } from '../services/SubscriptionService';
 import { SubscriptionTransaction } from '../types';
@@ -26,11 +26,12 @@ const PostShipmentPage: React.FC<PostShipmentPageProps> = ({ user }) => {
   const [activeSub, setActiveSub] = useState<SubscriptionTransaction | null>(null);
   const [loadingQuota, setLoadingQuota] = useState(true);
   const [loadingShipment, setLoadingShipment] = useState(isEditMode);
+  const [countries, setCountries] = useState<string[]>([]);
   const [form, setForm] = useState({
     category: '',
     description: '',
-    pickupCountry: COUNTRIES[0],
-    destCountry: COUNTRIES[1],
+    pickupCountry: '',
+    destCountry: '',
     address: '',
     receiverName: '',
     receiverPhone: '',
@@ -44,11 +45,31 @@ const PostShipmentPage: React.FC<PostShipmentPageProps> = ({ user }) => {
   const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);
 
   useEffect(() => {
-    SubscriptionService.getUserTransactions(user.id).then(txs => {
-      const active = txs.find(t => t.is_active);
-      setActiveSub(active || null);
-      setLoadingQuota(false);
-    }).catch(() => setLoadingQuota(false));
+    const fetchData = async () => {
+      try {
+        const [txs, supportedCountries] = await Promise.all([
+          SubscriptionService.getUserTransactions(user.id),
+          ShipmentService.getSupportedCountries()
+        ]);
+        const active = txs.find(t => t.is_active);
+        setActiveSub(active || null);
+        setCountries(supportedCountries);
+
+        // Set default countries if not in edit mode
+        if (!isEditMode && supportedCountries.length >= 2) {
+          setForm(prev => ({
+            ...prev,
+            pickupCountry: supportedCountries[0],
+            destCountry: supportedCountries[1]
+          }));
+        }
+      } catch (e) {
+        console.error("Failed to fetch page data", e);
+      } finally {
+        setLoadingQuota(false);
+      }
+    };
+    fetchData();
   }, [user.id]);
 
   // Load existing shipment data when editing
@@ -252,13 +273,13 @@ const PostShipmentPage: React.FC<PostShipmentPageProps> = ({ user }) => {
             <div>
               <label className="block text-sm font-bold text-slate-700 mb-2">From</label>
               <select className="w-full border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-[#009E49]" value={form.pickupCountry} onChange={e => setForm({ ...form, pickupCountry: e.target.value })}>
-                {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+                {countries.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div>
               <label className="block text-sm font-bold text-slate-700 mb-2">To</label>
               <select className="w-full border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-[#009E49]" value={form.destCountry} onChange={e => setForm({ ...form, destCountry: e.target.value })}>
-                {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+                {countries.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
           </div>

@@ -42,7 +42,10 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
   const handleMessage = async (e: React.MouseEvent) => {
     e.stopPropagation();
 
-    if (requireSubscriptionForChat && !isSubscriptionActive && role !== UserRole.ADMIN) {
+    // Ensure we don't block by mistake if isSubscriptionActive is undefined/loading
+    const subActive = isSubscriptionActive !== false;
+
+    if (requireSubscriptionForChat && !subActive && role !== UserRole.ADMIN) {
       alert("Chat access requires an active protocol subscription. Please upgrade your plan.");
       navigate('/packaging');
       return;
@@ -73,7 +76,11 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
 
   const handleViewDetails = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (requireSubscriptionForDetails && !isSubscriptionActive && role !== UserRole.ADMIN) {
+
+    // Ensure we don't block by mistake if isSubscriptionActive is undefined/loading
+    const subActive = isSubscriptionActive !== false;
+
+    if (requireSubscriptionForDetails && !subActive && role !== UserRole.ADMIN) {
       alert("Viewing detailed shipment analytics requires an active protocol subscription. Please upgrade your plan.");
       navigate('/packaging');
       return;

@@ -5,6 +5,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.extensions import db
 from app.models.notification import Notification, create_notification
 from app.models.shipment import ShipmentItem
+from app.models.supported_country import SupportedCountry
 
 bp = Blueprint('admin', __name__, url_prefix='/api/admin')
 
@@ -113,3 +114,60 @@ def get_users_list():
         'email': u.email,
         'role': u.role.value
     } for u in users])
+
+@bp.route('/countries', methods=['GET'])
+@jwt_required()
+def get_countries():
+    # Admin gets all, even inactive ones if we wanted, but let's keep it simple
+    countries = SupportedCountry.query.all()
+    return jsonify([c.to_dict() for c in countries])
+
+@bp.route('/countries', methods=['POST'])
+@jwt_required()
+def add_country():
+    current_user = User.query.get(get_jwt_identity())
+    if not current_user or current_user.role != UserRole.ADMIN:
+        return jsonify({'message': 'Admin access required'}), 403
+        
+    data = request.get_json()
+    name = data.get('name')
+    if not name:
+        return jsonify({'message': 'Country name is required'}), 400
+        
+    if SupportedCountry.query.filter_by(name=name).first():
+        return jsonify({'message': 'Country already exists'}), 400
+        
+    country = SupportedCountry(name=name)
+    db.session.add(country)
+    db.session.commit()
+    return jsonify(country.to_dict()), 201
+
+@bp.route('/countries/<country_id>', methods=['DELETE'])
+@jwt_required()
+def delete_country(country_id):
+    current_user = User.query.get(get_jwt_identity())
+    if not current_user or current_user.role != UserRole.ADMIN:
+        return jsonify({'message': 'Admin access required'}), 403
+        
+    country = SupportedCountry.query.get(country_id)
+    if not country:
+        return jsonify({'message': 'Country not found'}), 404
+        
+    db.session.delete(country)
+    db.session.commit()
+    return jsonify({'message': 'Country deleted successfully'})
+
+@bp.route('/countries/<country_id>/toggle', methods=['POST'])
+@jwt_required()
+def toggle_country(country_id):
+    current_user = User.query.get(get_jwt_identity())
+    if not current_user or current_user.role != UserRole.ADMIN:
+        return jsonify({'message': 'Admin access required'}), 403
+        
+    country = SupportedCountry.query.get(country_id)
+    if not country:
+        return jsonify({'message': 'Country not found'}), 404
+        
+    country.is_active = not country.is_active
+    db.session.commit()
+    return jsonify(country.to_dict())

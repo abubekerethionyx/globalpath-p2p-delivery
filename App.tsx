@@ -159,7 +159,7 @@ const App: React.FC = () => {
             <Route path="/post-shipment/:id" element={user ? <PostShipmentPage user={user} /> : <Navigate to="/login" />} />
             <Route path="/messages" element={
               user ? (
-                (publicSettings.require_subscription_for_chat && !user.isSubscriptionActive && user.role !== UserRole.ADMIN) ? (
+                (publicSettings.require_subscription_for_chat && user.isSubscriptionActive === false && user.role !== UserRole.ADMIN) ? (
                   <Navigate to="/packaging" />
                 ) : (
                   <MessagesPage user={user} />

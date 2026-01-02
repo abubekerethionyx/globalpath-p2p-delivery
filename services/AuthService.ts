@@ -17,6 +17,7 @@ const transformUserData = (userData: any): User => {
         earnings: userData.earnings,
         walletBalance: userData.wallet_balance ?? 0,
         currentPlanId: userData.current_plan_id,
+        isSubscriptionActive: userData.is_subscription_active,
         itemsCountThisMonth: userData.items_count_this_month ?? 0,
         verificationStatus: userData.verification_status,
         idType: userData.id_type,
@@ -33,6 +34,7 @@ const transformUserData = (userData: any): User => {
         idBackUrl: userData.id_back_url,
         livenessVideo: userData.liveness_video,
         createdAt: userData.created_at,
+        averageDeliveryTime: userData.average_delivery_time,
     } as User;
 };
 

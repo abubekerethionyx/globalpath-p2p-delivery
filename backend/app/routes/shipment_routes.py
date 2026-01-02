@@ -3,12 +3,18 @@ from app.services import shipment_service
 from app.schemas.shipment import ShipmentItemSchema
 from app.models.enums import ItemStatus
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from app.models.supported_country import SupportedCountry
 from werkzeug.utils import secure_filename
 import os
 
 bp = Blueprint('shipments', __name__, url_prefix='/api/shipments')
 shipment_schema = ShipmentItemSchema()
 shipments_schema = ShipmentItemSchema(many=True)
+
+@bp.route('/countries', methods=['GET'])
+def get_active_countries():
+    countries = SupportedCountry.query.filter_by(is_active=True).all()
+    return jsonify([c.name for c in countries])
 
 @bp.route('/', methods=['GET'])
 @jwt_required()

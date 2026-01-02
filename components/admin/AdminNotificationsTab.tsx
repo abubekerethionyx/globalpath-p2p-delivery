@@ -21,12 +21,25 @@ const AdminNotificationsTab: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [sending, setSending] = useState(false);
     const [feedback, setFeedback] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+    const [countries, setCountries] = useState<string[]>([]);
 
     useEffect(() => {
         if (targetType === 'USERS') {
             fetchUsers();
         }
+        if (targetType === 'LOCATION_HISTORY' && countries.length === 0) {
+            fetchCountries();
+        }
     }, [targetType]);
+
+    const fetchCountries = async () => {
+        try {
+            const data = await AdminService.getCountries();
+            setCountries(data.filter(c => c.is_active).map(c => c.name));
+        } catch (err) {
+            console.error("Failed to fetch countries", err);
+        }
+    };
 
     const fetchUsers = async () => {
         setLoading(true);
@@ -213,13 +226,14 @@ const AdminNotificationsTab: React.FC = () => {
                                 <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 flex flex-col md:flex-row items-center gap-6">
                                     <div className="flex-1 space-y-2">
                                         <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-2">Target Geography (Country)</label>
-                                        <input
-                                            type="text"
+                                        <select
                                             value={location}
                                             onChange={(e) => setLocation(e.target.value)}
-                                            placeholder="e.g., Ethiopia, USA..."
-                                            className="w-full bg-white border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold outline-none focus:ring-4 focus:ring-indigo-600/5 transition-all"
-                                        />
+                                            className="w-full bg-white border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold outline-none focus:ring-4 focus:ring-indigo-600/5 transition-all text-slate-900"
+                                        >
+                                            <option value="">Select Target Country...</option>
+                                            {countries.map(c => <option key={c} value={c}>{c}</option>)}
+                                        </select>
                                     </div>
                                     <div className="bg-indigo-50 p-6 rounded-2xl border border-indigo-100 max-w-xs text-center flex-shrink-0">
                                         <p className="text-[10px] font-bold text-indigo-700 leading-relaxed uppercase tracking-widest">
@@ -260,7 +274,7 @@ const AdminNotificationsTab: React.FC = () => {
                     </p>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

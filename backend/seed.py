@@ -71,6 +71,12 @@ def seed_data():
         db.session.add(admin)
         db.session.commit()
 
+        print("Creating Supported Countries...")
+        from app.models.supported_country import SupportedCountry
+        initial_countries = ["Ethiopia", "USA", "United Kingdom", "Germany", "UAE (Dubai)", "China", "Turkey", "Kenya", "South Africa", "Canada"]
+        db.session.add_all([SupportedCountry(name=name) for name in initial_countries])
+        db.session.commit()
+
         print("Seeding complete!")
         print(f"Admin Email: {admin.email}")
         print(f"Admin Password: admin123")

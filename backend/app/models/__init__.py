@@ -4,3 +4,4 @@ from .shipment import ShipmentItem
 from .message import Message
 from .setting import GlobalSetting
 from .enums import UserRole, ItemStatus, VerificationStatus
+from .supported_country import SupportedCountry

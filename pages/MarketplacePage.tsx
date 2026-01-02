@@ -3,7 +3,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { ShipmentItem, User, ItemStatus, VerificationStatus, SubscriptionPlan, SubscriptionTransaction } from '../types';
 import { PublicSettings } from '../services/AdminService';
 import { SubscriptionService } from '../services/SubscriptionService';
-import { COUNTRIES, CATEGORIES } from '../constants';
+import { CATEGORIES } from '../constants';
 import ShipmentCard from '../components/ShipmentCard';
 import { ShipmentService } from '../services/ShipmentService';
 import { useNavigate } from 'react-router-dom';
@@ -25,6 +25,7 @@ const MarketplacePage: React.FC<MarketplacePageProps> = ({ user, publicSettings 
   const [to, setTo] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [showPendingModal, setShowPendingModal] = useState(false);
+  const [countries, setCountries] = useState<string[]>([]);
 
   const fetchItems = async () => {
     try {
@@ -40,12 +41,14 @@ const MarketplacePage: React.FC<MarketplacePageProps> = ({ user, publicSettings 
     fetchItems();
     const loadData = async () => {
       try {
-        const [fetchedPlans, txs, myReqs] = await Promise.all([
+        const [fetchedPlans, txs, myReqs, supportedCountries] = await Promise.all([
           SubscriptionService.getPlans(),
           SubscriptionService.getUserTransactions(user.id),
-          ShipmentService.getMyRequests()
+          ShipmentService.getMyRequests(),
+          ShipmentService.getSupportedCountries()
         ]);
         setPlans(fetchedPlans);
+        setCountries(supportedCountries);
         const statusMap: Record<string, string> = {};
         myReqs.forEach((r: any) => {
           statusMap[r.shipment.id] = r.status;
@@ -63,7 +66,7 @@ const MarketplacePage: React.FC<MarketplacePageProps> = ({ user, publicSettings 
   const isVerified = user.verificationStatus === VerificationStatus.VERIFIED;
   const isPending = user.verificationStatus === VerificationStatus.PENDING;
   const isUnverified = user.verificationStatus === VerificationStatus.UNVERIFIED;
-  const hasPaid = user.isSubscriptionActive;
+  const hasPaid = user.isSubscriptionActive !== false;
 
   const currentPlan = plans.find(p => p.id === user.currentPlanId);
   const planLimit = currentPlan ? currentPlan.limit : 0;
@@ -185,7 +188,7 @@ const MarketplacePage: React.FC<MarketplacePageProps> = ({ user, publicSettings 
             onChange={e => setFrom(e.target.value)}
           >
             <option value="">Origin: All</option>
-            {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+            {countries.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
           <select
             className="px-6 py-4 bg-slate-50 border-none rounded-[1.5rem] text-xs font-black uppercase tracking-widest text-slate-600 focus:ring-2 focus:ring-[#009E49] cursor-pointer"
@@ -193,7 +196,7 @@ const MarketplacePage: React.FC<MarketplacePageProps> = ({ user, publicSettings 
             onChange={e => setTo(e.target.value)}
           >
             <option value="">Dest: All</option>
-            {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+            {countries.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
       </div>

@@ -90,5 +90,10 @@ export const ShipmentService = {
             ...r,
             shipment: transformShipmentData(r.shipment)
         }));
+    },
+
+    getSupportedCountries: async (): Promise<string[]> => {
+        const response = await api.get('/shipments/countries');
+        return response.data;
     }
 };
