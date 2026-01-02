@@ -30,3 +30,9 @@ class Config:
     
     # Google OAuth
     GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID') or "40182803174-dijfcrlpuu2du8ptq8hiha4e57h7pirf.apps.googleusercontent.com"
+
+    # Default Subscription Plans
+    DEFAULT_SENDER_PLAN_ID = os.environ.get('DEFAULT_SENDER_PLAN_ID') or 's-free-promo-6mo'
+    DEFAULT_PICKER_PLAN_ID = os.environ.get('DEFAULT_PICKER_PLAN_ID') or 'p-free-promo-6mo'
+    IS_FREE_PROMO_ENABLED_FOR_SENDER= os.environ.get('IS_FREE_PROMO_ENABLED_FOR_SENDER') or True
+    IS_FREE_PROMO_ENABLED_FOR_PICKER= os.environ.get('IS_FREE_PROMO_ENABLED_FOR_PICKER') or True

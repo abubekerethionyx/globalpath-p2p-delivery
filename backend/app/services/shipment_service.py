@@ -214,7 +214,7 @@ def approve_request(request_id):
     # Approve
     req.status = 'APPROVED'
     shipment.partner_id = req.picker_id
-    shipment.status = ItemStatus.PICKED
+    shipment.status = ItemStatus.REQUESTED
     shipment.picked_at = datetime.utcnow()
 
     # Reject others
@@ -223,28 +223,36 @@ def approve_request(request_id):
         ShipmentRequest.id != req.id,
         ShipmentRequest.status == 'PENDING'
     ).all()
+    
+    rejected_count = len(other_requests)
     for other in other_requests:
         other.status = 'REJECTED'
-        # Notify other pickers
-        from app.models.notification import create_notification
         create_notification(
             user_id=other.picker_id,
             title="Application Update",
-            message=f"Another traveler was selected for {shipment.description[:20]}...",
+            message=f"Transmission for '{shipment.description[:20]}...' was assigned to another partner.",
             type='INFO',
             link='/dashboard'
         )
 
     db.session.commit()
 
-    # Notify Picker
-    from app.models.notification import create_notification
+    # Notify Selected Picker
     create_notification(
         user_id=req.picker_id,
         title="Request Approved!",
         message=f"You have been selected to deliver {shipment.description[:20]}...",
         type='SUCCESS',
         link=f'/shipment-detail/{shipment.id}'
+    )
+
+    # Notify Sender
+    create_notification(
+        user_id=shipment.sender_id,
+        title="Partner Assigned",
+        message=f"Accepted {picker.first_name}. {rejected_count} other requests were automatically declined.",
+        type='SUCCESS',
+        link='/dashboard'
     )
     return shipment
 

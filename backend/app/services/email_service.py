@@ -13,7 +13,7 @@ def send_email(subject, recipients, body, subtype='html'):
             recipients=recipients if isinstance(recipients, list) else [recipients],
             body=body if subtype == 'plain' else None,
             html=body if subtype == 'html' else None,
-            sender=current_app.config.get('MAIL_DEFAULT_SENDER')
+            sender=(current_app.config.get('MAIL_FROM_NAME', 'GlobalPath'), current_app.config.get('MAIL_DEFAULT_SENDER'))
         )
         mail.send(msg)
         logger.info(f"Email sent to {recipients}")

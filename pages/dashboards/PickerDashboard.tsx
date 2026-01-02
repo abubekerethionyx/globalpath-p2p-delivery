@@ -161,7 +161,7 @@ const PickerDashboard: React.FC<PickerDashboardProps> = ({ user }) => {
 
     return (
         <div className="max-w-[1600px] mx-auto space-y-12 animate-in fade-in duration-700 pb-24 px-4">
-            {/* Security Alerts - UNCHANGED */}
+            {/* Security Alerts */}
             {user.verificationStatus !== VerificationStatus.VERIFIED && (
                 <div className={`p-8 rounded-[2.5rem] border-2 flex items-center justify-between shadow-xl ${user.verificationStatus === VerificationStatus.PENDING
                     ? 'bg-amber-50 border-amber-100 text-amber-900'
@@ -210,6 +210,37 @@ const PickerDashboard: React.FC<PickerDashboardProps> = ({ user }) => {
                     )}
                 </div>
             )}
+
+            {/* Profile Integrity Audit / Trust Score */}
+            {user.verificationStatus === VerificationStatus.VERIFIED && (
+                (!user.homeAddress || !user.nationalId && !user.passportNumber || !user.emergencyContact) && (
+                    <div className="p-8 rounded-[2.5rem] bg-indigo-50 border-2 border-indigo-100 flex items-center justify-between shadow-xl animate-in slide-in-from-top duration-700">
+                        <div className="flex items-center gap-6">
+                            <div className="w-16 h-16 bg-white rounded-[1.5rem] flex items-center justify-center shadow-lg text-indigo-600 border border-indigo-50">
+                                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-black text-indigo-950 uppercase tracking-tight">Boost Your Trust Score</h3>
+                                <p className="text-sm font-medium text-indigo-900/60 mt-1 max-w-lg">
+                                    Your email is verified, but your profile is incomplete. Completing KYC (ID/Passport & Emergency Data) increases your visibility to premium senders. <span className="font-black text-indigo-900">(Optional for now)</span>
+                                </p>
+                                <div className="flex gap-2 mt-4">
+                                    {!user.nationalId && !user.passportNumber && <span className="px-3 py-1 bg-white rounded-full text-[10px] font-black text-indigo-400 border border-indigo-100 uppercase tracking-widest">Missing ID Artifacts</span>}
+                                    {!user.homeAddress && <span className="px-3 py-1 bg-white rounded-full text-[10px] font-black text-indigo-400 border border-indigo-100 uppercase tracking-widest">Home Base Not Set</span>}
+                                    {!user.emergencyContact && <span className="px-3 py-1 bg-white rounded-full text-[10px] font-black text-indigo-400 border border-indigo-100 uppercase tracking-widest">No Emergency Contact</span>}
+                                </div>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => navigate('/registration')}
+                            className="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-slate-900 shadow-xl shadow-indigo-200 transition-all hover:-translate-y-1"
+                        >
+                            Complete Profile
+                        </button>
+                    </div>
+                )
+            )}
+
 
             {/* Header Area */}
             <div className="flex flex-col md:flex-row justify-between items-end gap-6">
@@ -335,47 +366,49 @@ const PickerDashboard: React.FC<PickerDashboardProps> = ({ user }) => {
             </div>
 
             {/* Bulk Update Navigation */}
-            {selectedIds.size > 0 && (
-                <div className="fixed bottom-12 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-10 py-6 rounded-[2.5rem] shadow-2xl z-[100] flex items-center gap-8 border border-white/10 backdrop-blur-xl bg-opacity-90 animate-in slide-in-from-bottom duration-500">
-                    <div className="flex items-center gap-4">
-                        <div className="bg-[#009E49] w-10 h-10 flex items-center justify-center rounded-2xl font-black text-xl shadow-lg shadow-[#009E49]/20">
-                            {selectedIds.size}
+            {
+                selectedIds.size > 0 && (
+                    <div className="fixed bottom-12 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-10 py-6 rounded-[2.5rem] shadow-2xl z-[100] flex items-center gap-8 border border-white/10 backdrop-blur-xl bg-opacity-90 animate-in slide-in-from-bottom duration-500">
+                        <div className="flex items-center gap-4">
+                            <div className="bg-[#009E49] w-10 h-10 flex items-center justify-center rounded-2xl font-black text-xl shadow-lg shadow-[#009E49]/20">
+                                {selectedIds.size}
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Selected</p>
+                                <p className="text-sm font-bold">Units for Batch Update</p>
+                            </div>
                         </div>
-                        <div>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Selected</p>
-                            <p className="text-sm font-bold">Units for Batch Update</p>
+
+                        <div className="h-10 w-px bg-white/10"></div>
+
+                        <div className="flex items-center gap-4">
+                            <select
+                                value={bulkStatus}
+                                onChange={(e) => setBulkStatus(e.target.value as ItemStatus)}
+                                className="bg-slate-800 border-none rounded-xl px-4 py-2.5 font-bold text-xs focus:ring-2 focus:ring-[#009E49]"
+                            >
+                                <option value={ItemStatus.PICKED}>Locked (Ready)</option>
+                                <option value={ItemStatus.IN_TRANSIT}>In Transit</option>
+                                <option value={ItemStatus.ARRIVED}>Arrived at Dest.</option>
+                                <option value={ItemStatus.WAITING_CONFIRMATION}>Report Delivered (Wait Confirm)</option>
+                            </select>
+                            <button
+                                onClick={handleBulkUpdate}
+                                className="bg-[#009E49] px-8 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-[#007A38] transition-all shadow-lg shadow-[#009E49]/20"
+                            >
+                                Deploy Meta Update
+                            </button>
                         </div>
-                    </div>
 
-                    <div className="h-10 w-px bg-white/10"></div>
-
-                    <div className="flex items-center gap-4">
-                        <select
-                            value={bulkStatus}
-                            onChange={(e) => setBulkStatus(e.target.value as ItemStatus)}
-                            className="bg-slate-800 border-none rounded-xl px-4 py-2.5 font-bold text-xs focus:ring-2 focus:ring-[#009E49]"
-                        >
-                            <option value={ItemStatus.PICKED}>Locked (Ready)</option>
-                            <option value={ItemStatus.IN_TRANSIT}>In Transit</option>
-                            <option value={ItemStatus.ARRIVED}>Arrived at Dest.</option>
-                            <option value={ItemStatus.WAITING_CONFIRMATION}>Report Delivered (Wait Confirm)</option>
-                        </select>
                         <button
-                            onClick={handleBulkUpdate}
-                            className="bg-[#009E49] px-8 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-[#007A38] transition-all shadow-lg shadow-[#009E49]/20"
+                            onClick={() => setSelectedIds(new Set())}
+                            className="bg-white/5 p-3 hover:bg-white/10 rounded-xl transition-colors"
                         >
-                            Deploy Meta Update
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
                     </div>
-
-                    <button
-                        onClick={() => setSelectedIds(new Set())}
-                        className="bg-white/5 p-3 hover:bg-white/10 rounded-xl transition-colors"
-                    >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
-                </div>
-            )}
+                )
+            }
         </div>
     );
 };

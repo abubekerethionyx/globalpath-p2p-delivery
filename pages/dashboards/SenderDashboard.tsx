@@ -98,7 +98,7 @@ const SenderDashboard: React.FC<SenderDashboardProps> = ({ user }) => {
     const handleApproveRequest = async (requestId: string) => {
         try {
             await ShipmentService.approveRequest(requestId);
-            alert("Partner Approved! Shipment status updated.");
+            alert("Partner assigned! All other pending requests for this shipment have been automatically declined.");
             fetchItems();
         } catch (e) {
             alert("Error approving request");
