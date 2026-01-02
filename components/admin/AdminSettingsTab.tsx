@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { AdminService, AdminSettings, AdminSetting } from '../../services/AdminService';
+import { AdminService, AdminSettings } from '../../services/AdminService';
 import { SubscriptionService } from '../../services/SubscriptionService';
 import { SubscriptionPlan, UserRole } from '../../types';
+import api from '../../services/api';
 
 const AdminSettingsTab: React.FC = () => {
     const [settings, setSettings] = useState<AdminSettings>({});
@@ -35,7 +36,8 @@ const AdminSettingsTab: React.FC = () => {
                 enable_free_promo_picker: { value: 'true', description: 'Enable free welcome plan for new Pickers' },
                 free_promo_sender_plan_id: { value: '', description: 'Select the promotional plan for Senders' },
                 free_promo_picker_plan_id: { value: '', description: 'Select the promotional plan for Pickers' },
-                enable_google_login: { value: 'true', description: 'Enable third-party authentication via Google' }
+                enable_google_login: { value: 'true', description: 'Enable third-party authentication via Google' },
+                maintenance_interval_hours: { value: '24', description: 'System maintenance cycle interval in hours' }
             };
             setSettings({ ...defaults, ...data });
         } catch (err) {
@@ -98,6 +100,16 @@ const AdminSettingsTab: React.FC = () => {
                 </svg>
             ),
             keys: ['require_subscription_for_details', 'require_subscription_for_chat']
+        },
+        {
+            title: "System Automations",
+            description: "Control background heartbeats and recurring protocol indexing.",
+            icon: (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            ),
+            keys: ['maintenance_interval_hours']
         }
     ];
 
@@ -167,6 +179,7 @@ const AdminSettingsTab: React.FC = () => {
                                 if (!info) return null;
 
                                 const isPlanSelector = key === 'free_promo_sender_plan_id' || key === 'free_promo_picker_plan_id';
+                                const isTextInput = key === 'maintenance_interval_hours';
                                 const targetRole = key.includes('picker') ? UserRole.PICKER : UserRole.SENDER;
                                 const filteredPlans = plans.filter(p => p.role === targetRole);
                                 const isToggleActive = String(info.value) === 'true';
@@ -182,13 +195,23 @@ const AdminSettingsTab: React.FC = () => {
                                                     {key.replace(/_/g, ' ')}
                                                 </h3>
                                             </div>
-                                            {!isPlanSelector ? (
+                                            {!isPlanSelector && !isTextInput ? (
                                                 <button
                                                     onClick={() => handleToggle(key)}
                                                     className={`w-14 h-8 rounded-full relative transition-all duration-500 ${isToggleActive ? 'bg-[#009E49] shadow-[0_0_15px_-3px_rgba(0,158,73,0.5)]' : 'bg-slate-200'}`}
                                                 >
                                                     <div className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-lg transition-transform duration-500 transform ${isToggleActive ? 'translate-x-6' : 'translate-x-0'}`} />
                                                 </button>
+                                            ) : isTextInput ? (
+                                                <div className="flex items-center space-x-2">
+                                                    <input
+                                                        type="text"
+                                                        value={String(info.value)}
+                                                        onChange={(e) => setSettings({ ...settings, [key]: { ...info, value: e.target.value } })}
+                                                        className="w-16 bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-center text-sm font-black text-slate-900 outline-none focus:ring-4 focus:ring-[#009E49]/10 transition-all"
+                                                    />
+                                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hrs</span>
+                                                </div>
                                             ) : (
                                                 <div className="relative">
                                                     <select
@@ -233,21 +256,47 @@ const AdminSettingsTab: React.FC = () => {
                 ))}
             </div>
 
-            <div className="bg-slate-900 p-12 rounded-[3.5rem] border border-slate-800 relative overflow-hidden shadow-2xl">
-                <div className="absolute top-0 right-0 p-12 opacity-5 scale-150 rotate-12">
-                    <svg className="w-48 h-48 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20ZM11 7H13V9H11V7ZM11 11H13V17H11V11Z" /></svg>
+            <section className="bg-slate-50 p-10 rounded-[3rem] border-2 border-dashed border-slate-200 space-y-8">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                    <div>
+                        <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Protocol Maintenance</h3>
+                        <p className="text-slate-500 font-medium">Manually trigger marketplace indexing and subscription lifecycle tasks.</p>
+                    </div>
+                    <button
+                        onClick={async () => {
+                            try {
+                                await api.post('/admin/maintenance/run');
+                                alert("System maintenance protocol executed successfully. Ranking scores recalculated and expired nodes deactivated.");
+                            } catch (e) {
+                                alert("Maintenance failed: Uplink timeout.");
+                            }
+                        }}
+                        className="bg-white text-slate-900 px-8 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest border-2 border-slate-900 hover:bg-slate-900 hover:text-white transition-all shadow-xl shadow-slate-100"
+                    >
+                        Execute Core sync
+                    </button>
                 </div>
-                <div className="relative z-10">
-                    <h4 className="text-[#FDD100] font-black uppercase tracking-[0.3em] text-xs mb-4">Core Governance Protocol</h4>
-                    <p className="text-slate-300 text-lg font-medium leading-relaxed max-w-3xl">
-                        Adjustments to these operational parameters propagate through the global network in real-time. Platform Governance ensures that feature gating and promotional incentives remain synchronized across all distributed user clusters.
-                    </p>
-                    <div className="mt-8 flex space-x-4">
-                        <div className="px-4 py-2 bg-white/5 rounded-full border border-white/10 text-white text-[10px] font-black uppercase tracking-widest">v4.2 Stable</div>
-                        <div className="px-4 py-2 bg-white/5 rounded-full border border-white/10 text-white text-[10px] font-black uppercase tracking-widest">Encrypted Session</div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-white p-6 rounded-2xl flex items-center gap-4">
+                        <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                        </div>
+                        <div>
+                            <p className="text-xs font-black text-slate-900 uppercase">Marketplace Indexing</p>
+                            <p className="text-[10px] text-slate-500 font-bold">Recalculates scores for Premium & Recency</p>
+                        </div>
+                    </div>
+                    <div className="bg-white p-6 rounded-2xl flex items-center gap-4">
+                        <div className="w-10 h-10 bg-red-50 text-red-600 rounded-xl flex items-center justify-center">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                        <div>
+                            <p className="text-xs font-black text-slate-900 uppercase">Node Expiration</p>
+                            <p className="text-[10px] text-slate-500 font-bold">Checks and deactivates expired partner sub-protocols</p>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </section>
         </div>
     );
 };

@@ -157,6 +157,12 @@ const PackagingPage: React.FC<PackagingPageProps> = ({ user, onPlanChanged }) =>
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Billing Period</p>
                   <p className="text-xl font-black">Monthly Cycle</p>
                 </div>
+                {activeSubscription?.days_remaining !== undefined && (
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-[#FDD100] mb-1">Time Remaining</p>
+                    <p className="text-xl font-black text-[#FDD100]">{activeSubscription.days_remaining} Days</p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -231,17 +237,15 @@ const PackagingPage: React.FC<PackagingPageProps> = ({ user, onPlanChanged }) =>
           );
 
           const isPlanActive = !!activeTx;
-
-          // Check if there is a pending transaction for this plan
           const isPlanPending = transactions.some(t => t.plan_id === plan.id && t.status === 'PENDING');
 
           // Check if USER has any OTHER active subscription that isn't expired/finished
-          const hasOtherActive = transactions.some(t =>
+          const otherActive = transactions.find(t =>
             t.plan_id !== plan.id &&
             t.is_active &&
-            t.remaining_usage > 0 &&
-            (!t.end_date || new Date(t.end_date) > new Date())
+            (t.remaining_usage > 0 || (t.end_date && new Date(t.end_date) > new Date()))
           );
+          const hasOtherActive = !!otherActive;
 
           const isRecommended = index === 1;
 
@@ -310,10 +314,10 @@ const PackagingPage: React.FC<PackagingPageProps> = ({ user, onPlanChanged }) =>
               <ul className="space-y-4 mb-12 flex-1">
                 {[
                   `${plan.limit} Active Slots`,
+                  `${plan.duration_days || 30} Days Protocol Duration`,
                   'Diaspora Trust Badge',
                   'Priority Visibility',
-                  '24/7 Customs Support',
-                  'Advanced Analytics'
+                  '24/7 Customs Support'
                 ].map((feature, i) => (
                   <li key={i} className="flex items-start">
                     <div className="w-5 h-5 rounded-full flex items-center justify-center mr-3 mt-0.5 flex-shrink-0 bg-green-50 text-[#009E49]">
@@ -331,12 +335,16 @@ const PackagingPage: React.FC<PackagingPageProps> = ({ user, onPlanChanged }) =>
                   } else if (!isPlanActive && !isPlanPending && !hasOtherActive) {
                     setSelectedPlan(plan);
                     setShowCheckout(true);
+                  } else if (isPlanActive && activeTx && activeTx.remaining_usage <= 0) {
+                    // Allow re-subscribing if usage is out
+                    setSelectedPlan(plan);
+                    setShowCheckout(true);
                   } else if (hasOtherActive) {
                     alert("You already have an active subscription for another plan. Please wait for it to expire or finish usage before switching.");
                   }
                 }}
-                disabled={isPlanActive || isPlanPending || (hasOtherActive && !isPlanActive)}
-                className={`w-full py-5 rounded-[1.2rem] text-[10px] font-black uppercase tracking-[0.2em] transition-all transform hover:scale-[1.02] active:scale-95 ${isPlanActive
+                disabled={(isPlanActive && activeTx && activeTx.remaining_usage > 0) || isPlanPending || (hasOtherActive && !isPlanActive)}
+                className={`w-full py-5 rounded-[1.2rem] text-[10px] font-black uppercase tracking-[0.2em] transition-all transform hover:scale-[1.02] active:scale-95 ${isPlanActive && activeTx && activeTx.remaining_usage > 0
                   ? 'bg-slate-50 text-slate-300 cursor-not-allowed border border-slate-200'
                   : isPlanPending
                     ? 'bg-amber-50 text-amber-600 cursor-not-allowed border border-amber-200'

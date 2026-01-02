@@ -46,7 +46,8 @@ def get_public_settings():
         'require_otp_for_signup',
         'enable_free_promo_sender',
         'enable_free_promo_picker',
-        'enable_google_login'
+        'enable_google_login',
+        'maintenance_interval_hours'
     ]
     settings = {}
     for key in keys:
@@ -57,6 +58,8 @@ def get_public_settings():
             # Defaults
             if key in ['require_otp_for_signup', 'enable_free_promo_sender', 'enable_free_promo_picker', 'enable_google_login']:
                 settings[key] = True
+            elif key == 'maintenance_interval_hours':
+                settings[key] = '24'
             else:
                 settings[key] = False
             
@@ -171,3 +174,15 @@ def toggle_country(country_id):
     country.is_active = not country.is_active
     db.session.commit()
     return jsonify(country.to_dict())
+
+@bp.route('/maintenance/run', methods=['POST'])
+@jwt_required()
+def trigger_maintenance():
+    current_user = User.query.get(get_jwt_identity())
+    if not current_user or current_user.role != UserRole.ADMIN:
+        return jsonify({'message': 'Admin access required'}), 403
+    
+    from app.services.maintenance_service import run_system_maintenance
+    run_system_maintenance()
+    
+    return jsonify({'message': 'System maintenance protocol executed successfully'})

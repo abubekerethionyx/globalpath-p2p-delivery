@@ -23,7 +23,8 @@ def seed_data():
                 price=0.0,
                 limit=100,
                 role=UserRole.SENDER,
-                description="Special 6-month free trial for Senders. Post up to 100 items/month."
+                description="Special 6-month free trial for Senders. Post up to 100 items/month.",
+                duration_days=180
             ),
             SubscriptionPlan(
                 id="p-free-promo-6mo",
@@ -31,7 +32,8 @@ def seed_data():
                 price=0.0,
                 limit=100,
                 role=UserRole.PICKER,
-                description="Special 6-month free trial for Pickers. Deliver up to 100 items/month."
+                description="Special 6-month free trial for Pickers. Deliver up to 100 items/month.",
+                duration_days=180
             ),
             # Premium Plans
             SubscriptionPlan(
@@ -40,7 +42,9 @@ def seed_data():
                 price=49.99,
                 limit=500,
                 role=UserRole.SENDER,
-                description="Unlimited possibilities for professional senders. Priority placement and dedicated support."
+                description="Unlimited possibilities for professional senders. Priority placement and dedicated support.",
+                is_premium=True,
+                duration_days=30
             ),
             SubscriptionPlan(
                 id="p-premium",
@@ -48,7 +52,9 @@ def seed_data():
                 price=39.99,
                 limit=500,
                 role=UserRole.PICKER,
-                description="Maximize your earnings. Access to exclusive high-value routes and instant payouts."
+                description="Maximize your earnings. Access to exclusive high-value routes and instant payouts.",
+                is_premium=True,
+                duration_days=30
             )
         ]
         db.session.add_all(plans)

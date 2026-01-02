@@ -53,7 +53,8 @@ def _activate_subscription(transaction):
     if plan:
         transaction.remaining_usage = plan.limit
         transaction.is_active = True
-        transaction.end_date = datetime.utcnow() + timedelta(days=30)
+        duration = getattr(plan, 'duration_days', 30) or 30
+        transaction.end_date = datetime.utcnow() + timedelta(days=duration)
     
     # Update User
     from app.models.user import User

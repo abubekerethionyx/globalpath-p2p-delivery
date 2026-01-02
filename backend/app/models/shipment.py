@@ -24,6 +24,7 @@ class ShipmentItem(db.Model):
     picked_at = db.Column(db.DateTime)
     available_pickup_time = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    ranking_score = db.Column(db.Float, default=0.0)
 
     # Relationships
     sender = db.relationship('User', foreign_keys=[sender_id], backref='sent_shipments')

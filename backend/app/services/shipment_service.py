@@ -2,7 +2,7 @@ from app.models.shipment import ShipmentItem
 from app.extensions import db
 
 def get_all_shipments():
-    return ShipmentItem.query.all()
+    return ShipmentItem.query.order_by(ShipmentItem.ranking_score.desc(), ShipmentItem.created_at.desc()).all()
 
 def get_shipment(shipment_id):
     return ShipmentItem.query.get(shipment_id)
@@ -36,6 +36,9 @@ def create_shipment(data):
         active_sub.remaining_usage -= 1
 
     shipment = ShipmentItem(**data)
+    # Initial ranking score: higher for premium, but let's set a base here. 
+    # Recalculate ranking job will refine this.
+    shipment.ranking_score = 100.0 
     db.session.add(shipment)
     db.session.commit()
     return shipment

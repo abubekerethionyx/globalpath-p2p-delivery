@@ -67,6 +67,8 @@ export interface SubscriptionPlan {
   limit: number;
   role: UserRole;
   description: string;
+  is_premium?: boolean;
+  duration_days?: number;
 }
 
 export interface SubscriptionTransaction {
@@ -81,6 +83,7 @@ export interface SubscriptionTransaction {
   remaining_usage?: number;
   is_active?: boolean;
   end_date?: string;
+  days_remaining?: number;
   transaction_reference?: string;
   receipt_url?: string;
   payment_info?: {
