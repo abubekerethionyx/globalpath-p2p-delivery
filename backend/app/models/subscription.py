@@ -9,6 +9,7 @@ class SubscriptionPlan(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     name = db.Column(db.String(100), nullable=False)
     price = db.Column(db.Float, nullable=False)
+    coin_price = db.Column(db.Integer, default=0)
     limit = db.Column(db.Integer, nullable=False)
     role = db.Column(db.Enum(UserRole), nullable=False)
     description = db.Column(db.Text)
@@ -23,7 +24,7 @@ class SubscriptionTransaction(db.Model):
     plan_id = db.Column(db.String(36), db.ForeignKey('subscription_plans.id'), nullable=False)
     plan_name = db.Column(db.String(100))
     amount = db.Column(db.Float, nullable=False)
-    payment_method = db.Column(db.String(20)) # 'wallet' | 'direct'
+    payment_method = db.Column(db.String(20)) # 'wallet' | 'direct' | 'chapa' | 'coins'
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     status = db.Column(db.String(20), default='PENDING') # 'COMPLETED' | 'PENDING'
     remaining_usage = db.Column(db.Integer, default=0)

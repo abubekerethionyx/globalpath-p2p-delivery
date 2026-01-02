@@ -19,7 +19,7 @@ const PackagingPage: React.FC<PackagingPageProps> = ({ user, onPlanChanged }) =>
   const [loading, setLoading] = useState(true);
 
   // Payment Form State
-  const [paymentMethod, setPaymentMethod] = useState<'direct' | 'chapa' | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'direct' | 'chapa' | 'coins' | null>(null);
   const [txnRef, setTxnRef] = useState('');
   const [receipt, setReceipt] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -69,16 +69,17 @@ const PackagingPage: React.FC<PackagingPageProps> = ({ user, onPlanChanged }) =>
 
     setIsSubmitting(true);
     try {
+      const isCoinPayment = paymentMethod === 'coins';
       const formData = new FormData();
       formData.append('user_id', user.id);
       formData.append('plan_id', selectedPlan.id);
       formData.append('plan_name', selectedPlan.name);
-      formData.append('amount', selectedPlan.price.toString());
+      formData.append('amount', isCoinPayment ? '0' : selectedPlan.price.toString());
       formData.append('payment_method', paymentMethod);
-      formData.append('transaction_reference', txnRef);
-      formData.append('status', 'PENDING');
+      formData.append('transaction_reference', isCoinPayment ? `COIN-AUTH-${Math.random().toString(36).substr(2, 9).toUpperCase()}` : txnRef);
+      formData.append('status', isCoinPayment ? 'COMPLETED' : 'PENDING');
 
-      if (receipt) {
+      if (receipt && !isCoinPayment) {
         formData.append('receipt', receipt);
       }
 
@@ -157,6 +158,10 @@ const PackagingPage: React.FC<PackagingPageProps> = ({ user, onPlanChanged }) =>
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Billing Period</p>
                   <p className="text-xl font-black">Monthly Cycle</p>
                 </div>
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-[#009E49] mb-1">Technical Credits</p>
+                  <p className="text-xl font-black">{user.coinsBalance?.toLocaleString() || 0} λ</p>
+                </div>
                 {activeSubscription?.days_remaining !== undefined && (
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-widest text-[#FDD100] mb-1">Time Remaining</p>
@@ -173,7 +178,8 @@ const PackagingPage: React.FC<PackagingPageProps> = ({ user, onPlanChanged }) =>
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Monthly Usage</p>
                   <p className="text-sm font-black">{user.itemsCountThisMonth} / {currentPlan.limit}</p>
                 </div>
-                <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden">
+                <div
+                  className="w-full h-3 bg-white/10 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-[#009E49] to-[#FDD100] transition-all duration-1000"
                     style={{ width: `${Math.min(100, (user.itemsCountThisMonth / currentPlan.limit) * 100)}%` }}
@@ -292,6 +298,15 @@ const PackagingPage: React.FC<PackagingPageProps> = ({ user, onPlanChanged }) =>
                 <span className="ml-3 font-bold text-xs uppercase tracking-widest text-slate-400">
                   ETB / MO
                 </span>
+                {plan.coinPrice && (
+                  <div className="ml-auto text-right">
+                    <p className="text-[9px] font-black text-[#009E49] uppercase tracking-widest mb-1">Or Redeem</p>
+                    <div className="flex items-center gap-1.5 text-[#009E49]">
+                      <span className="text-xl font-black">{plan.coinPrice}</span>
+                      <span className="text-xs font-black">λ</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {isPlanActive && activeTx && (
@@ -499,6 +514,27 @@ const PackagingPage: React.FC<PackagingPageProps> = ({ user, onPlanChanged }) =>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" /></svg>
                   </div>
                 </button>
+
+                {selectedPlan.coinPrice && (
+                  <button
+                    onClick={() => setPaymentMethod('coins')}
+                    disabled={!user || (user.coinsBalance || 0) < (selectedPlan.coinPrice || 0)}
+                    className="w-full flex items-center justify-between p-5 bg-[#009E49]/5 border-2 border-[#009E49]/20 rounded-[1.5rem] hover:bg-[#009E49]/10 transition-all group disabled:opacity-50 disabled:grayscale"
+                  >
+                    <div className="flex items-center">
+                      <div className="w-12 h-12 bg-[#009E49] text-white rounded-2xl flex items-center justify-center mr-4">
+                        <span className="font-black text-lg">λ</span>
+                      </div>
+                      <div className="text-left">
+                        <p className="font-black text-slate-900">Protocol Credits</p>
+                        <p className="text-xs font-bold text-[#009E49]">{selectedPlan.coinPrice} Credits Required</p>
+                      </div>
+                    </div>
+                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center group-hover:bg-[#009E49] group-hover:text-white transition-colors">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" /></svg>
+                    </div>
+                  </button>
+                )}
               </div>
             ) : (
               <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
@@ -510,6 +546,17 @@ const PackagingPage: React.FC<PackagingPageProps> = ({ user, onPlanChanged }) =>
                   <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 text-center">
                     <p className="font-bold text-slate-700 mb-2">Authorize Chapa Node</p>
                     <p className="text-xs text-slate-500">You will be securely redirected to finalize the transaction flow.</p>
+                  </div>
+                ) : paymentMethod === 'coins' ? (
+                  <div className="bg-[#009E49]/5 p-8 rounded-2xl border border-[#009E49]/20 text-center space-y-4">
+                    <div className="w-16 h-16 bg-[#009E49] text-white rounded-full flex items-center justify-center mx-auto shadow-lg shadow-green-900/10">
+                      <span className="font-black text-2xl">λ</span>
+                    </div>
+                    <div>
+                      <p className="font-black text-slate-900">Protocol Credit Authorization</p>
+                      <p className="text-xs text-[#009E49] font-bold">Consuming {selectedPlan.coinPrice} Credits</p>
+                    </div>
+                    <p className="text-[10px] text-slate-400 font-medium">This action will instantly upgrade your node status. All technical credits will be deducted from your secure vault.</p>
                   </div>
                 ) : (
                   <div className="space-y-4">

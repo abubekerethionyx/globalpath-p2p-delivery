@@ -44,7 +44,8 @@ def seed_data():
                 role=UserRole.SENDER,
                 description="Unlimited possibilities for professional senders. Priority placement and dedicated support.",
                 is_premium=True,
-                duration_days=30
+                duration_days=30,
+                coin_price=500
             ),
             SubscriptionPlan(
                 id="p-premium",
@@ -54,7 +55,8 @@ def seed_data():
                 role=UserRole.PICKER,
                 description="Maximize your earnings. Access to exclusive high-value routes and instant payouts.",
                 is_premium=True,
-                duration_days=30
+                duration_days=30,
+                coin_price=500
             )
         ]
         db.session.add_all(plans)
@@ -69,7 +71,8 @@ def seed_data():
             verification_status=VerificationStatus.VERIFIED,
             is_phone_verified=True,
             is_email_verified=True,
-            wallet_balance=0.00
+            wallet_balance=0.00,
+            coins_balance=1000
         )
         admin.set_password("admin123")
         admin.avatar = "https://ui-avatars.com/api/?name=Admin+GlobalPath&background=009E49&color=fff"

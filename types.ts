@@ -69,6 +69,7 @@ export interface SubscriptionPlan {
   description: string;
   is_premium?: boolean;
   duration_days?: number;
+  coin_price?: number;
 }
 
 export interface SubscriptionTransaction {
@@ -106,6 +107,7 @@ export interface User {
   completedDeliveries?: number;
   earnings?: number;
   walletBalance: number;
+  coinsBalance: number;
   currentPlanId?: string;
   isSubscriptionActive?: boolean;
   itemsCountThisMonth: number;

@@ -25,6 +25,7 @@ class User(db.Model):
     completed_deliveries = db.Column(db.Integer, default=0)
     earnings = db.Column(db.Float, default=0.0)
     wallet_balance = db.Column(db.Float, default=0.0)
+    coins_balance = db.Column(db.Integer, default=0)
     current_plan_id = db.Column(db.String(36), db.ForeignKey('subscription_plans.id'))
     items_count_this_month = db.Column(db.Integer, default=0)
     average_delivery_time = db.Column(db.Float, default=0.0) # In Days or Hours

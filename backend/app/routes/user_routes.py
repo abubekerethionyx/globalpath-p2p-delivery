@@ -239,6 +239,10 @@ def verify_user(user_id):
     # Admin Action: Approve User
     updated_user = user_service.update_user(user_id, {'verification_status': VerificationStatus.VERIFIED})
     
+    # Award technical credits for KYC fulfillment
+    from app.services.user_service import reward_user_coins
+    reward_user_coins(user_id, 50, "KYC Fulfillment Bonus")
+
     # Notify User
     from app.models.notification import create_notification
     create_notification(

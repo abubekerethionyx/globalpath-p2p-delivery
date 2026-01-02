@@ -8,27 +8,38 @@ from flask import current_app
 def assign_default_subscription(user):
     """Assigns the default 6-month free promotion plan to a new user."""
     from app.models.setting import GlobalSetting
+    from app.constants import (
+        SETTING_ENABLE_FREE_PROMO_SENDER, SETTING_ENABLE_FREE_PROMO_PICKER,
+        SETTING_FREE_PROMO_SENDER_PLAN_ID, SETTING_FREE_PROMO_PICKER_PLAN_ID,
+        DEFAULT_SENDER_PLAN_ID, DEFAULT_PICKER_PLAN_ID
+    )
     
-    is_picker = user.role == 'PICKER' or (hasattr(user.role, 'value') and user.role.value == 'PICKER')
+    # Robust role check
+    is_picker = False
+    if hasattr(user.role, 'name'):
+        is_picker = user.role.name == 'PICKER'
+    elif isinstance(user.role, str):
+        is_picker = user.role.upper() == 'PICKER'
     
     # Check if promo is enabled for this specific role
-    promo_enabled_key = 'enable_free_promo_picker' if is_picker else 'enable_free_promo_sender'
+    promo_enabled_key = SETTING_ENABLE_FREE_PROMO_PICKER if is_picker else SETTING_ENABLE_FREE_PROMO_SENDER
     if not GlobalSetting.get_value(promo_enabled_key, default=True):
+        print(f"Promo disabled for {'Picker' if is_picker else 'Sender'} via settings.")
         return False
     
     # Try to get plan ID from settings first
-    setting_key = 'free_promo_picker_plan_id' if is_picker else 'free_promo_sender_plan_id'
+    setting_key = SETTING_FREE_PROMO_PICKER_PLAN_ID if is_picker else SETTING_FREE_PROMO_SENDER_PLAN_ID
     promo_plan_id = GlobalSetting.get_value(setting_key)
     
-    # Fallback to config if setting not found
+    # Fallback to config if setting not found or empty
     if not promo_plan_id:
-        promo_plan_id = current_app.config['DEFAULT_PICKER_PLAN_ID'] if is_picker else current_app.config['DEFAULT_SENDER_PLAN_ID']
+        promo_plan_id = current_app.config.get('DEFAULT_PICKER_PLAN_ID', DEFAULT_PICKER_PLAN_ID) if is_picker else current_app.config.get('DEFAULT_SENDER_PLAN_ID', DEFAULT_SENDER_PLAN_ID)
     
     promo_plan = SubscriptionPlan.query.get(promo_plan_id)
     
-    # Fallback lookup if ID not found (e.g. if seed not run yet or IDs changed)
+    # Fallback lookup if ID not found (match names in seed.py)
     if not promo_plan:
-        target_name = "6 Month Free Traveler" if is_picker else "6 Month Free Starter"
+        target_name = "6 Month Free (Picker)" if is_picker else "6 Month Free (Sender)"
         promo_plan = SubscriptionPlan.query.filter_by(name=target_name).first()
     
     if promo_plan:
@@ -51,14 +62,20 @@ def assign_default_subscription(user):
         from app.models.notification import create_notification
         action_type = "pickups" if is_picker else "shipments"
         
+        # Calculate days until end date for the message
+        days_total = promo_plan.duration_days or 180
+        
         create_notification(
             user_id=user.id,
             title="Welcome Gift Unlocked!",
-            message=f"Welcome to GlobalPath! You have been automatically upgraded to the '{promo_plan.name}'. Enjoy {promo_plan.limit} free {action_type}/month for 6 months.",
+            message=f"Welcome to GlobalPath! You have been automatically upgraded to the '{promo_plan.name}'. Enjoy {promo_plan.limit} free {action_type}/month for the next {days_total} days.",
             type='SUCCESS',
             link='/packaging'
         )
+        print(f"Successfully assigned '{promo_plan.name}' to {user.email}")
         return True
+    
+    print(f"Failing to assign default subscription: No valid plan found for {'Picker' if is_picker else 'Sender'}.")
     return False
 
 def get_all_users():
@@ -109,8 +126,7 @@ def create_user(data):
 
     return user
 
-    return user
-
+  
 def authenticate_user(email, password):
     user = User.query.filter_by(email=email).first()
     if user and user.check_password(password):
@@ -131,6 +147,27 @@ def update_user(user_id, data):
                 setattr(user, key, value)
         db.session.commit()
     return user
+
+def reward_user_coins(user_id, amount, reason="Activity Reward"):
+    """Awards technical credits (coins) to a user for specific achievements."""
+    user = User.query.get(user_id)
+    if not user or amount <= 0:
+        return False
+        
+    user.coins_balance += int(amount)
+    db.session.commit()
+    
+    # Notify User
+    from app.models.notification import create_notification
+    create_notification(
+        user_id=user_id,
+        title="Protocol Credits Received",
+        message=f"You have been awarded {amount} technical credits for: {reason}. Use them to unlock premium tiers.",
+        type='SUCCESS',
+        link='/packaging'
+    )
+    print(f"Awarded {amount} coins to user {user_id} for {reason}")
+    return True
 
 def delete_user(user_id):
     user = User.query.get(user_id)

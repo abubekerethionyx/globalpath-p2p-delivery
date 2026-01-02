@@ -142,6 +142,28 @@ def update_shipment_status(shipment_id, status):
                 link=f'/shipment-detail/{shipment.id}'
             )
 
+        # Award Activity Rewards for the status change
+        from app.models.setting import GlobalSetting
+        from app.services.user_service import reward_user_coins
+        
+        # 1. Base Status Change Reward
+        reward_amount = int(GlobalSetting.get_value('reward_status_change', default=1))
+        # Determine who to reward: the one who performed the action?
+        # Usually pickers change status. Senders confirm.
+        target_uid = shipment.partner_id if status in [ItemStatus.PICKED, ItemStatus.IN_TRANSIT, ItemStatus.ARRIVED, ItemStatus.WAITING_CONFIRMATION] else shipment.sender_id
+        
+        if target_uid:
+            reward_user_coins(target_uid, reward_amount, f"Protocol Update Reward: {status.value}")
+            
+            # 2. Holiday Bonus Logic
+            if GlobalSetting.get_value('enable_holiday_mode', default=False):
+                holiday_bonus = int(GlobalSetting.get_value('reward_holiday_bonus', default=10))
+                holiday_name = GlobalSetting.get_value('holiday_name', default="New Year")
+                
+                # Only give holiday bonus for "working" statuses
+                if status in [ItemStatus.PICKED, ItemStatus.IN_TRANSIT, ItemStatus.ARRIVED, ItemStatus.DELIVERED]:
+                    reward_user_coins(target_uid, holiday_bonus, f"{holiday_name} Logistics Pulse Bonus")
+
     return shipment
 
 def pick_shipment(shipment_id, picker_id):

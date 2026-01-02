@@ -81,10 +81,30 @@ def create_transaction(data):
     
     transaction = SubscriptionTransaction(**filtered_data)
     db.session.add(transaction)
+    
+    # Handle Coin Payments
+    if data.get('payment_method') == 'coins':
+        from app.models.user import User
+        user = User.query.get(transaction.user_id)
+        plan = SubscriptionPlan.query.get(transaction.plan_id)
+        
+        if not user or not plan:
+            db.session.rollback()
+            raise Exception("Invalid user or plan for coin transaction")
+            
+        if user.coins_balance < plan.coin_price:
+            db.session.rollback()
+            raise Exception(f"Insufficient technical credits. Required: {plan.coin_price}, Available: {user.coins_balance}")
+            
+        # Deduct credits and mark completed
+        user.coins_balance -= plan.coin_price
+        transaction.status = 'COMPLETED'
+        print(f"Deducted {plan.coin_price} coins from user {user.id}")
+
     db.session.commit()
     
     # Auto-upgrade User Plan if Payment Completed
-    if data.get('status') == 'COMPLETED':
+    if transaction.status == 'COMPLETED':
         _activate_subscription(transaction)
 
     return transaction
