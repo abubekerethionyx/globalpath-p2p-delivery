@@ -8,6 +8,7 @@ class UserRole(enum.Enum):
 class ItemStatus(enum.Enum):
     POSTED = 'POSTED'
     REQUESTED = 'REQUESTED'
+    APPROVED = 'APPROVED'
     PICKED = 'PICKED'
     IN_TRANSIT = 'IN_TRANSIT'
     ARRIVED = 'ARRIVED'

@@ -50,16 +50,21 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser }) 
     }
   };
 
-  const handleConfirmReceipt = async () => {
+  const handleUpdateStatus = async (newStatus: ItemStatus) => {
     if (!item) return;
-    if (!window.confirm("Confirm that you have received the shipment and are satisfied?")) return;
+    const confirmMsg = newStatus === ItemStatus.DELIVERED
+      ? "Confirm that you have received the shipment and are satisfied?"
+      : `Change status to ${newStatus.replace('_', ' ')}?`;
+
+    if (!window.confirm(confirmMsg)) return;
+
     try {
-      await ShipmentService.updateStatus(item.id, ItemStatus.DELIVERED);
+      await ShipmentService.updateStatus(item.id, newStatus);
       const updated = await ShipmentService.getShipment(item.id);
       setItem(updated);
     } catch (e) {
       console.error(e);
-      alert("Failed to confirm receipt");
+      alert("Failed to update status");
     }
   };
 
@@ -77,8 +82,8 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser }) 
 
   const steps = [
     { status: ItemStatus.POSTED, label: 'Manifest Created', desc: 'Item successfully registered on protocol' },
-    { status: ItemStatus.REQUESTED, label: 'Claims Initiated', desc: 'Partner has requested this delivery node' },
-    { status: ItemStatus.PICKED, label: 'Partner Validated', desc: 'Handover sequence approved by sender' },
+    { status: ItemStatus.APPROVED, label: 'Partner Assigned', desc: 'Handover sequence approved by sender' },
+    { status: ItemStatus.PICKED, label: 'Item Collected', desc: 'Partner has physically collected the shipment' },
     { status: ItemStatus.IN_TRANSIT, label: 'Active Transit', desc: 'Shipment currently in global motion' },
     { status: ItemStatus.ARRIVED, label: 'Dest. Arrived', desc: 'Package reached the target local hub' },
     { status: ItemStatus.WAITING_CONFIRMATION, label: 'Pending Signature', desc: 'Partner awaiting final sign-off' },
@@ -97,8 +102,8 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser }) 
           Dashboard
         </button>
         <div className="flex gap-2 items-center">
-          {/* Edit Button - Only for sender and POSTED status */}
-          {item.senderId === currentUser.id && (item.status === ItemStatus.POSTED || item.status === ItemStatus.REQUESTED) && (
+          {/* Edit Button - Only for sender and POSTED/APPROVED status */}
+          {item.senderId === currentUser.id && (item.status === ItemStatus.POSTED || item.status === ItemStatus.REQUESTED || item.status === ItemStatus.APPROVED) && (
             <button
               onClick={() => navigate(`/post-shipment/${item.id}`)}
               className="bg-[#009E49] text-white text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-tighter flex items-center gap-1 shadow-lg shadow-green-100 hover:bg-[#007A38] transition"
@@ -107,6 +112,55 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser }) 
               Edit
             </button>
           )}
+
+          {/* Partner Action Buttons */}
+          {item.partnerId === currentUser.id && (
+            <div className="flex gap-2">
+              {item.status === ItemStatus.APPROVED && (
+                <button
+                  onClick={() => handleUpdateStatus(ItemStatus.PICKED)}
+                  className="bg-[#009E49] text-white text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-tighter flex items-center gap-1 shadow-lg shadow-green-100 hover:bg-[#007A38] transition"
+                >
+                  Mark as Picked
+                </button>
+              )}
+              {item.status === ItemStatus.PICKED && (
+                <button
+                  onClick={() => handleUpdateStatus(ItemStatus.IN_TRANSIT)}
+                  className="bg-indigo-600 text-white text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-tighter flex items-center gap-1 shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition"
+                >
+                  Start Transit
+                </button>
+              )}
+              {item.status === ItemStatus.IN_TRANSIT && (
+                <button
+                  onClick={() => handleUpdateStatus(ItemStatus.ARRIVED)}
+                  className="bg-purple-600 text-white text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-tighter flex items-center gap-1 shadow-lg shadow-purple-100 hover:bg-purple-700 transition"
+                >
+                  Mark Arrived
+                </button>
+              )}
+              {item.status === ItemStatus.ARRIVED && (
+                <button
+                  onClick={() => handleUpdateStatus(ItemStatus.WAITING_CONFIRMATION)}
+                  className="bg-orange-600 text-white text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-tighter flex items-center gap-1 shadow-lg shadow-orange-100 hover:bg-orange-700 transition"
+                >
+                  Report Delivered
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Sender Delivery Confirmation */}
+          {item.senderId === currentUser.id && item.status === ItemStatus.WAITING_CONFIRMATION && (
+            <button
+              onClick={() => handleUpdateStatus(ItemStatus.DELIVERED)}
+              className="bg-[#009E49] text-white text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-tighter flex items-center gap-1 shadow-lg shadow-green-100 hover:bg-[#007A38] transition animate-pulse"
+            >
+              Confirm Delivery
+            </button>
+          )}
+
           <p className="text-slate-300 font-mono text-[9px] bg-slate-50 px-2 py-1 rounded border border-slate-100 uppercase">NODE: {item.id.split('-')[0]}</p>
           {isDelivered && (
             <span className="bg-[#009E49] text-white text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-tighter flex items-center gap-1 shadow-lg shadow-green-100">
@@ -227,7 +281,7 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser }) 
                             {/* Action Button for Sender in Waiting State */}
                             {isActive && step.status === ItemStatus.WAITING_CONFIRMATION && currentUser.id === item.senderId && (
                               <button
-                                onClick={handleConfirmReceipt}
+                                onClick={() => handleUpdateStatus(ItemStatus.DELIVERED)}
                                 className="mt-2 bg-[#009E49] text-white text-[8px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg shadow-lg shadow-green-200 hover:bg-[#007A38] transition animate-bounce"
                               >
                                 Confirm Receipt

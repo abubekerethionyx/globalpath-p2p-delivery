@@ -354,22 +354,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete }) => {
             )}
           </form>
 
-          {isLogin && !showForgot && !showOTP && (
-            <div className="mt-8 pt-8 border-t border-slate-100">
-              <p className="text-xs text-slate-400 font-bold text-center mb-4 uppercase tracking-widest">Demo Accounts</p>
-              <div className="flex flex-wrap justify-center gap-2">
-                {MOCK_USERS.map(u => (
-                  <button
-                    key={u.id}
-                    onClick={() => { setFormData({ ...formData, email: u.email, password: 'password' }); }}
-                    className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-bold text-slate-600 hover:bg-[#009E49]/10 hover:border-[#009E49] transition"
-                  >
-                    {u.firstName} ({u.role})
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+
         </div>
       </div>
 

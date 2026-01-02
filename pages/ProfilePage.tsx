@@ -22,6 +22,42 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
         setEditedUser({ ...user });
     }, [user]);
 
+    const getVerificationData = () => {
+        const checks = [
+            { label: 'Email Verified', status: user.isEmailVerified },
+            { label: 'Phone Registry', status: user.isPhoneVerified || !!user.phoneNumber },
+            { label: 'Resident Artifact', status: !!user.homeAddress },
+            { label: 'Emergency Protocol', status: !!user.emergencyContact },
+            { label: 'Identity Documents', status: !!(user.nationalId || user.passportNumber) },
+            { label: 'Portraits & Biometrics', status: !!(user.selfieUrl && user.idFrontUrl) },
+            { label: 'Manual Clearance', status: user.verificationStatus === VerificationStatus.VERIFIED },
+        ];
+
+        const completed = checks.filter(c => c.status).length;
+        const total = checks.length;
+        const percent = Math.round((completed / total) * 100);
+
+        let tier = "Unverified Node";
+        let tierColor = "text-slate-400";
+        if (user.verificationStatus === VerificationStatus.VERIFIED) {
+            tier = "Verified Partner";
+            tierColor = "text-[#009E49]";
+        } else if (completed >= 5) {
+            tier = "Pro Tier (Level 3)";
+            tierColor = "text-indigo-600";
+        } else if (completed >= 3) {
+            tier = "Active Tier (Level 2)";
+            tierColor = "text-amber-600";
+        } else if (completed >= 1) {
+            tier = "Basic Tier (Level 1)";
+            tierColor = "text-blue-600";
+        }
+
+        return { checks, completed, total, percent, tier, tierColor };
+    };
+
+    const vData = getVerificationData();
+
     const handleSave = async () => {
         setLoading(true);
         try {
@@ -121,54 +157,63 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
                 )}
             </div>
 
-            {/* Verification Status Banner - Only for Pickers */}
+            {/* Verification Progress Manifest - Only for Pickers */}
             {needsVerification && (
-                <div className={`p-8 rounded-[2rem] border-2 flex items-center justify-between shadow-sm ${user.verificationStatus === VerificationStatus.VERIFIED
-                    ? 'bg-green-50/50 border-green-100'
-                    : user.verificationStatus === VerificationStatus.PENDING
-                        ? 'bg-amber-50/50 border-amber-100'
-                        : 'bg-red-50/50 border-red-100'
-                    }`}>
-                    <div className="flex items-center gap-6">
-                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-md ${user.verificationStatus === VerificationStatus.VERIFIED
-                            ? 'bg-[#009E49] text-white'
-                            : user.verificationStatus === VerificationStatus.PENDING
-                                ? 'bg-amber-500 text-white'
-                                : 'bg-[#EF3340] text-white'
-                            }`}>
-                            {user.verificationStatus === VerificationStatus.VERIFIED ? (
-                                <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-                            ) : user.verificationStatus === VerificationStatus.PENDING ? (
-                                <svg className="w-8 h-8 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-                            ) : (
-                                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                            )}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div className={`lg:col-span-12 p-8 rounded-[2rem] border-2 flex flex-col md:flex-row items-center justify-between shadow-sm gap-8 transition-all ${user.verificationStatus === VerificationStatus.VERIFIED
+                        ? 'bg-green-50/50 border-green-100'
+                        : user.verificationStatus === VerificationStatus.PENDING
+                            ? 'bg-amber-50/50 border-amber-100'
+                            : 'bg-red-50/50 border-red-100'
+                        }`}>
+                        <div className="flex items-center gap-6 flex-1">
+                            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-md flex-shrink-0 ${user.verificationStatus === VerificationStatus.VERIFIED
+                                ? 'bg-[#009E49] text-white'
+                                : user.verificationStatus === VerificationStatus.PENDING
+                                    ? 'bg-amber-500 text-white'
+                                    : 'bg-[#EF3340] text-white'
+                                }`}>
+                                {user.verificationStatus === VerificationStatus.VERIFIED ? (
+                                    <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                                ) : user.verificationStatus === VerificationStatus.PENDING ? (
+                                    <svg className="w-8 h-8 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                                ) : (
+                                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                )}
+                            </div>
+                            <div className="flex-1">
+                                <div className="flex items-center justify-between mb-2">
+                                    <p className={`font-black text-lg uppercase tracking-tight leading-none ${vData.tierColor}`}>
+                                        {vData.tier}
+                                    </p>
+                                    <span className="text-[10px] font-black text-slate-400">{vData.percent}% Security Match</span>
+                                </div>
+                                <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                                    <div className="h-full bg-slate-900 transition-all duration-1000" style={{ width: `${vData.percent}%` }}></div>
+                                </div>
+                                <p className="text-xs font-bold text-slate-400 mt-2">
+                                    {user.verificationStatus === VerificationStatus.VERIFIED
+                                        ? 'Your logistics node is fully authenticated in the global network.'
+                                        : user.verificationStatus === VerificationStatus.PENDING
+                                            ? 'Security protocols are currently validating your documentation.'
+                                            : 'Complete your trust manifest to unlock higher level shipments.'}
+                                </p>
+                            </div>
                         </div>
-                        <div>
-                            <p className="font-black text-lg uppercase tracking-tight text-slate-900 leading-none mb-1">
-                                {user.verificationStatus === VerificationStatus.VERIFIED
-                                    ? 'Clearance Absolute'
-                                    : user.verificationStatus === VerificationStatus.PENDING
-                                        ? 'Reviewing Artifacts'
-                                        : 'Identity Required'}
-                            </p>
-                            <p className="text-sm font-bold text-slate-400">
-                                {user.verificationStatus === VerificationStatus.VERIFIED
-                                    ? 'Your logistics node is fully authenticated in the global network.'
-                                    : user.verificationStatus === VerificationStatus.PENDING
-                                        ? 'Security protocols are currently validating your documentation.'
-                                        : 'Mandatory verification is required to claim global marketplace shipments.'}
-                            </p>
+
+                        <div className="flex flex-wrap gap-2 md:max-w-xs justify-end">
+                            {vData.checks.map((check, i) => (
+                                <div key={i} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border transition-all ${check.status ? 'bg-green-100 border-green-200 text-green-700' : 'bg-slate-50 border-slate-100 text-slate-300'}`}>
+                                    {check.status ? (
+                                        <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
+                                    ) : (
+                                        <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    )}
+                                    {check.label}
+                                </div>
+                            ))}
                         </div>
                     </div>
-                    {user.verificationStatus === VerificationStatus.UNVERIFIED && (
-                        <button
-                            onClick={() => setIsEditing(true)}
-                            className="bg-[#EF3340] text-white px-8 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-[#D62832] transition shadow-xl shadow-red-100"
-                        >
-                            Update Info
-                        </button>
-                    )}
                 </div>
             )}
 

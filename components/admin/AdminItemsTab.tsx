@@ -29,6 +29,7 @@ const AdminItemsTab: React.FC<AdminItemsTabProps> = ({ items, onUpdateStatus }) 
     switch (status) {
       case ItemStatus.POSTED: return 'bg-blue-50 text-blue-600 border-blue-100';
       case ItemStatus.REQUESTED: return 'bg-amber-50 text-amber-600 border-amber-100';
+      case ItemStatus.APPROVED: return 'bg-amber-100 text-amber-700 border-amber-200';
       case ItemStatus.PICKED: return 'bg-indigo-50 text-indigo-600 border-indigo-100';
       case ItemStatus.IN_TRANSIT: return 'bg-purple-50 text-purple-600 border-purple-100';
       case ItemStatus.ARRIVED: return 'bg-green-50 text-green-600 border-green-100';
@@ -40,7 +41,8 @@ const AdminItemsTab: React.FC<AdminItemsTabProps> = ({ items, onUpdateStatus }) 
   const statusProgress = {
     [ItemStatus.POSTED]: 15,
     [ItemStatus.REQUESTED]: 30,
-    [ItemStatus.PICKED]: 50,
+    [ItemStatus.APPROVED]: 40,
+    [ItemStatus.PICKED]: 55,
     [ItemStatus.IN_TRANSIT]: 70,
     [ItemStatus.ARRIVED]: 90,
     [ItemStatus.DELIVERED]: 100,

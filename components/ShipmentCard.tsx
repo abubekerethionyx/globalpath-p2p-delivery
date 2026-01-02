@@ -68,6 +68,7 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
     switch (status) {
       case ItemStatus.POSTED: return 'bg-blue-500 text-white';
       case ItemStatus.REQUESTED: return 'bg-amber-500 text-white';
+      case ItemStatus.APPROVED: return 'bg-amber-600 text-white';
       case ItemStatus.PICKED: return 'bg-indigo-500 text-white';
       case ItemStatus.IN_TRANSIT: return 'bg-purple-500 text-white';
       case ItemStatus.ARRIVED: return 'bg-[#009E49] text-white';
@@ -79,8 +80,9 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
 
   const statusProgress = {
     [ItemStatus.POSTED]: 10,
-    [ItemStatus.REQUESTED]: 25,
-    [ItemStatus.PICKED]: 40,
+    [ItemStatus.REQUESTED]: 20,
+    [ItemStatus.APPROVED]: 30,
+    [ItemStatus.PICKED]: 45,
     [ItemStatus.IN_TRANSIT]: 65,
     [ItemStatus.ARRIVED]: 85,
     [ItemStatus.WAITING_CONFIRMATION]: 90,
@@ -98,7 +100,7 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
     >
       {/* Bulk Selection Checkbox */}
       {onSelect && (
-        (role === UserRole.PICKER && item.status !== ItemStatus.POSTED && item.status !== ItemStatus.REQUESTED && item.status !== ItemStatus.DELIVERED) ||
+        (role === UserRole.PICKER && item.status !== ItemStatus.POSTED && item.status !== ItemStatus.DELIVERED) ||
         (role === UserRole.SENDER && item.status === ItemStatus.WAITING_CONFIRMATION)
       ) && (
           <div
@@ -256,11 +258,11 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
             )
           )}
 
-          {role === UserRole.PICKER && item.status === ItemStatus.REQUESTED && (
+          {(item.status === ItemStatus.REQUESTED || item.status === ItemStatus.APPROVED) && role === UserRole.PICKER && (
             (currentUserId && item.partnerId === currentUserId) || requestStatus === 'APPROVED' ? (
               <button
                 className="flex-1 bg-green-600 text-white px-3 py-2 rounded-xl text-xs font-black border-2 border-green-600 uppercase tracking-wider flex items-center justify-center shadow-lg shadow-green-200"
-                onClick={handleViewDetails}
+                onClick={(e) => { e.stopPropagation(); onUpdateStatus?.(item.id, ItemStatus.PICKED); }}
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
@@ -277,7 +279,7 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
             )
           )}
 
-          {role === UserRole.PICKER && item.status !== ItemStatus.POSTED && item.status !== ItemStatus.REQUESTED && item.status !== ItemStatus.DELIVERED && onUpdateStatus && (
+          {role === UserRole.PICKER && item.status !== ItemStatus.POSTED && item.status !== ItemStatus.REQUESTED && item.status !== ItemStatus.APPROVED && item.status !== ItemStatus.DELIVERED && onUpdateStatus && (
             <select
               value={item.status}
               onClick={(e) => e.stopPropagation()}

@@ -55,6 +55,50 @@ const PickerProfilePage: React.FC = () => {
         }
     };
 
+    const getVerificationData = () => {
+        if (!picker) return null;
+
+        const checks = [
+            { label: 'Email Verified', status: picker.isEmailVerified, weight: 1 },
+            { label: 'Phone Registry', status: picker.isPhoneVerified || !!picker.phoneNumber, weight: 1 },
+            { label: 'Resident Artifact', status: !!picker.homeAddress, weight: 1 },
+            { label: 'Emergency Protocol', status: !!picker.emergencyContact, weight: 1 },
+            { label: 'Identity Documents', status: !!(picker.nationalId || picker.passportNumber), weight: 1 },
+            { label: 'Portraits & Biometrics', status: !!(picker.selfieUrl && picker.idFrontUrl), weight: 1 },
+            { label: 'Manual Clearance', status: picker.verificationStatus === VerificationStatus.VERIFIED, weight: 1 },
+        ];
+
+        const completed = checks.filter(c => c.status).length;
+        const total = checks.length;
+        const percent = Math.round((completed / total) * 100);
+
+        let tier = "Unverified Node";
+        let tierColor = "text-slate-400";
+        let level = 0;
+
+        if (picker.verificationStatus === VerificationStatus.VERIFIED) {
+            tier = "Verified Partner";
+            tierColor = "text-[#009E49]";
+            level = 4;
+        } else if (completed >= 5) {
+            tier = "Pro Tier (Level 3)";
+            tierColor = "text-indigo-400";
+            level = 3;
+        } else if (completed >= 3) {
+            tier = "Active Tier (Level 2)";
+            tierColor = "text-amber-400";
+            level = 2;
+        } else if (completed >= 1) {
+            tier = "Basic Tier (Level 1)";
+            tierColor = "text-blue-400";
+            level = 1;
+        }
+
+        return { checks, completed, total, percent, tier, tierColor, level };
+    };
+
+    const vData = getVerificationData();
+
     return (
         <div className="max-w-[1200px] mx-auto p-4 md:p-8 pt-12 space-y-12 animate-in fade-in duration-700 pb-24">
             {/* Header / Nav */}
@@ -165,32 +209,48 @@ const PickerProfilePage: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="bg-indigo-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-50"></div>
-                    <p className="text-indigo-300 text-[10px] font-black uppercase tracking-widest relative z-10">Verification Level</p>
-                    <h3 className="text-3xl font-black mt-2 relative z-10">Gold Tier</h3>
-                    <p className="mt-4 text-indigo-200 text-sm relative z-10">This partner has completed advanced identity verification and has a consistent track record.</p>
+                <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden flex flex-col justify-between">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-20"></div>
 
-                    <div className="mt-8 space-y-4 relative z-10">
-                        <div className="flex items-center gap-3">
-                            <div className="w-6 h-6 rounded-full bg-green-400/20 flex items-center justify-center">
-                                <svg className="w-3 h-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
+                    <div>
+                        <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest relative z-10">System Trust Manifest</p>
+                        <h3 className={`text-3xl font-black mt-2 relative z-10 ${vData?.tierColor}`}>{vData?.tier}</h3>
+                        <div className="mt-4 flex items-center gap-3 bg-white/5 p-4 rounded-2xl border border-white/5">
+                            <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+                                <div className="h-full bg-indigo-500 transition-all duration-1000" style={{ width: `${vData?.percent}%` }}></div>
                             </div>
-                            <span className="font-bold text-sm">Identity Verified</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <div className="w-6 h-6 rounded-full bg-green-400/20 flex items-center justify-center">
-                                <svg className="w-3 h-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
-                            </div>
-                            <span className="font-bold text-sm">Valid Phone Number</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <div className="w-6 h-6 rounded-full bg-green-400/20 flex items-center justify-center">
-                                <svg className="w-3 h-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
-                            </div>
-                            <span className="font-bold text-sm">Background Check Passed</span>
+                            <span className="text-xs font-black text-indigo-400">{vData?.percent}%</span>
                         </div>
                     </div>
+
+                    <div className="mt-8 space-y-3 relative z-10">
+                        {vData?.checks.map((check, i) => (
+                            <div key={i} className="flex items-center justify-between group">
+                                <div className="flex items-center gap-3">
+                                    <div className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${check.status ? 'bg-[#009E49]/20' : 'bg-red-500/20'}`}>
+                                        {check.status ? (
+                                            <svg className="w-3 h-3 text-[#009E49]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
+                                        ) : (
+                                            <svg className="w-2.5 h-2.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" /></svg>
+                                        )}
+                                    </div>
+                                    <span className={`text-xs font-bold ${check.status ? 'text-white' : 'text-slate-500'}`}>{check.label}</span>
+                                </div>
+                                {!check.status && (
+                                    <span className="text-[8px] font-black text-red-400 opacity-0 group-hover:opacity-100 transition-opacity uppercase tracking-tighter">Required for Level {vData.level + 1}</span>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    {vData && vData.completed < vData.total && (
+                        <div className="mt-8 p-4 bg-indigo-600/20 border border-indigo-600/30 rounded-2xl relative z-10">
+                            <p className="text-[9px] font-black text-indigo-300 uppercase tracking-widest mb-1">Missing Credentials</p>
+                            <p className="text-[10px] text-indigo-100/60 leading-tight">
+                                Complete the protocol to reach the next tier and unlock higher value shipments.
+                            </p>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

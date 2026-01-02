@@ -78,7 +78,8 @@ const SenderDashboard: React.FC<SenderDashboardProps> = ({ user }) => {
 
     const groupedItems = {
         [ItemStatus.POSTED]: items.filter(i => i.status === ItemStatus.POSTED),
-        [ItemStatus.REQUESTED]: items.filter(i => i.status === ItemStatus.REQUESTED), // Legacy or Approved state
+        [ItemStatus.REQUESTED]: items.filter(i => i.status === ItemStatus.REQUESTED),
+        [ItemStatus.APPROVED]: items.filter(i => i.status === ItemStatus.APPROVED),
         [ItemStatus.PICKED]: items.filter(i => i.status === ItemStatus.PICKED),
         [ItemStatus.IN_TRANSIT]: items.filter(i => i.status === ItemStatus.IN_TRANSIT),
         [ItemStatus.ARRIVED]: items.filter(i => i.status === ItemStatus.ARRIVED),
@@ -88,7 +89,8 @@ const SenderDashboard: React.FC<SenderDashboardProps> = ({ user }) => {
 
     const pendingRequestCount = Object.keys(requestsMap).length;
     const waitingConfirmationCount = groupedItems[ItemStatus.WAITING_CONFIRMATION].length;
-    const actionCount = pendingRequestCount + groupedItems[ItemStatus.REQUESTED].length + waitingConfirmationCount;
+    const approvedCount = (groupedItems[ItemStatus.APPROVED] || []).length;
+    const actionCount = pendingRequestCount + (groupedItems[ItemStatus.REQUESTED] || []).length + approvedCount + waitingConfirmationCount;
     const pipelineCount = groupedItems[ItemStatus.PICKED].length + groupedItems[ItemStatus.IN_TRANSIT].length + groupedItems[ItemStatus.ARRIVED].length;
     const marketplaceCount = groupedItems[ItemStatus.POSTED].length;
     const historyCount = groupedItems[ItemStatus.DELIVERED].length;
@@ -340,12 +342,17 @@ const SenderDashboard: React.FC<SenderDashboardProps> = ({ user }) => {
                             );
                         })}
 
-                        {/* Legacy REQUESTED Status Items (Now considered Approvals) */}
-                        {groupedItems[ItemStatus.REQUESTED].length > 0 && (
+                        {/* Approved Status Items */}
+                        {(groupedItems[ItemStatus.APPROVED] || []).length > 0 && (
+                            <StatusGrid statusItems={groupedItems[ItemStatus.APPROVED]} emptyMessage="" />
+                        )}
+
+                        {/* Legacy REQUESTED Status Items */}
+                        {(groupedItems[ItemStatus.REQUESTED] || []).length > 0 && (
                             <StatusGrid statusItems={groupedItems[ItemStatus.REQUESTED]} emptyMessage="" />
                         )}
 
-                        {Object.keys(requestsMap).length === 0 && groupedItems[ItemStatus.REQUESTED].length === 0 && (
+                        {Object.keys(requestsMap).length === 0 && (groupedItems[ItemStatus.APPROVED] || []).length === 0 && (groupedItems[ItemStatus.REQUESTED] || []).length === 0 && (
                             <StatusGrid statusItems={[]} emptyMessage="No active requests or actions needed." />
                         )}
                     </div>

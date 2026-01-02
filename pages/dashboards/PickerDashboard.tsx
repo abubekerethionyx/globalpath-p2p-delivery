@@ -44,6 +44,7 @@ const PickerDashboard: React.FC<PickerDashboardProps> = ({ user }) => {
 
     const groupedItems = {
         [ItemStatus.REQUESTED]: items.filter(i => i.status === ItemStatus.REQUESTED),
+        [ItemStatus.APPROVED]: items.filter(i => i.status === ItemStatus.APPROVED),
         [ItemStatus.PICKED]: items.filter(i => i.status === ItemStatus.PICKED),
         [ItemStatus.IN_TRANSIT]: items.filter(i => i.status === ItemStatus.IN_TRANSIT),
         [ItemStatus.ARRIVED]: items.filter(i => i.status === ItemStatus.ARRIVED),
@@ -56,7 +57,7 @@ const PickerDashboard: React.FC<PickerDashboardProps> = ({ user }) => {
         .map(r => ({ ...r.shipment, requestStatus: r.status }));
 
     const pendingCount = pendingRequests.length;
-    const requestedCount = groupedItems[ItemStatus.REQUESTED].length;
+    const requestedCount = (groupedItems[ItemStatus.APPROVED] || []).length + (groupedItems[ItemStatus.REQUESTED] || []).length;
     const lockedCount = groupedItems[ItemStatus.PICKED].length;
     const transitCount = groupedItems[ItemStatus.IN_TRANSIT].length + groupedItems[ItemStatus.ARRIVED].length + groupedItems[ItemStatus.WAITING_CONFIRMATION].length;
     const historyCount = groupedItems[ItemStatus.DELIVERED].length;
@@ -345,7 +346,7 @@ const PickerDashboard: React.FC<PickerDashboardProps> = ({ user }) => {
                 )}
                 {activeTab === 'REQUESTS' && (
                     <StatusGrid
-                        statusItems={groupedItems[ItemStatus.REQUESTED]}
+                        statusItems={[...(groupedItems[ItemStatus.APPROVED] || []), ...(groupedItems[ItemStatus.REQUESTED] || [])]}
                         emptyMessage="No approved jobs awaiting pickup"
                         isAction={true}
                     />

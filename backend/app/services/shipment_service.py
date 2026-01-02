@@ -179,6 +179,7 @@ def get_shipment_requests(shipment_id):
 def approve_request(request_id):
     from app.models.shipment import ShipmentRequest
     from app.models.subscription import SubscriptionTransaction
+    from app.models.notification import create_notification
     from datetime import datetime
 
     req = ShipmentRequest.query.get(request_id)
@@ -214,7 +215,7 @@ def approve_request(request_id):
     # Approve
     req.status = 'APPROVED'
     shipment.partner_id = req.picker_id
-    shipment.status = ItemStatus.REQUESTED
+    shipment.status = ItemStatus.APPROVED
     shipment.picked_at = datetime.utcnow()
 
     # Reject others

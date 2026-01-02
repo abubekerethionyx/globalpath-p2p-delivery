@@ -84,10 +84,10 @@ def update_shipment(shipment_id):
     if existing_shipment.sender_id != current_user_id:
         return jsonify({'message': 'Unauthorized'}), 403
     
-    # Only allow editing if status is POSTED or REQUESTED (before partner confirms pickup)
-    allowed_statuses = ['POSTED', 'REQUESTED']
+    # Only allow editing if status is POSTED or APPROVED (before partner confirms pickup)
+    allowed_statuses = ['POSTED', 'REQUESTED', 'APPROVED']
     if existing_shipment.status.value not in allowed_statuses:
-        return jsonify({'message': f'Cannot edit shipment with status {existing_shipment.status}. Only POSTED or REQUESTED shipments can be edited.'}), 400
+        return jsonify({'message': f'Cannot edit shipment with status {existing_shipment.status}. Only POSTED, REQUESTED or APPROVED shipments can be edited.'}), 400
     
     # Handle multipart/form-data (same as create)
     data = request.form.to_dict()
