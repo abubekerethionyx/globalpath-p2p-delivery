@@ -4,6 +4,7 @@ import { User, ShipmentItem, ItemStatus, VerificationStatus } from '../types';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ShipmentService } from '../services/ShipmentService';
 import { MessageService } from '../services/MessageService';
+import { PublicSettings } from '../services/AdminService';
 import { BASE_URL } from '../config';
 
 // Helper to get full image URL
@@ -17,9 +18,10 @@ const getImageUrl = (url: string) => {
 
 interface ShipmentDetailPageProps {
   currentUser: User;
+  publicSettings?: PublicSettings;
 }
 
-const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser }) => {
+const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser, publicSettings }) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [item, setItem] = useState<ShipmentItem | null>(null);
@@ -38,10 +40,23 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser }) 
       }
     };
     fetchItem();
-  }, [id]);
+
+    // Check if user is allowed to see the details based on subscription settings
+    if (publicSettings?.require_subscription_for_details && !currentUser.isSubscriptionActive && currentUser.role !== 'ADMIN') {
+      alert("Viewing detailed shipment analytics requires an active protocol subscription. Please upgrade your plan.");
+      navigate('/packaging');
+    }
+  }, [id, publicSettings, currentUser.isSubscriptionActive, navigate]);
 
   const handleMessage = async (otherUserId: string) => {
     if (!item) return;
+
+    if (publicSettings?.require_subscription_for_chat && !currentUser.isSubscriptionActive && currentUser.role !== 'ADMIN') {
+      alert("Chat access requires an active protocol subscription. Please upgrade your plan.");
+      navigate('/packaging');
+      return;
+    }
+
     try {
       const thread = await MessageService.createThread(otherUserId, item.id);
       navigate('/messages', { state: { threadId: thread.id } });

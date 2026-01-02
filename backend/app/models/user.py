@@ -50,6 +50,30 @@ class User(db.Model):
     def name(self):
         return f"{self.first_name} {self.last_name}"
 
+    @property
+    def is_subscription_active(self):
+        # Admin always has access
+        if self.role == UserRole.ADMIN:
+            return True
+            
+        from app.models.subscription import SubscriptionTransaction
+        active_sub = SubscriptionTransaction.query.filter_by(
+            user_id=self.id, 
+            is_active=True, 
+            status='COMPLETED'
+        ).first()
+        
+        if not active_sub:
+            return False
+            
+        if active_sub.end_date and active_sub.end_date < datetime.utcnow():
+            # Auto-deactivate if expired
+            active_sub.is_active = False
+            db.session.commit()
+            return False
+            
+        return True
+
     # Relationships
     plan = db.relationship('SubscriptionPlan', backref='users')
 

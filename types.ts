@@ -104,6 +104,7 @@ export interface User {
   earnings?: number;
   walletBalance: number;
   currentPlanId?: string;
+  isSubscriptionActive?: boolean;
   itemsCountThisMonth: number;
   averageDeliveryTime?: number;
   // Expanded Security Fields

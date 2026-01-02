@@ -3,6 +3,7 @@ import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-
 import { User, UserRole, VerificationStatus } from './types';
 import { AuthService } from './services/AuthService';
 import { UserService } from './services/UserService';
+import { AdminService, PublicSettings } from './services/AdminService';
 import Navbar from './components/Navbar';
 
 // Pages
@@ -22,12 +23,22 @@ import SupportPage from './pages/SupportPage';
 import NotificationsPage from './pages/NotificationsPage';
 import PickerProfilePage from './pages/PickerProfilePage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import TermsPage from './pages/TermsPage';
+import PrivacyPage from './pages/PrivacyPage';
 
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [publicSettings, setPublicSettings] = useState<PublicSettings>({
+    require_subscription_for_details: false,
+    require_subscription_for_chat: false,
+    require_otp_for_signup: true,
+    enable_free_promo_sender: true,
+    enable_free_promo_picker: true,
+    enable_google_login: true
+  });
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -36,18 +47,32 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const loadUser = async () => {
-      const currentUser = await AuthService.getCurrentUser(); // Assuming this might be async in future, currently sync but safe
+      const currentUser = await AuthService.getCurrentUser();
+
+      // Fetch public settings in parallel with user profile
+      const settingsPromise = AdminService.getPublicSettings().catch(err => {
+        console.error("Failed to fetch public settings", err);
+        return null;
+      });
+
       if (currentUser) {
-        // Verify with backend if token exists
         try {
-          const freshUser = await UserService.getProfile();
+          const [freshUser, settings] = await Promise.all([
+            UserService.getProfile(),
+            settingsPromise
+          ]);
           setUser(freshUser);
+          if (settings) setPublicSettings(settings);
           localStorage.setItem('user', JSON.stringify(freshUser));
         } catch {
-          setUser(currentUser); // Fallback
+          setUser(currentUser);
+          const settings = await settingsPromise;
+          if (settings) setPublicSettings(settings);
         }
       } else {
         setUser(null);
+        const settings = await settingsPromise;
+        if (settings) setPublicSettings(settings);
       }
       setLoading(false);
     };
@@ -109,6 +134,7 @@ const App: React.FC = () => {
           user={user}
           currentPage={getCurrentPageName()}
           onLogout={handleLogout}
+          publicSettings={publicSettings}
           onNavigate={(page) => {
             if (page === 'landing') navigate('/');
             else if (page === 'support') navigate('/support');
@@ -119,17 +145,29 @@ const App: React.FC = () => {
         <main className={`flex-1 w-full relative pt-20 ${location.pathname === '/' || location.pathname === '/landing' || location.pathname === '/admin' ? '' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'}`}>
           <Routes>
             <Route path="/" element={user ? <Navigate to="/dashboard" /> : <LandingPage onNavigate={(page) => navigate(page === 'landing' ? '/' : `/${page}`)} />} />
-            <Route path="/login" element={<AuthPage onAuthComplete={handleAuthComplete} />} />
+            <Route path="/login" element={<AuthPage onAuthComplete={handleAuthComplete} publicSettings={publicSettings} />} />
             <Route path="/packaging" element={<PackagingPage user={user} onPlanChanged={refreshUser} />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
 
             {/* Protected Routes */}
             <Route path="/dashboard" element={user ? <DashboardPage user={user} /> : <Navigate to="/login" />} />
-            <Route path="/shipment-detail/:id" element={user ? <ShipmentDetailPage currentUser={user} /> : <Navigate to="/login" />} />
-            <Route path="/marketplace" element={user ? <MarketplacePage user={user} /> : <Navigate to="/login" />} />
+            <Route path="/shipment-detail/:id" element={user ? <ShipmentDetailPage currentUser={user} publicSettings={publicSettings} /> : <Navigate to="/login" />} />
+            <Route path="/marketplace" element={user ? <MarketplacePage user={user} publicSettings={publicSettings} /> : <Navigate to="/login" />} />
             <Route path="/billing" element={user ? <BillingPage user={user} /> : <Navigate to="/login" />} />
             <Route path="/post-item" element={user ? <PostShipmentPage user={user} /> : <Navigate to="/login" />} />
             <Route path="/post-shipment/:id" element={user ? <PostShipmentPage user={user} /> : <Navigate to="/login" />} />
-            <Route path="/messages" element={user ? <MessagesPage user={user} /> : <Navigate to="/login" />} />
+            <Route path="/messages" element={
+              user ? (
+                (publicSettings.require_subscription_for_chat && !user.isSubscriptionActive && user.role !== UserRole.ADMIN) ? (
+                  <Navigate to="/packaging" />
+                ) : (
+                  <MessagesPage user={user} />
+                )
+              ) : (
+                <Navigate to="/login" />
+              )
+            } />
             <Route path="/support" element={user ? <SupportPage user={user} /> : <Navigate to="/login" />} />
             <Route path="/notifications" element={user ? <NotificationsPage user={user} /> : <Navigate to="/login" />} />
             <Route path="/profile" element={user ? <ProfilePage user={user} onUserUpdate={(updatedUser) => setUser(updatedUser)} /> : <Navigate to="/login" />} />

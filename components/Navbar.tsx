@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { User, UserRole } from '../types';
 import { NotificationService, Notification } from '../services/NotificationService';
+import { PublicSettings } from '../services/AdminService';
 
 interface NavbarProps {
   user: User | null;
   onLogout: () => void;
   onNavigate: (page: string) => void;
   currentPage: string;
+  publicSettings?: PublicSettings;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onNavigate, currentPage }) => {
+const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onNavigate, currentPage, publicSettings }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -92,7 +94,10 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onNavigate, currentPage
                     className={`px-3 py-2 text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 ${currentPage === link.id ? 'text-[#009E49] bg-green-50 rounded-lg' : 'text-slate-400 hover:text-slate-900'}`}
                   >
                     {link.label}
-                    {link.dot && <span className="flex h-1.5 w-1.5 rounded-full bg-[#EF3340]"></span>}
+                    {link.id === 'messages' && publicSettings?.require_subscription_for_chat && !user.isSubscriptionActive && user.role !== UserRole.ADMIN && (
+                      <svg className="w-3 h-3 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                    )}
+                    {link.dot && (!publicSettings?.require_subscription_for_chat || user.isSubscriptionActive || user.role === UserRole.ADMIN) && <span className="flex h-1.5 w-1.5 rounded-full bg-[#EF3340]"></span>}
                   </button>
                 ))}
               </div>

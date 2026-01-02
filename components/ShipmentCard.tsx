@@ -16,6 +16,9 @@ interface ShipmentCardProps {
   isRequested?: boolean;
   requestStatus?: string | null;
   currentUserId?: string;
+  isSubscriptionActive?: boolean;
+  requireSubscriptionForDetails?: boolean;
+  requireSubscriptionForChat?: boolean;
 }
 
 const ShipmentCard: React.FC<ShipmentCardProps> = ({
@@ -29,12 +32,21 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
   compact = false,
   isRequested = false,
   requestStatus = null,
-  currentUserId
+  currentUserId,
+  isSubscriptionActive = true,
+  requireSubscriptionForDetails = false,
+  requireSubscriptionForChat = false
 }) => {
   const navigate = useNavigate();
 
   const handleMessage = async (e: React.MouseEvent) => {
     e.stopPropagation();
+
+    if (requireSubscriptionForChat && !isSubscriptionActive && role !== UserRole.ADMIN) {
+      alert("Chat access requires an active protocol subscription. Please upgrade your plan.");
+      navigate('/packaging');
+      return;
+    }
 
     if (onChat) {
       onChat(item);
@@ -61,6 +73,11 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
 
   const handleViewDetails = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (requireSubscriptionForDetails && !isSubscriptionActive && role !== UserRole.ADMIN) {
+      alert("Viewing detailed shipment analytics requires an active protocol subscription. Please upgrade your plan.");
+      navigate('/packaging');
+      return;
+    }
     navigate(`/shipment-detail/${item.id}`);
   };
 

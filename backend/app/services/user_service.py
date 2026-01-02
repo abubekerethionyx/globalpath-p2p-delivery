@@ -7,15 +7,22 @@ from flask import current_app
 
 def assign_default_subscription(user):
     """Assigns the default 6-month free promotion plan to a new user."""
-    # Determine the correct promo plan ID from config
-    if not current_app.config['IS_FREE_PROMO_ENABLED_FOR_SENDER'] and user.role.value == 'SENDER':
-        return False
-    
-    if not current_app.config['IS_FREE_PROMO_ENABLED_FOR_PICKER'] and user.role.value == 'PICKER':
-        return False
+    from app.models.setting import GlobalSetting
     
     is_picker = user.role == 'PICKER' or (hasattr(user.role, 'value') and user.role.value == 'PICKER')
-    promo_plan_id = current_app.config['DEFAULT_PICKER_PLAN_ID'] if is_picker else current_app.config['DEFAULT_SENDER_PLAN_ID']
+    
+    # Check if promo is enabled for this specific role
+    promo_enabled_key = 'enable_free_promo_picker' if is_picker else 'enable_free_promo_sender'
+    if not GlobalSetting.get_value(promo_enabled_key, default=True):
+        return False
+    
+    # Try to get plan ID from settings first
+    setting_key = 'free_promo_picker_plan_id' if is_picker else 'free_promo_sender_plan_id'
+    promo_plan_id = GlobalSetting.get_value(setting_key)
+    
+    # Fallback to config if setting not found
+    if not promo_plan_id:
+        promo_plan_id = current_app.config['DEFAULT_PICKER_PLAN_ID'] if is_picker else current_app.config['DEFAULT_SENDER_PLAN_ID']
     
     promo_plan = SubscriptionPlan.query.get(promo_plan_id)
     
@@ -74,6 +81,10 @@ def create_user(data):
     # Generate 6-digit OTP
     otp = ''.join(secrets.choice(string.digits) for _ in range(6))
     
+    from app.models.setting import GlobalSetting
+    require_otp = GlobalSetting.get_value('require_otp_for_signup', default=True)
+    from app.models.enums import VerificationStatus
+
     user = User(
         first_name=data['first_name'],
         last_name=data['last_name'],
@@ -82,8 +93,10 @@ def create_user(data):
         is_phone_verified=data.get('is_phone_verified', False),
         role=data.get('role', 'SENDER'),
         email_verification_token=secrets.token_urlsafe(32),
-        email_otp=otp,
-        email_otp_expiry=datetime.utcnow() + timedelta(minutes=10)
+        email_otp=otp if require_otp else None,
+        email_otp_expiry=(datetime.utcnow() + timedelta(minutes=10)) if require_otp else None,
+        is_email_verified=not require_otp,
+        verification_status=VerificationStatus.VERIFIED if not require_otp else VerificationStatus.UNVERIFIED
     )
     if 'password' in data:
         user.set_password(data['password'])

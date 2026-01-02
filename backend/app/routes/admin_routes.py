@@ -1,0 +1,115 @@
+from flask import Blueprint, request, jsonify
+from app.models.setting import GlobalSetting
+from app.models.user import User, UserRole
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from app.extensions import db
+from app.models.notification import Notification, create_notification
+from app.models.shipment import ShipmentItem
+
+bp = Blueprint('admin', __name__, url_prefix='/api/admin')
+
+@bp.route('/settings', methods=['GET'])
+@jwt_required()
+def get_settings():
+    current_user = User.query.get(get_jwt_identity())
+    if not current_user or current_user.role != UserRole.ADMIN:
+        return jsonify({'message': 'Admin access required'}), 403
+        
+    settings = GlobalSetting.query.all()
+    return jsonify({s.key: {'value': s.value, 'description': s.description} for s in settings})
+
+@bp.route('/settings', methods=['POST'])
+@jwt_required()
+def update_settings():
+    current_user = User.query.get(get_jwt_identity())
+    if not current_user or current_user.role != UserRole.ADMIN:
+        return jsonify({'message': 'Admin access required'}), 403
+        
+    data = request.get_json()
+    if not data:
+        return jsonify({'message': 'No data provided'}), 400
+        
+    for key, info in data.items():
+        value = info.get('value')
+        description = info.get('description')
+        GlobalSetting.set_value(key, value, description)
+        
+    return jsonify({'message': 'Settings updated successfully'})
+
+@bp.route('/settings/public', methods=['GET'])
+def get_public_settings():
+    # Only expose specific settings that frontend needs to know
+    keys = [
+        'require_subscription_for_details', 
+        'require_subscription_for_chat',
+        'require_otp_for_signup',
+        'enable_free_promo_sender',
+        'enable_free_promo_picker',
+        'enable_google_login'
+    ]
+    settings = {}
+    for key in keys:
+        val = GlobalSetting.get_value(key)
+        if val is not None:
+            settings[key] = val
+        else:
+            # Defaults
+            if key in ['require_otp_for_signup', 'enable_free_promo_sender', 'enable_free_promo_picker', 'enable_google_login']:
+                settings[key] = True
+            else:
+                settings[key] = False
+            
+    return jsonify(settings)
+@bp.route('/notifications/broadcast', methods=['POST'])
+@jwt_required()
+def broadcast_notification():
+    current_user = User.query.get(get_jwt_identity())
+    if not current_user or current_user.role != UserRole.ADMIN:
+        return jsonify({'message': 'Admin access required'}), 403
+        
+    data = request.get_json()
+    title = data.get('title')
+    message = data.get('message')
+    ntype = data.get('type', 'INFO')
+    target_type = data.get('target_type') # ALL, ROLE, USERS, LOCATION_HISTORY
+    
+    if not title or not message:
+        return jsonify({'message': 'Title and message are required'}), 400
+        
+    targets = []
+    
+    if target_type == 'ALL':
+        targets = User.query.all()
+    elif target_type == 'ROLE':
+        roles = data.get('roles', [])
+        targets = User.query.filter(User.role.in_(roles)).all()
+    elif target_type == 'USERS':
+        user_ids = data.get('user_ids', [])
+        targets = User.query.filter(User.id.in_(user_ids)).all()
+    elif target_type == 'LOCATION_HISTORY':
+        location = data.get('location')
+        if location:
+            # Find users who have picked up or delivered to this location
+            pickers = db.session.query(User).join(ShipmentItem, User.id == ShipmentItem.partner_id)\
+                .filter((ShipmentItem.pickup_country == location) | (ShipmentItem.dest_country == location)).all()
+            targets = list(set(pickers)) # Unique users
+    
+    for user in targets:
+        create_notification(user.id, title, message, ntype)
+    
+    return jsonify({'message': f'Notification broadcasted to {len(targets)} users successfully'})
+
+@bp.route('/users', methods=['GET'])
+@jwt_required()
+def get_users_list():
+    current_user = User.query.get(get_jwt_identity())
+    if not current_user or current_user.role != UserRole.ADMIN:
+        return jsonify({'message': 'Admin access required'}), 403
+        
+    users = User.query.all()
+    return jsonify([{
+        'id': u.id,
+        'name': u.name,
+        'email': u.email,
+        'role': u.role.value
+    } for u in users])

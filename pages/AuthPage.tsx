@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { UserRole } from '../types';
 import { AuthService } from '../services/AuthService';
+import { PublicSettings } from '../services/AdminService';
 import { MOCK_USERS } from '../constants';
 import { useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 
 interface AuthPageProps {
   onAuthComplete: (user: any) => void;
+  publicSettings?: PublicSettings;
 }
 
-const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete }) => {
+const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete, publicSettings }) => {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [showForgot, setShowForgot] = useState(false);
@@ -133,7 +135,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete }) => {
           return;
         }
 
-        await AuthService.register({
+        const registerResponse = await AuthService.register({
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
@@ -142,7 +144,18 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete }) => {
           role: role
         });
 
-        setShowOTP(true);
+        if (publicSettings?.require_otp_for_signup === false) {
+          // Auto login if OTP is not required
+          const loginResp = await AuthService.login(formData.email, formData.password);
+          if (loginResp.user) {
+            onAuthComplete(loginResp.user);
+          } else {
+            setError("Account created, but login failed. Please sign in manually.");
+            setIsLogin(true);
+          }
+        } else {
+          setShowOTP(true);
+        }
       }
     } catch (err: any) {
       console.error("Auth error:", err);
@@ -326,7 +339,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete }) => {
                     {isLoading ? 'Wait...' : tempGoogleToken ? 'Complete Registration' : showForgot ? 'Send Link' : isLogin ? 'Enter Platform' : 'Create My Account'}
                   </button>
 
-                  {isLogin && !tempGoogleToken && (
+                  {isLogin && !tempGoogleToken && publicSettings?.enable_google_login !== false && (
                     <div className="flex flex-col items-center space-y-4">
                       <div className="flex items-center w-full">
                         <div className="flex-1 h-[1px] bg-slate-100"></div>
@@ -360,6 +373,10 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete }) => {
 
       <div className="mt-8 flex justify-center space-x-6 text-slate-400 font-bold text-xs">
         <button onClick={() => navigate('/')} className="hover:text-slate-900">Back Home</button>
+        <span>|</span>
+        <button onClick={() => navigate('/terms')} className="hover:text-slate-900">Terms</button>
+        <span>|</span>
+        <button onClick={() => navigate('/privacy')} className="hover:text-slate-900">Privacy</button>
         <span>|</span>
         <a href="#" className="hover:text-slate-900">Support</a>
       </div>

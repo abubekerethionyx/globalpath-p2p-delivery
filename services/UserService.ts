@@ -17,6 +17,7 @@ export const transformUserData = (userData: any): User => {
         earnings: userData.earnings,
         walletBalance: userData.wallet_balance ?? 0, // Default to 0 if undefined
         currentPlanId: userData.current_plan_id,
+        isSubscriptionActive: userData.is_subscription_active,
         itemsCountThisMonth: userData.items_count_this_month ?? 0, // Default to 0 if undefined
         verificationStatus: userData.verification_status,
         idType: userData.id_type,

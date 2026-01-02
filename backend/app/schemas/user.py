@@ -7,6 +7,7 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
     role = EnumField(UserRole, by_value=True)
     verification_status = EnumField(VerificationStatus, by_value=True)
     name = ma.String(dump_only=True)
+    is_subscription_active = ma.Boolean(dump_only=True)
     
     class Meta:
         model = User

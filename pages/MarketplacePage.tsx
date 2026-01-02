@@ -1,6 +1,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { ShipmentItem, User, ItemStatus, VerificationStatus, SubscriptionPlan, SubscriptionTransaction } from '../types';
+import { PublicSettings } from '../services/AdminService';
 import { SubscriptionService } from '../services/SubscriptionService';
 import { COUNTRIES, CATEGORIES } from '../constants';
 import ShipmentCard from '../components/ShipmentCard';
@@ -9,9 +10,10 @@ import { useNavigate } from 'react-router-dom';
 
 interface MarketplacePageProps {
   user: User;
+  publicSettings?: PublicSettings;
 }
 
-const MarketplacePage: React.FC<MarketplacePageProps> = ({ user }) => {
+const MarketplacePage: React.FC<MarketplacePageProps> = ({ user, publicSettings }) => {
   const navigate = useNavigate();
   const [items, setItems] = useState<ShipmentItem[]>([]);
   const [myRequestsStatus, setMyRequestsStatus] = useState<Record<string, string>>({});
@@ -61,7 +63,7 @@ const MarketplacePage: React.FC<MarketplacePageProps> = ({ user }) => {
   const isVerified = user.verificationStatus === VerificationStatus.VERIFIED;
   const isPending = user.verificationStatus === VerificationStatus.PENDING;
   const isUnverified = user.verificationStatus === VerificationStatus.UNVERIFIED;
-  const hasPaid = user.currentPlanId !== 's-free' && user.currentPlanId !== 'p-free';
+  const hasPaid = user.isSubscriptionActive;
 
   const currentPlan = plans.find(p => p.id === user.currentPlanId);
   const planLimit = currentPlan ? currentPlan.limit : 0;
@@ -234,6 +236,9 @@ const MarketplacePage: React.FC<MarketplacePageProps> = ({ user }) => {
                   onPick={handlePickAttempt}
                   requestStatus={myRequestsStatus[item.id]}
                   currentUserId={user.id}
+                  isSubscriptionActive={user.isSubscriptionActive}
+                  requireSubscriptionForDetails={publicSettings?.require_subscription_for_details}
+                  requireSubscriptionForChat={publicSettings?.require_subscription_for_chat}
                 />
                 {(!hasPaid) && (
                   <div className="absolute top-14 right-4 bg-slate-900/10 p-2 rounded-xl backdrop-blur-md border border-white/20 z-10">
