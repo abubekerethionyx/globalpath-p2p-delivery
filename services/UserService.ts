@@ -72,19 +72,9 @@ export const UserService = {
         return transformUserData(response.data);
     },
 
-    submitVerification: async (userId: string, formData: FormData): Promise<User> => {
-        const response = await api.post(`/users/${userId}/verify`, formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        });
-        const transformedUser = transformUserData(response.data);
-        // Update local storage if current user is updated
-        const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-        if (currentUser.id === userId) {
-            localStorage.setItem('user', JSON.stringify(transformedUser));
-        }
-        return transformedUser;
+    verifyUser: async (userId: string): Promise<User> => {
+        const response = await api.post(`/users/${userId}/verify`);
+        return transformUserData(response.data);
     },
 
     updateRegistration: async (userId: string, formData: FormData): Promise<User> => {

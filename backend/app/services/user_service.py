@@ -146,9 +146,25 @@ def authenticate_user(email, password):
 def update_user(user_id, data):
     user = User.query.get(user_id)
     if user:
+        # Date fields that need careful handling
+        date_fields = ['passport_expiry', 'date_of_birth']
         for key, value in data.items():
             if key == 'password':
                 user.set_password(value)
+            elif key in date_fields:
+                if value and isinstance(value, str) and value.strip():
+                    try:
+                        # Attempt to parse common formats
+                        if 'T' in value:
+                            setattr(user, key, datetime.fromisoformat(value.replace('Z', '+00:00')))
+                        else:
+                            setattr(user, key, datetime.strptime(value, '%Y-%m-%d'))
+                    except (ValueError, TypeError):
+                        setattr(user, key, None)
+                elif not value:
+                    setattr(user, key, None)
+                else:
+                    setattr(user, key, value)
             else:
                 setattr(user, key, value)
         db.session.commit()

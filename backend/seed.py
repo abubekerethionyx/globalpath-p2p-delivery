@@ -86,6 +86,26 @@ def seed_data():
         db.session.add_all([SupportedCountry(name=name) for name in initial_countries])
         db.session.commit()
 
+        print("Creating Default System Settings...")
+        from app.models.setting import GlobalSetting
+        from app.constants import (
+            SETTING_KYC_VERIFICATION_BONUS, SETTING_REGISTRATION_BONUS,
+            SETTING_ENABLE_FREE_PROMO_PICKER, SETTING_ENABLE_FREE_PROMO_SENDER,
+            SETTING_FREE_PROMO_PICKER_PLAN_ID, SETTING_FREE_PROMO_SENDER_PLAN_ID,
+            DEFAULT_PICKER_PLAN_ID, DEFAULT_SENDER_PLAN_ID
+        )
+        default_settings = [
+            GlobalSetting(key=SETTING_KYC_VERIFICATION_BONUS, value="50", description="Coins awarded upon successful KYC verification"),
+            GlobalSetting(key=SETTING_REGISTRATION_BONUS, value="10", description="Coins awarded to new users upon registration"),
+            GlobalSetting(key=SETTING_ENABLE_FREE_PROMO_PICKER, value="true", description="Enable free welcome plan for new Pickers"),
+            GlobalSetting(key=SETTING_ENABLE_FREE_PROMO_SENDER, value="true", description="Enable free welcome plan for new Senders"),
+            GlobalSetting(key=SETTING_FREE_PROMO_PICKER_PLAN_ID, value=DEFAULT_PICKER_PLAN_ID, description="Promotional plan for Pickers"),
+            GlobalSetting(key=SETTING_FREE_PROMO_SENDER_PLAN_ID, value=DEFAULT_SENDER_PLAN_ID, description="Promotional plan for Senders"),
+            GlobalSetting(key='require_otp_for_signup', value="true", description="Require email OTP verification for new accounts")
+        ]
+        db.session.add_all(default_settings)
+        db.session.commit()
+
         print("Seeding complete!")
         print(f"Admin Email: {admin.email}")
         print(f"Admin Password: admin123")

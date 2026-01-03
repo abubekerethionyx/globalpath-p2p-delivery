@@ -183,11 +183,14 @@ def update_registration(user_id):
         if frontend_key in form_data:
             val = form_data[frontend_key]
             # Handle Date Fields
-            if backend_key in ['passport_expiry', 'date_of_birth'] and val:
-                try:
-                    data[backend_key] = datetime.strptime(val, '%Y-%m-%d')
-                except ValueError:
-                    pass
+            if backend_key in ['passport_expiry', 'date_of_birth']:
+                if val and val.strip():
+                    try:
+                        data[backend_key] = datetime.strptime(val, '%Y-%m-%d')
+                    except ValueError:
+                        data[backend_key] = None
+                else:
+                    data[backend_key] = None
             else:
                 data[backend_key] = val
     
@@ -228,36 +231,48 @@ def update_registration(user_id):
 @jwt_required()
 def verify_user(user_id):
     current_user_id = get_jwt_identity()
-    current_user = user_service.get_user(current_user_id)
+    current_admin = user_service.get_user(current_user_id)
     
-    if not current_user or current_user.role != UserRole.ADMIN:
+    if not current_admin or current_admin.role != UserRole.ADMIN:
         return jsonify({'message': 'Unauthorized. Admin role required.'}), 403
 
     user = user_service.get_user(user_id)
     if not user:
         return jsonify({'message': 'User not found'}), 404
 
+    # Check if already verified to prevent multiple rewards
+    if user.verification_status == VerificationStatus.VERIFIED:
+        return jsonify(user_schema.dump(user)), 200
+
     # Admin Action: Approve User
-    updated_user = user_service.update_user(user_id, {'verification_status': VerificationStatus.VERIFIED})
+    user.verification_status = VerificationStatus.VERIFIED
+    db.session.commit()
     
     # Award technical credits for KYC fulfillment from settings
-    from app.services.user_service import reward_user_coins
     from app.models.setting import GlobalSetting
     from app.constants import SETTING_KYC_VERIFICATION_BONUS
-    kyc_bonus = int(GlobalSetting.get_value(SETTING_KYC_VERIFICATION_BONUS, default=50))
-    reward_user_coins(user_id, kyc_bonus, "KYC Fulfillment Bonus")
+    
+    # Use config value or default
+    kyc_bonus_val = GlobalSetting.get_value(SETTING_KYC_VERIFICATION_BONUS, default="50")
+    try:
+        kyc_bonus = int(kyc_bonus_val)
+    except (ValueError, TypeError):
+        kyc_bonus = 50
+
+    if kyc_bonus > 0:
+        user_service.reward_user_coins(user_id, kyc_bonus, "KYC Fulfillment Bonus")
 
     # Notify User
     from app.models.notification import create_notification
     create_notification(
         user_id=user_id,
         title="Identity Verified",
-        message="Your protocol verification is complete. You now have full access to node fulfillment.",
+        message=f"Your protocol verification is complete. You have been awarded {kyc_bonus} λ bonus credits.",
         type='SUCCESS',
         link='/profile'
     )
     
-    return jsonify(user_schema.dump(updated_user)), 200
+    return jsonify(user_schema.dump(user)), 200
 @bp.route('/<user_id>/avatar', methods=['POST'])
 @jwt_required()
 def update_avatar(user_id):

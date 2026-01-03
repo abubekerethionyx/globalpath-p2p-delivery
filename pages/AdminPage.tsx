@@ -47,7 +47,11 @@ const AdminPage: React.FC = () => {
 
   const handleVerify = async (userId: string, status: VerificationStatus) => {
     try {
-      await UserService.updateUser(userId, { verification_status: status } as any);
+      if (status === VerificationStatus.VERIFIED) {
+        await UserService.verifyUser(userId);
+      } else {
+        await UserService.updateUser(userId, { verification_status: status } as any);
+      }
       refreshData();
     } catch (error) {
       console.error("Failed to update verification status", error);
