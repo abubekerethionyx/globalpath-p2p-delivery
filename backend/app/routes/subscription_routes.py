@@ -60,8 +60,26 @@ def get_all_transactions():
     if not current_user or current_user.role != UserRole.ADMIN:
         return jsonify({'error': 'Admin access required'}), 403
 
-    transactions = subscription_service.get_all_transactions()
-    return jsonify(transactions_schema.dump(transactions))
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
+    status = request.args.get('status')
+    payment_method = request.args.get('payment_method')
+    search = request.args.get('search')
+
+    pagination = subscription_service.get_all_transactions(
+        page=page, 
+        per_page=per_page, 
+        status=status, 
+        payment_method=payment_method, 
+        search=search
+    )
+    
+    return jsonify({
+        'transactions': transactions_schema.dump(pagination.items),
+        'total': pagination.total,
+        'pages': pagination.pages,
+        'current_page': pagination.page
+    })
 
 @bp.route('/transactions/<transaction_id>', methods=['PATCH'])
 @jwt_required()

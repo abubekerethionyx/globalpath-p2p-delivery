@@ -1,8 +1,36 @@
 from app.models.shipment import ShipmentItem
 from app.extensions import db
 
-def get_all_shipments():
-    return ShipmentItem.query.order_by(ShipmentItem.ranking_score.desc(), ShipmentItem.created_at.desc()).all()
+def get_all_shipments(page=1, per_page=10, status=None, pickup_country=None, dest_country=None, category=None, search=None):
+    from app.models.enums import ItemStatus
+    query = ShipmentItem.query
+    
+    if status and status != 'ALL':
+        try:
+            query = query.filter_by(status=ItemStatus(status))
+        except ValueError:
+            pass
+            
+    if pickup_country and pickup_country != 'ALL':
+        query = query.filter_by(pickup_country=pickup_country)
+        
+    if dest_country and dest_country != 'ALL':
+        query = query.filter_by(dest_country=dest_country)
+        
+    if category and category != 'ALL':
+        query = query.filter_by(category=category)
+        
+    if search:
+        search_filter = f"%{search}%"
+        query = query.filter(
+            (ShipmentItem.description.ilike(search_filter)) |
+            (ShipmentItem.receiver_name.ilike(search_filter)) |
+            (ShipmentItem.address.ilike(search_filter))
+        )
+        
+    query = query.order_by(ShipmentItem.ranking_score.desc(), ShipmentItem.created_at.desc())
+    
+    return query.paginate(page=page, per_page=per_page, error_out=False)
 
 def get_shipment(shipment_id):
     return ShipmentItem.query.get(shipment_id)

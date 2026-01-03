@@ -33,8 +33,25 @@ def delete_plan(plan_id):
     return True
 
 # Transactions
-def get_all_transactions():
-    return SubscriptionTransaction.query.order_by(SubscriptionTransaction.timestamp.desc()).all()
+def get_all_transactions(page=1, per_page=20, status=None, payment_method=None, search=None):
+    query = SubscriptionTransaction.query
+    
+    if status and status != 'ALL':
+        query = query.filter_by(status=status)
+    if payment_method and payment_method != 'ALL':
+        query = query.filter_by(payment_method=payment_method)
+    if search:
+        from app.models.user import User
+        query = query.outerjoin(User, SubscriptionTransaction.user_id == User.id).filter(
+            db.or_(
+                User.first_name.ilike(f'%{search}%'),
+                User.last_name.ilike(f'%{search}%'),
+                User.email.ilike(f'%{search}%'),
+                SubscriptionTransaction.transaction_reference.ilike(f'%{search}%')
+            )
+        )
+        
+    return query.order_by(SubscriptionTransaction.timestamp.desc()).paginate(page=page, per_page=per_page)
 
 def get_user_transactions(user_id):
     return SubscriptionTransaction.query.filter_by(user_id=user_id).order_by(SubscriptionTransaction.timestamp.desc()).all()

@@ -7,8 +7,13 @@ export const SupportService = {
         return response.data;
     },
 
-    async getTickets(): Promise<SupportTicket[]> {
-        const response = await api.get('/support/tickets');
+    async getTickets(params?: { page?: number; per_page?: number; status?: string; category?: string; search?: string }): Promise<{
+        tickets: SupportTicket[];
+        total: number;
+        pages: number;
+        current_page: number;
+    }> {
+        const response = await api.get('/support/tickets', { params });
         return response.data;
     },
 

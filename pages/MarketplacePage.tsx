@@ -29,8 +29,8 @@ const MarketplacePage: React.FC<MarketplacePageProps> = ({ user, publicSettings 
 
   const fetchItems = async () => {
     try {
-      const allItems = await ShipmentService.getAllShipments();
-      setItems(allItems);
+      const { shipments } = await ShipmentService.getAllShipments({ per_page: 500 });
+      setItems(shipments);
       setLoading(false);
     } catch (e) {
       console.error("Failed to fetch shipments", e);

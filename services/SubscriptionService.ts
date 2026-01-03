@@ -26,8 +26,13 @@ export const SubscriptionService = {
         return response.data;
     },
 
-    getAllTransactions: async (): Promise<SubscriptionTransaction[]> => {
-        const response = await api.get('/subscriptions/transactions');
+    getAllTransactions: async (params?: { page?: number; per_page?: number; status?: string; payment_method?: string; search?: string }): Promise<{
+        transactions: SubscriptionTransaction[];
+        total: number;
+        pages: number;
+        current_page: number;
+    }> => {
+        const response = await api.get('/subscriptions/transactions', { params });
         return response.data;
     },
 

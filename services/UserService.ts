@@ -62,9 +62,17 @@ export const UserService = {
         return transformedUser;
     },
 
-    getAllUsers: async (): Promise<User[]> => {
-        const response = await api.get('/users/');
-        return response.data.map(transformUserData);
+    getAllUsers: async (params?: { page?: number, per_page?: number, role?: string, status?: string, search?: string }): Promise<{ users: User[], total: number, pages: number, current_page: number }> => {
+        const response = await api.get('/users/', { params });
+        // Handle both old and new response formats for backward compatibility if needed, 
+        // but here we expect the new format.
+        const data = response.data.users ? response.data : { users: response.data, total: response.data.length, pages: 1, current_page: 1 };
+        return {
+            users: data.users.map(transformUserData),
+            total: data.total,
+            pages: data.pages,
+            current_page: data.current_page
+        };
     },
 
     getUserById: async (userId: string): Promise<User> => {

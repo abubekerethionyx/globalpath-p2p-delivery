@@ -79,8 +79,35 @@ def assign_default_subscription(user):
     print(f"Failing to assign default subscription: No valid plan found for {'Picker' if is_picker else 'Sender'}.")
     return False
 
-def get_all_users():
-    return User.query.all()
+def get_all_users(page=1, per_page=10, role=None, status=None, search=None):
+    from app.models.enums import UserRole, VerificationStatus
+    
+    query = User.query
+    
+    if role and role != 'ALL':
+        try:
+            query = query.filter_by(role=UserRole(role))
+        except ValueError:
+            pass
+            
+    if status and status != 'ALL':
+        try:
+            query = query.filter_by(verification_status=VerificationStatus(status))
+        except ValueError:
+            pass
+            
+    if search:
+        search_filter = f"%{search}%"
+        query = query.filter(
+            (User.first_name.ilike(search_filter)) |
+            (User.last_name.ilike(search_filter)) |
+            (User.email.ilike(search_filter))
+        )
+    
+    # Order by newest first
+    query = query.order_by(User.created_at.desc())
+    
+    return query.paginate(page=page, per_page=per_page, error_out=False)
 
 def get_user(user_id):
     return User.query.get(user_id)

@@ -79,12 +79,52 @@ def get_tickets():
     user_id = get_jwt_identity()
     user = User.query.get(user_id)
     
-    if user.role == UserRole.ADMIN:
-        tickets = SupportTicket.query.order_by(SupportTicket.created_at.desc()).all()
-    else:
-        tickets = SupportTicket.query.filter_by(user_id=user_id).order_by(SupportTicket.created_at.desc()).all()
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
+    status = request.args.get('status')
+    category = request.args.get('category')
+    search = request.args.get('search')
+
+    query = SupportTicket.query
+
+    if user.role != UserRole.ADMIN:
+        query = query.filter_by(user_id=user_id)
     
-    return jsonify([t.to_dict() for t in tickets]), 200
+    if status and status != 'ALL':
+        query = query.filter(SupportTicket.status == TicketStatus[status])
+    if category and category != 'ALL':
+        query = query.filter(SupportTicket.category == category)
+    if search:
+        query = query.outerjoin(User, SupportTicket.user_id == User.id).filter(
+            db.or_(
+                SupportTicket.subject.ilike(f'%{search}%'),
+                SupportTicket.description.ilike(f'%{search}%'),
+                User.first_name.ilike(f'%{search}%'),
+                User.last_name.ilike(f'%{search}%')
+            )
+        )
+
+    # Custom ordering: OPEN(1), PENDING(2) first, then RESOLVED(3), CLOSED(4)
+    # Then FIFO within status (created_at ASC)
+    status_order = db.case(
+        {
+            TicketStatus.OPEN.value: 1,
+            TicketStatus.PENDING.value: 2,
+            TicketStatus.RESOLVED.value: 3,
+            TicketStatus.CLOSED.value: 4
+        },
+        value=SupportTicket.status,
+        else_=5
+    )
+    
+    pagination = query.order_by(status_order, SupportTicket.created_at.asc()).paginate(page=page, per_page=per_page)
+    
+    return jsonify({
+        'tickets': [t.to_dict() for t in pagination.items],
+        'total': pagination.total,
+        'pages': pagination.pages,
+        'current_page': pagination.page
+    }), 200
 
 @bp.route('/tickets/<ticket_id>', methods=['GET'])
 @jwt_required()

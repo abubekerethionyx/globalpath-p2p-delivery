@@ -44,8 +44,8 @@ const SenderDashboard: React.FC<SenderDashboardProps> = ({ user }) => {
 
     const fetchItems = async () => {
         try {
-            const allItems = await ShipmentService.getAllShipments();
-            const myItems = allItems.filter(item => item.senderId === user.id);
+            const { shipments } = await ShipmentService.getAllShipments({ per_page: 500 });
+            const myItems = shipments.filter(item => item.senderId === user.id);
             setItems(myItems);
 
             // Fetch requests for POSTED items

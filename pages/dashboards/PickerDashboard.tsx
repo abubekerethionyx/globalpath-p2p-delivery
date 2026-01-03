@@ -22,11 +22,11 @@ const PickerDashboard: React.FC<PickerDashboardProps> = ({ user }) => {
 
     const fetchItems = async () => {
         try {
-            const [allItems, myReqs] = await Promise.all([
-                ShipmentService.getAllShipments(),
+            const [{ shipments }, myReqs] = await Promise.all([
+                ShipmentService.getAllShipments({ per_page: 500 }),
                 ShipmentService.getMyRequests()
             ]);
-            const myItems = allItems.filter(item => item.partnerId === user.id);
+            const myItems = shipments.filter(item => item.partnerId === user.id);
             setItems(myItems);
             setRequests(myReqs);
             setLoading(false);

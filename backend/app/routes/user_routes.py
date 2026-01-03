@@ -91,8 +91,20 @@ def google_login():
 @bp.route('/', methods=['GET'])
 @jwt_required()
 def get_users():
-    users = user_service.get_all_users()
-    return jsonify(users_schema.dump(users))
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
+    role = request.args.get('role')
+    status = request.args.get('status')
+    search = request.args.get('search')
+    
+    pagination = user_service.get_all_users(page, per_page, role, status, search)
+    
+    return jsonify({
+        'users': users_schema.dump(pagination.items),
+        'total': pagination.total,
+        'pages': pagination.pages,
+        'current_page': pagination.page
+    })
 
 @bp.route('/<user_id>', methods=['GET'])
 @jwt_required()

@@ -31,9 +31,15 @@ const transformShipmentData = (data: any): ShipmentItem => {
 
 
 export const ShipmentService = {
-    getAllShipments: async (): Promise<ShipmentItem[]> => {
-        const response = await api.get('/shipments/');
-        return response.data.map(transformShipmentData);
+    getAllShipments: async (params?: { page?: number, per_page?: number, status?: string, pickup_country?: string, dest_country?: string, category?: string, search?: string }): Promise<{ shipments: ShipmentItem[], total: number, pages: number, current_page: number }> => {
+        const response = await api.get('/shipments/', { params });
+        const data = response.data.shipments ? response.data : { shipments: response.data, total: response.data.length, pages: 1, current_page: 1 };
+        return {
+            shipments: data.shipments.map(transformShipmentData),
+            total: data.total,
+            pages: data.pages,
+            current_page: data.current_page
+        };
     },
 
     getShipment: async (id: string): Promise<ShipmentItem> => {

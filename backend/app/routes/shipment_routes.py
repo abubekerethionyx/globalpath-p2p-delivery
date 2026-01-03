@@ -19,8 +19,22 @@ def get_active_countries():
 @bp.route('/', methods=['GET'])
 @jwt_required()
 def get_shipments():
-    shipments = shipment_service.get_all_shipments()
-    return jsonify(shipments_schema.dump(shipments))
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
+    status = request.args.get('status')
+    pickup_country = request.args.get('pickup_country')
+    dest_country = request.args.get('dest_country')
+    category = request.args.get('category')
+    search = request.args.get('search')
+    
+    pagination = shipment_service.get_all_shipments(page, per_page, status, pickup_country, dest_country, category, search)
+    
+    return jsonify({
+        'shipments': shipments_schema.dump(pagination.items),
+        'total': pagination.total,
+        'pages': pagination.pages,
+        'current_page': pagination.page
+    })
 
 @bp.route('/<shipment_id>', methods=['GET'])
 @jwt_required()

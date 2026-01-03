@@ -4,14 +4,27 @@ import { SubscriptionPlan, UserRole } from '../../types';
 import { SubscriptionService } from '../../services/SubscriptionService';
 
 interface AdminPackagesTabProps {
-  plans: SubscriptionPlan[];
   onRefresh?: () => void;
 }
 
-const AdminPackagesTab: React.FC<AdminPackagesTabProps> = ({ plans, onRefresh }) => {
+const AdminPackagesTab: React.FC<AdminPackagesTabProps> = ({ onRefresh }) => {
+  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [editingPlan, setEditingPlan] = useState<SubscriptionPlan | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [activeRole, setActiveRole] = useState<UserRole>(UserRole.SENDER);
+
+  const fetchPlans = async () => {
+    try {
+      const data = await SubscriptionService.getPlans();
+      setPlans(data);
+    } catch (error) {
+      console.error("Failed to fetch plans", error);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchPlans();
+  }, []);
   const [formData, setFormData] = useState<Partial<SubscriptionPlan>>({
     name: '',
     price: 0,
@@ -53,6 +66,7 @@ const AdminPackagesTab: React.FC<AdminPackagesTabProps> = ({ plans, onRefresh })
     if (!window.confirm("Broadcast deletion signal to all nodes? This tier will be decommissioned.")) return;
     try {
       await SubscriptionService.deletePlan(id);
+      fetchPlans();
       if (onRefresh) onRefresh();
     } catch (error) {
       console.error("Failed to delete plan", error);
@@ -69,6 +83,7 @@ const AdminPackagesTab: React.FC<AdminPackagesTabProps> = ({ plans, onRefresh })
         await SubscriptionService.createPlan(formData);
       }
       setShowModal(false);
+      fetchPlans();
       if (onRefresh) onRefresh();
     } catch (error) {
       console.error("Failed to save plan", error);

@@ -17,12 +17,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [allUsers, allShipments] = await Promise.all([
-                    UserService.getAllUsers(),
-                    ShipmentService.getAllShipments()
+                const [userResponse, shipmentResponse] = await Promise.all([
+                    UserService.getAllUsers({ per_page: 500 }),
+                    ShipmentService.getAllShipments({ per_page: 500 })
                 ]);
-                setUsers(allUsers);
-                setShipments(allShipments);
+                setUsers(userResponse.users);
+                setShipments(shipmentResponse.shipments);
                 setLoading(false);
             } catch (error) {
                 console.error("Failed to fetch admin data", error);

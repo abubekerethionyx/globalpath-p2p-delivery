@@ -7,10 +7,11 @@ from .notification_routes import bp as notification_bp
 from .admin_routes import bp as admin_bp
 
 def register_routes(app):
-    app.register_blueprint(user_bp)
-    app.register_blueprint(subscription_bp)
-    app.register_blueprint(shipment_bp)
-    app.register_blueprint(message_bp)
-    app.register_blueprint(support_bp)
-    app.register_blueprint(notification_bp)
-    app.register_blueprint(admin_bp)
+    # Register blueprints with v1 API versioning
+    app.register_blueprint(user_bp, url_prefix='/api/v1/users')
+    app.register_blueprint(subscription_bp, url_prefix='/api/v1/subscriptions')
+    app.register_blueprint(shipment_bp, url_prefix='/api/v1/shipments')
+    app.register_blueprint(message_bp, url_prefix='/api/v1/messages')
+    app.register_blueprint(support_bp, url_prefix='/api/v1/support')
+    app.register_blueprint(notification_bp, url_prefix='/api/v1/notifications')
+    app.register_blueprint(admin_bp, url_prefix='/api/v1/admin')

@@ -1,29 +1,40 @@
 
-import React, { useState, useEffect } from 'react';
-import { SubscriptionTransaction, User } from '../../types';
+import React, { useState, useEffect, useCallback } from 'react';
 import { SubscriptionService } from '../../services/SubscriptionService';
-import { UserService } from '../../services/UserService';
-import { BASE_URL } from '../../config';
+import { User, SubscriptionTransaction } from '../../types';
+import { debounce } from 'lodash';
 
 interface AdminBillingTabProps {
-  users?: User[];
+  users?: User[]; // Optional prop if we want to pass users
 }
 
 const AdminBillingTab: React.FC<AdminBillingTabProps> = ({ users: propsUsers }) => {
   const [transactions, setTransactions] = useState<SubscriptionTransaction[]>([]);
   const [loading, setLoading] = useState(true);
-  const [allUsers, setAllUsers] = useState<User[]>(propsUsers || []);
-  const [verifyingId, setVerifyingId] = useState<string | null>(null);
+  const [modalImage, setModalImage] = useState<string | null>(null);
 
-  const fetchData = async () => {
+  // Pagination & Filters
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [filterStatus, setFilterStatus] = useState<string>('ALL');
+  const [filterMethod, setFilterMethod] = useState<string>('ALL');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const fetchTransactions = async (page: number, status: string, method: string, search: string) => {
     setLoading(true);
     try {
-      const [txs, fetchedUsers] = await Promise.all([
-        SubscriptionService.getAllTransactions(),
-        propsUsers ? Promise.resolve(propsUsers) : UserService.getAllUsers()
-      ]);
-      setTransactions(txs);
-      if (!propsUsers) setAllUsers(fetchedUsers);
+      const response = await SubscriptionService.getAllTransactions({
+        page,
+        per_page: 20,
+        status: status === 'ALL' ? undefined : status,
+        payment_method: method === 'ALL' ? undefined : method,
+        search
+      });
+      setTransactions(response.transactions);
+      setTotalPages(response.pages);
+      setTotalRecords(response.total);
+      setCurrentPage(response.current_page);
     } catch (error) {
       console.error("Failed to fetch billing data", error);
     } finally {
@@ -31,195 +42,255 @@ const AdminBillingTab: React.FC<AdminBillingTabProps> = ({ users: propsUsers }) 
     }
   };
 
-  useEffect(() => {
-    if (propsUsers) setAllUsers(propsUsers);
-  }, [propsUsers]);
+  const debouncedFetch = useCallback(
+    debounce((page, status, method, search) => {
+      fetchTransactions(page, status, method, search);
+    }, 500),
+    []
+  );
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    debouncedFetch(currentPage, filterStatus, filterMethod, searchTerm);
+  }, [currentPage, filterStatus, filterMethod, searchTerm, debouncedFetch]);
 
-  const handleVerifyPayment = async (txId: string) => {
-    setVerifyingId(txId);
+  const handleUpdateStatus = async (txId: string, status: string) => {
     try {
-      await SubscriptionService.updateTransactionStatus(txId, 'COMPLETED');
-      await fetchData();
-      alert("Payment verified and subscription activated!");
+      if (status === 'COMPLETED' && !window.confirm("Verify: Confirm successful receipt of funds? This will activate the user's subscription.")) return;
+      if (status === 'REJECTED' && !window.confirm("Verify: Reject this transaction? This will invalidate the payment attempt.")) return;
+
+      await SubscriptionService.updateTransactionStatus(txId, status);
+      fetchTransactions(currentPage, filterStatus, filterMethod, searchTerm);
     } catch (error) {
-      console.error("Failed to verify payment", error);
-      alert("Verification failed.");
-    } finally {
-      setVerifyingId(null);
+      alert("Failed to update status");
     }
   };
 
-  const getUserName = (userId: string | undefined) => {
-    if (!userId) return 'Anonymous';
-    const user = allUsers.find(u => u.id === userId);
-    return user ? `${user.firstName} ${user.lastName}` : `User (${userId.slice(0, 8)})`;
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    // Could add toast here
   };
 
-  if (loading) return <div className="text-center py-20 animate-pulse text-slate-400 font-bold">Loading Financial Records...</div>;
-
-  const pendingCount = transactions.filter(t => t.status === 'PENDING').length;
-  const totalRevenue = transactions
-    .filter(t => t.status === 'COMPLETED')
-    .reduce((acc, t) => acc + t.amount, 0);
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'COMPLETED': return 'bg-green-100 text-[#009E49] border-green-200';
+      case 'PENDING': return 'bg-amber-100 text-amber-600 border-amber-200';
+      case 'REJECTED': return 'bg-red-100 text-red-600 border-red-200';
+      default: return 'bg-slate-100 text-slate-500 border-slate-200';
+    }
+  };
 
   return (
-    <div className="space-y-8">
-      {/* Analytics Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-xl shadow-slate-200 group">
-          <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Total Verified Revenue</p>
-          <p className="text-4xl font-black text-[#009E49] mt-2">
-            {totalRevenue.toLocaleString()} <span className="text-sm font-bold text-slate-500 uppercase">ETB</span>
-          </p>
+    <div className="space-y-6 animate-in fade-in duration-500">
+      {/* Stats Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm">
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Total Volume</p>
+          <p className="text-2xl font-black text-slate-900 mt-1">{totalRecords} <span className="text-xs font-bold text-slate-400">TXS</span></p>
         </div>
-        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200">
-          <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Pending Approvals</p>
-          <p className="text-4xl font-black text-amber-500 mt-2">{pendingCount}</p>
+        {/* Add more stats if needed by aggregating locally or fetching summary endpoint */}
+      </div>
+
+      {/* Controls */}
+      <div className="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col lg:flex-row gap-4 items-center justify-between">
+        <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto">
+          <div className="relative flex-1 min-w-[300px]">
+            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            <input
+              type="text"
+              placeholder="Search ref, user, or email..."
+              value={searchTerm}
+              onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+              className="w-full pl-10 pr-4 py-3 bg-slate-50 border-none rounded-xl text-sm font-bold focus:ring-2 focus:ring-indigo-600"
+            />
+          </div>
+          <select
+            value={filterStatus}
+            onChange={(e) => { setFilterStatus(e.target.value); setCurrentPage(1); }}
+            className="px-4 py-3 bg-slate-50 border-none rounded-xl text-xs font-black uppercase tracking-widest text-slate-900 focus:ring-2 focus:ring-indigo-600"
+          >
+            <option value="ALL">All Status</option>
+            <option value="PENDING">Pending</option>
+            <option value="COMPLETED">Completed</option>
+            <option value="REJECTED">Rejected</option>
+          </select>
+          <select
+            value={filterMethod}
+            onChange={(e) => { setFilterMethod(e.target.value); setCurrentPage(1); }}
+            className="px-4 py-3 bg-slate-50 border-none rounded-xl text-xs font-black uppercase tracking-widest text-slate-900 focus:ring-2 focus:ring-indigo-600"
+          >
+            <option value="ALL">All Methods</option>
+            <option value="telebirr">Telebirr</option>
+            <option value="cbe">CBE Transfer</option>
+            <option value="boa">BOA Transfer</option>
+            <option value="chapa">Chapa Gateway</option>
+            <option value="coins">System Credits</option>
+          </select>
         </div>
-        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200">
-          <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Total Transactions</p>
-          <p className="text-4xl font-black text-slate-900 mt-2">{transactions.length}</p>
+        <div className="flex items-center gap-2">
+          <button onClick={() => fetchTransactions(currentPage, filterStatus, filterMethod, searchTerm)} className="p-2 hover:bg-slate-100 rounded-lg text-slate-400">
+            <svg className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357-2H15" /></svg>
+          </button>
         </div>
       </div>
 
-      <div className="bg-white rounded-[3rem] border border-slate-200 shadow-xl overflow-hidden">
-        <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-          <h3 className="text-xl font-black text-slate-900">Subscription History</h3>
-          <button onClick={fetchData} className="text-xs font-black text-indigo-600 uppercase tracking-widest hover:text-indigo-800 transition">Refresh List</button>
-        </div>
-
+      <div className="bg-white rounded-[2.5rem] border border-slate-200 overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="bg-white text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">
+            <thead className="bg-white border-b border-slate-100 text-[10px] uppercase font-black text-slate-400">
               <tr>
-                <th className="px-8 py-6">User & Payment</th>
-                <th className="px-8 py-6">Ref & Receipt</th>
-                <th className="px-8 py-6">Date</th>
-                <th className="px-8 py-6 text-right">Amount</th>
-                <th className="px-8 py-6 text-center">Actions</th>
+                <th className="px-8 py-6">Transaction Ref</th>
+                <th className="px-8 py-6">User Identity</th>
+                <th className="px-8 py-6">Financials</th>
+                <th className="px-8 py-6">Method & Proof</th>
+                <th className="px-8 py-6">Status & Validity</th>
+                <th className="px-8 py-6 text-center">Protocol Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 italic-none">
-              {transactions.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-8 py-20 text-center">
-                    <p className="text-slate-300 font-bold uppercase tracking-widest text-sm">No transactions found</p>
-                  </td>
-                </tr>
+              {loading && transactions.length === 0 ? (
+                <tr><td colSpan={6} className="px-8 py-20 text-center animate-pulse text-indigo-600 font-bold uppercase tracking-widest text-sm">Syncing Ledger...</td></tr>
+              ) : transactions.length === 0 ? (
+                <tr><td colSpan={6} className="px-8 py-20 text-center text-slate-300 font-bold uppercase tracking-widest text-sm">No transaction records found</td></tr>
               ) : (
-                transactions.map((tx) => {
-                  const receiptUrl = tx.receipt_url;
-                  const ref = tx.transaction_reference;
-                  const date = new Date(tx.timestamp);
-                  const endDate = tx.end_date ? new Date(tx.end_date) : null;
-
-                  return (
-                    <tr key={tx.id} className="hover:bg-slate-50/50 transition duration-200">
-                      <td className="px-8 py-6">
+                transactions.map((tx) => (
+                  <tr key={tx.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-8 py-6">
+                      <div className="flex flex-col gap-1 cursor-pointer group" onClick={() => copyToClipboard(tx.transaction_reference)}>
+                        <span className="text-xs font-mono font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">{tx.transaction_reference}</span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{new Date(tx.timestamp).toLocaleDateString()}</span>
+                      </div>
+                    </td>
+                    <td className="px-8 py-6">
+                      {/* If we have user info populated by API join later, great. For now, assuming tx might have user_id and we rely on propsUsers lookup or minimal data if backend sends none. 
+                              Since backend search joins User, it implies we might want User info in TX response. 
+                              Assuming TX response from backend currently only has user_id. 
+                              However, our updated getAllTransactions filters by User fields but returns Transaction objects which usually don't nest User unless schema modified.
+                              For MVP, we display User ID if name not avail, or fetch user properly. 
+                              Wait, updated backend join does filter but doesn't explicitly modify return schema to include User details if they weren't matched in schema.
+                              Let's assume standard Schema dump.
+                           */}
+                      <div className="flex flex-col">
+                        <span className="text-xs font-black text-slate-900">UID: {tx.userId?.slice(0, 8)}</span>
+                        {/* Ideally backend should return user name/email flattened or nested */}
+                      </div>
+                    </td>
+                    <td className="px-8 py-6">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-black text-[#009E49]">{tx.amount.toLocaleString()} <span className="text-[10px] text-slate-400">ETB</span></span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Plan ID: {tx.planId}</span>
+                      </div>
+                    </td>
+                    <td className="px-8 py-6">
+                      <div className="flex items-center gap-2">
                         <div className="flex flex-col">
-                          <span className="text-sm font-black text-slate-900">{getUserName(tx.user_id)}</span>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
-                              {tx.plan_name} • {tx.payment_method}
-                            </span>
-                            {tx.is_active && (
-                              <span className="px-1.5 py-0.5 bg-green-500 text-white text-[8px] font-black rounded uppercase">Active</span>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-8 py-6">
-                        <div className="flex flex-col items-start gap-2">
-                          <span className={`text-xs font-mono font-bold px-2 py-1 rounded ${tx.payment_method === 'direct' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500'}`}>
-                            {ref || 'No Ref'}
-                          </span>
-                          {receiptUrl ? (
-                            <div className="group relative">
-                              <a
-                                href={`${BASE_URL}${receiptUrl}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-[10px] font-black text-[#009E49] uppercase tracking-widest hover:underline flex items-center gap-3 p-2 bg-green-50/50 rounded-2xl border border-green-100 transition-all hover:bg-green-50"
-                              >
-                                <div className="w-12 h-12 rounded-xl bg-slate-200 overflow-hidden flex-shrink-0 border-2 border-white shadow-sm group-hover:scale-105 transition-transform">
-                                  <img
-                                    src={`${BASE_URL}${receiptUrl}`}
-                                    alt="Receipt"
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                      (e.target as HTMLImageElement).src = 'https://via.placeholder.com/150?text=Receipt';
-                                    }}
-                                  />
-                                </div>
-                                <div className="flex flex-col">
-                                  <span className="flex items-center gap-1">
-                                    View Proof
-                                    <svg className="w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                                  </span>
-                                  <span className="text-[8px] opacity-60 font-medium">Click to examine</span>
-                                </div>
-                              </a>
-                            </div>
-                          ) : (
-                            tx.payment_method === 'direct' ? (
-                              <div className="flex items-center gap-2 p-2 bg-red-50 rounded-xl border border-red-100">
-                                <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center text-red-500">
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                                </div>
-                                <span className="text-[9px] font-black text-red-600 uppercase tracking-tighter">No Receipt</span>
-                              </div>
-                            ) : (
-                              <span className="text-[9px] font-bold text-slate-300 uppercase italic">Digital Auto-Ref</span>
-                            )
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-8 py-6">
-                        <div className="flex flex-col">
-                          <span className="text-xs font-bold text-slate-600">Issued: {date.toLocaleDateString()}</span>
-                          {endDate && (
-                            <span className="text-[10px] text-slate-400 font-medium">Expires: {endDate.toLocaleDateString()}</span>
-                          )}
-                          <span className="text-[9px] text-indigo-500 font-black uppercase mt-1">
-                            Usage: {tx.remaining_usage} Slots
+                          <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md border w-fit ${tx.paymentMethod === 'chapa' ? 'bg-indigo-50 border-indigo-100 text-indigo-700' : 'bg-slate-50 border-slate-200 text-slate-600'}`}>
+                            {tx.paymentMethod}
                           </span>
                         </div>
-                      </td>
-                      <td className="px-8 py-6 text-right">
-                        <span className="text-sm font-black text-slate-900">{tx.amount.toLocaleString()} <span className="text-[10px] text-slate-400">ETB</span></span>
-                      </td>
-                      <td className="px-8 py-6 text-center">
-                        {tx.status === 'PENDING' ? (
+                        {tx.receiptUrl && (
                           <button
-                            onClick={() => handleVerifyPayment(tx.id)}
-                            disabled={verifyingId === tx.id}
-                            className="px-4 py-2 bg-[#009E49] text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-[#007A38] shadow-lg shadow-green-100 disabled:opacity-50 transition-all hover:scale-105 active:scale-95"
+                            onClick={() => setModalImage(tx.receiptUrl!)}
+                            className="p-1.5 bg-slate-100 text-slate-500 rounded-lg hover:bg-slate-200 hover:text-slate-900 transition-colors"
+                            title="View Receipt"
                           >
-                            {verifyingId === tx.id ? 'Verifying...' : 'Verify Now'}
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                           </button>
-                        ) : tx.status === 'REJECTED' ? (
-                          <span className="inline-flex items-center px-3 py-1 bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-widest rounded-lg border border-red-100">
-                            Rejected
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center px-3 py-1 bg-green-50 text-[#009E49] text-[10px] font-black uppercase tracking-widest rounded-lg border border-green-100">
-                            <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
-                            Verified
-                          </span>
                         )}
-                      </td>
-                    </tr>
-                  );
-                })
+                      </div>
+                    </td>
+                    <td className="px-8 py-6">
+                      <div className="flex flex-col gap-1">
+                        <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border w-fit ${getStatusColor(tx.status)}`}>
+                          {tx.status}
+                        </span>
+                        {tx.isActive ? (
+                          <span className="text-[9px] font-bold text-[#009E49] flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#009E49]"></span> Active Sub
+                          </span>
+                        ) : tx.status === 'COMPLETED' ? (
+                          <span className="text-[9px] font-bold text-slate-400">Inactive/Expired</span>
+                        ) : null}
+                      </div>
+                    </td>
+                    <td className="px-8 py-6 text-center">
+                      {tx.status === 'PENDING' && (
+                        <div className="flex justify-center gap-2">
+                          <button onClick={() => handleUpdateStatus(tx.id, 'COMPLETED')} className="p-2 bg-green-100 text-green-700 rounded-xl hover:bg-green-200 transition">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
+                          </button>
+                          <button onClick={() => handleUpdateStatus(tx.id, 'REJECTED')} className="p-2 bg-red-100 text-red-700 rounded-xl hover:bg-red-200 transition">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" /></svg>
+                          </button>
+                        </div>
+                      )}
+                      {tx.status !== 'PENDING' && (
+                        <div className="relative inline-block group">
+                          <select
+                            value={tx.status}
+                            onChange={(e) => handleUpdateStatus(tx.id, e.target.value)}
+                            className="appearance-none bg-slate-50 border border-slate-200 text-slate-500 text-[9px] font-black uppercase tracking-widest py-1.5 pl-3 pr-8 rounded-lg outline-none focus:ring-2 focus:ring-indigo-600 cursor-pointer"
+                          >
+                            <option value="COMPLETED">Completed</option>
+                            <option value="REJECTED">Reject</option>
+                            <option value="PENDING">Pending</option>
+                          </select>
+                          <svg className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
         </div>
       </div>
+
+      {/* Pagination Controls */}
+      {!loading && totalPages > 1 && (
+        <div className="flex items-center justify-center gap-4 mt-8 bg-white w-fit mx-auto p-2 rounded-[2rem] shadow-xl border border-slate-100">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => { setCurrentPage(prev => prev - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            className="p-4 bg-slate-50 text-slate-400 hover:text-indigo-600 disabled:opacity-30 transition-all rounded-2xl hover:bg-white"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M15 19l-7-7 7-7" /></svg>
+          </button>
+          <div className="flex items-center gap-2">
+            {[...Array(totalPages)].map((_, i) => {
+              const pageNum = i + 1;
+              if (totalPages > 7) {
+                if (pageNum !== 1 && pageNum !== totalPages && Math.abs(pageNum - currentPage) > 1) {
+                  if (pageNum === 2 || pageNum === totalPages - 1) return <span key={i} className="text-slate-300">...</span>;
+                  return null;
+                }
+              }
+              return (
+                <button
+                  key={i}
+                  onClick={() => { setCurrentPage(pageNum); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  className={`w-12 h-12 rounded-2xl text-xs font-black transition-all ${currentPage === pageNum ? 'bg-indigo-600 text-white shadow-xl scale-110' : 'text-slate-400 hover:text-slate-900 hover:bg-slate-50'}`}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+          </div>
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => { setCurrentPage(prev => prev + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            className="p-4 bg-slate-50 text-slate-400 hover:text-indigo-600 disabled:opacity-30 transition-all rounded-2xl hover:bg-white"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" /></svg>
+          </button>
+        </div>
+      )}
+
+      {modalImage && (
+        <div className="fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-8 animate-in fade-in" onClick={() => setModalImage(null)}>
+          <img src={modalImage} className="max-w-full max-h-[85vh] rounded-2xl shadow-2xl border-4 border-white" alt="Receipt" onClick={e => e.stopPropagation()} />
+        </div>
+      )}
     </div>
   );
 };
