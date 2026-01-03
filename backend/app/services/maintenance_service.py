@@ -111,10 +111,70 @@ def award_daily_activity_coins():
         
     print(f"Social currency distribution complete. Targets synchronized.")
 
+def process_holiday_bonuses():
+    """
+    Checks if today is a public holiday in Ethiopia and awards a bonus to all users.
+    Uses Nager.Date public API for holiday detection.
+    """
+    import requests
+    from app.models.setting import GlobalSetting
+    from app.constants import SETTING_HOLIDAY_BONUS_AMOUNT, SETTING_LAST_HOLIDAY_CHECK
+    from app.models.notification import create_notification
+    
+    today = datetime.utcnow().date()
+    today_str = today.isoformat()
+    
+    # Avoid duplicate checks/bonuses on the same day
+    if GlobalSetting.get_value(SETTING_LAST_HOLIDAY_CHECK) == today_str:
+        return
+        
+    print(f"Checking for public holidays on {today_str}...")
+    
+    try:
+        # Fetch Ethiopian holidays for the current year
+        year = today.year
+        # Protocol Note: We use the ET country code for GlobalPath's primary operations region
+        response = requests.get(f"https://date.nager.at/api/v3/PublicHolidays/{year}/ET", timeout=10)
+        
+        if response.status_code == 200:
+            holidays = response.json()
+            holiday_today = next((h for h in holidays if h['date'] == today_str), None)
+            
+            if holiday_today:
+                holiday_name = holiday_today['name']
+                print(f"National Holiday Detected: {holiday_name}! Initiating global reward sequence...")
+                
+                bonus_amount = int(GlobalSetting.get_value(SETTING_HOLIDAY_BONUS_AMOUNT, default=15))
+                users = User.query.all()
+                
+                for user in users:
+                    user.coins_balance += bonus_amount
+                    create_notification(
+                        user_id=user.id,
+                        title=f"Happy {holiday_name}! 🎊",
+                        message=f"To celebrate the holiday, we've awarded you {bonus_amount} technical credits. Protocol connectivity for all!",
+                        type='SUCCESS',
+                        link='/packaging'
+                    )
+                
+                # Sync settings to prevent re-processing
+                GlobalSetting.set_value('current_holiday_protocol', holiday_name)
+                print(f"Distributed {bonus_amount} coins to each of {len(users)} users for {holiday_name}.")
+            
+            # Mark today as checked regardless of whether it was a holiday or not
+            GlobalSetting.set_value(SETTING_LAST_HOLIDAY_CHECK, today_str)
+            db.session.commit()
+        else:
+            print(f"Holiday API returned unexpected status: {response.status_code}")
+
+    except Exception as e:
+        print(f"Failed to process holiday bonuses: {str(e)}")
+
 def run_system_maintenance():
     """Run all maintenance tasks"""
     print(f"--- System Maintenance Log: {datetime.utcnow()} ---")
     deactivate_expired_subscriptions()
     recalculate_rankings()
     award_daily_activity_coins()
+    process_holiday_bonuses()
     print("--- Maintenance Session Finished ---")

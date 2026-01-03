@@ -13,6 +13,9 @@ const AdminSettingsTab: React.FC = () => {
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
     const [activeTab, setActiveTab] = useState(0);
+    const [rewardAmount, setRewardAmount] = useState('10');
+    const [rewardReason, setRewardReason] = useState('System Loyalty Reward');
+    const [rewarding, setRewarding] = useState(false);
 
     useEffect(() => {
         Promise.all([fetchSettings(), fetchPlans()]);
@@ -45,8 +48,11 @@ const AdminSettingsTab: React.FC = () => {
                 [SETTINGS_KEYS.REWARD_DAILY_PICKER]: { value: '5', description: 'Coins awarded to active pickers (>= 3 items) daily' },
                 [SETTINGS_KEYS.REWARD_STATUS_CHANGE]: { value: '1', description: 'Coins awarded for each shipment status update' },
                 [SETTINGS_KEYS.REWARD_HOLIDAY_BONUS]: { value: '10', description: 'Bonus coins awarded for actions during holidays' },
-                [SETTINGS_KEYS.ENABLE_HOLIDAY_MODE]: { value: 'false', description: 'Activate holiday bonus protocols globally' },
-                [SETTINGS_KEYS.HOLIDAY_NAME]: { value: 'New Year', description: 'Name of the current holiday for notifications' }
+                [SETTINGS_KEYS.ENABLE_HOLIDAY_MODE]: { value: 'false', description: 'Activate manual holiday bonus protocols globally' },
+                [SETTINGS_KEYS.HOLIDAY_NAME]: { value: 'New Year', description: 'Name of the current manual holiday' },
+                [SETTINGS_KEYS.REGISTRATION_BONUS]: { value: '10', description: 'Coins awarded to new users upon registration' },
+                [SETTINGS_KEYS.KYC_BONUS]: { value: '50', description: 'Coins awarded upon successful KYC verification' },
+                [SETTINGS_KEYS.HOLIDAY_BONUS_AMOUNT]: { value: '15', description: 'Automatic weekly/national holiday pulse reward' }
             };
             setSettings({ ...defaults, ...data });
         } catch (err) {
@@ -113,7 +119,17 @@ const AdminSettingsTab: React.FC = () => {
             id: "rewards",
             description: "Technical credit (λ) yields & seasonal events.",
             icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
-            keys: [SETTINGS_KEYS.REWARD_DAILY_SENDER, SETTINGS_KEYS.REWARD_DAILY_PICKER, SETTINGS_KEYS.REWARD_STATUS_CHANGE, SETTINGS_KEYS.REWARD_HOLIDAY_BONUS, SETTINGS_KEYS.ENABLE_HOLIDAY_MODE, SETTINGS_KEYS.HOLIDAY_NAME]
+            keys: [
+                SETTINGS_KEYS.REGISTRATION_BONUS,
+                SETTINGS_KEYS.KYC_BONUS,
+                SETTINGS_KEYS.REWARD_DAILY_SENDER,
+                SETTINGS_KEYS.REWARD_DAILY_PICKER,
+                SETTINGS_KEYS.REWARD_STATUS_CHANGE,
+                SETTINGS_KEYS.HOLIDAY_BONUS_AMOUNT,
+                SETTINGS_KEYS.ENABLE_HOLIDAY_MODE,
+                SETTINGS_KEYS.REWARD_HOLIDAY_BONUS,
+                SETTINGS_KEYS.HOLIDAY_NAME
+            ]
         }
     ];
 
@@ -162,9 +178,9 @@ const AdminSettingsTab: React.FC = () => {
                 </div>
             </div>
 
-            <div className="flex flex-1 gap-8 min-h-0">
+            <div className="flex flex-1 gap-8 min-h-0 overflow-hidden">
                 {/* Sidebar Navigation */}
-                <div className="w-64 flex flex-col gap-2">
+                <div className="w-72 flex flex-col gap-2 overflow-y-auto pr-2 scrollbar-hide pb-8">
                     {categories.map((cat, idx) => (
                         <button
                             key={cat.id}
@@ -181,20 +197,69 @@ const AdminSettingsTab: React.FC = () => {
                         </button>
                     ))}
 
-                    <div className="mt-auto p-6 bg-slate-900 rounded-[2rem] text-white overflow-hidden relative group">
-                        <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-green-500/20 rounded-full blur-2xl group-hover:bg-green-500/40 transition-all duration-700"></div>
+                    <div className="mt-8 p-6 bg-slate-900 rounded-[2rem] text-white overflow-hidden relative group flex-none">
+                        <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-green-500/20 rounded-full blur-2xl group-hover:bg-green-500/40 transition-all duration-700"></div>
                         <p className="relative z-10 text-[9px] font-black uppercase tracking-[0.2em] text-green-500 mb-2">Core Maintenance</p>
                         <h4 className="relative z-10 text-xs font-black leading-relaxed mb-4">Manual protocol re-indexing.</h4>
                         <button
-                            onClick={async () => {
+                            onClick={async (e) => {
+                                e.stopPropagation();
                                 try {
                                     await api.post('/admin/maintenance/run');
                                     alert("Marketplace synchronized.");
                                 } catch (e) { alert("Uplink timeout."); }
                             }}
-                            className="relative z-10 w-full py-2 bg-white/10 hover:bg-white hover:text-slate-900 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all"
+                            className="relative z-20 w-full py-2.5 bg-white/10 hover:bg-white hover:text-slate-900 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer active:scale-95 shadow-sm"
                         >
                             Pulse Sync
+                        </button>
+                    </div>
+
+                    <div className="mt-4 p-6 bg-[#009E49] rounded-[2rem] text-white overflow-hidden relative group flex-none">
+                        <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white/20 rounded-full blur-2xl group-hover:bg-white/40 transition-all duration-700"></div>
+                        <p className="relative z-10 text-[9px] font-black uppercase tracking-[0.2em] text-green-100 mb-2">Global Rewards</p>
+                        <h4 className="relative z-10 text-xs font-black leading-relaxed mb-4">Broadcast credits to all users.</h4>
+
+                        <div className="relative z-10 space-y-3 mb-4">
+                            <div className="bg-white/10 rounded-xl p-2.5 border border-white/10 focus-within:border-white/30 transition-colors">
+                                <p className="text-[8px] font-black uppercase text-green-100 mb-1">Amount (λ)</p>
+                                <input
+                                    type="number"
+                                    value={rewardAmount}
+                                    onChange={(e) => setRewardAmount(e.target.value)}
+                                    className="bg-transparent border-none text-white text-xs font-black p-0 focus:ring-0 w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                />
+                            </div>
+                            <div className="bg-white/10 rounded-xl p-2.5 border border-white/10 focus-within:border-white/30 transition-colors">
+                                <p className="text-[8px] font-black uppercase text-green-100 mb-1">Message</p>
+                                <input
+                                    type="text"
+                                    value={rewardReason}
+                                    onChange={(e) => setRewardReason(e.target.value)}
+                                    className="bg-transparent border-none text-white text-[10px] font-bold p-0 focus:ring-0 w-full placeholder:text-white/30"
+                                    placeholder="Reason..."
+                                />
+                            </div>
+                        </div>
+
+                        <button
+                            disabled={rewarding}
+                            onClick={async (e) => {
+                                e.stopPropagation();
+                                if (!window.confirm(`Award ${rewardAmount} λ to EVERY user?`)) return;
+                                setRewarding(true);
+                                try {
+                                    const resp = await api.post('/admin/rewards/all', {
+                                        amount: parseInt(rewardAmount),
+                                        reason: rewardReason
+                                    });
+                                    alert(resp.data.message);
+                                } catch (e) { alert("Broadcast failed."); }
+                                finally { setRewarding(false); }
+                            }}
+                            className="relative z-20 w-full py-2.5 bg-white text-[#009E49] hover:bg-slate-900 hover:text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-lg cursor-pointer active:scale-95 disabled:opacity-50"
+                        >
+                            {rewarding ? 'Transmitting...' : 'Distribute λ'}
                         </button>
                     </div>
                 </div>
@@ -207,8 +272,18 @@ const AdminSettingsTab: React.FC = () => {
                             if (!info) return null;
 
                             const isPlanSelector = key === SETTINGS_KEYS.FREE_PROMO_SENDER_PLAN_ID || key === SETTINGS_KEYS.FREE_PROMO_PICKER_PLAN_ID;
-                            const isTextInput = [SETTINGS_KEYS.MAINTENANCE_INTERVAL, SETTINGS_KEYS.REWARD_DAILY_SENDER, SETTINGS_KEYS.REWARD_DAILY_PICKER, SETTINGS_KEYS.REWARD_STATUS_CHANGE, SETTINGS_KEYS.REWARD_HOLIDAY_BONUS, SETTINGS_KEYS.HOLIDAY_NAME].includes(key);
-                            const isNumberInput = isTextInput && key !== 'holiday_name';
+                            const isTextInput = [
+                                SETTINGS_KEYS.MAINTENANCE_INTERVAL,
+                                SETTINGS_KEYS.REWARD_DAILY_SENDER,
+                                SETTINGS_KEYS.REWARD_DAILY_PICKER,
+                                SETTINGS_KEYS.REWARD_STATUS_CHANGE,
+                                SETTINGS_KEYS.REWARD_HOLIDAY_BONUS,
+                                SETTINGS_KEYS.HOLIDAY_NAME,
+                                SETTINGS_KEYS.REGISTRATION_BONUS,
+                                SETTINGS_KEYS.KYC_BONUS,
+                                SETTINGS_KEYS.HOLIDAY_BONUS_AMOUNT
+                            ].includes(key);
+                            const isNumberInput = isTextInput && key !== SETTINGS_KEYS.HOLIDAY_NAME;
                             const isToggleActive = String(info.value) === 'true';
 
                             return (
@@ -265,7 +340,7 @@ const AdminSettingsTab: React.FC = () => {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="absolute bottom-0 left-0 h-0.5 bg-slate-900/5 group-hover:bg-[#009E49]/20 transition-all" style={{ width: '100%' }}></div>
+                                    <div className="absolute inset-0 bg-slate-900/5 group-hover:bg-[#009E49]/20 transition-all pointer-events-none" />
                                 </div>
                             );
                         })}

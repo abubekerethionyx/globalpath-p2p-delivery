@@ -81,7 +81,8 @@ def google_login():
         
     if result.get('needs_role'):
         return jsonify(result), 200
-        
+ 
+
     return jsonify({
         'token': result['token'],
         'user': user_schema.dump(result['user'])
@@ -239,9 +240,12 @@ def verify_user(user_id):
     # Admin Action: Approve User
     updated_user = user_service.update_user(user_id, {'verification_status': VerificationStatus.VERIFIED})
     
-    # Award technical credits for KYC fulfillment
+    # Award technical credits for KYC fulfillment from settings
     from app.services.user_service import reward_user_coins
-    reward_user_coins(user_id, 50, "KYC Fulfillment Bonus")
+    from app.models.setting import GlobalSetting
+    from app.constants import SETTING_KYC_VERIFICATION_BONUS
+    kyc_bonus = int(GlobalSetting.get_value(SETTING_KYC_VERIFICATION_BONUS, default=50))
+    reward_user_coins(user_id, kyc_bonus, "KYC Fulfillment Bonus")
 
     # Notify User
     from app.models.notification import create_notification

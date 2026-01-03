@@ -23,5 +23,8 @@ export const SETTINGS_KEYS = {
     REWARD_STATUS_CHANGE: 'reward_status_change',
     REWARD_HOLIDAY_BONUS: 'reward_holiday_bonus',
     ENABLE_HOLIDAY_MODE: 'enable_holiday_mode',
-    HOLIDAY_NAME: 'holiday_name'
+    HOLIDAY_NAME: 'holiday_name',
+    REGISTRATION_BONUS: 'registration_bonus_amount',
+    KYC_BONUS: 'kyc_verification_bonus_amount',
+    HOLIDAY_BONUS_AMOUNT: 'holiday_bonus_amount'
 };

@@ -273,10 +273,14 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
                             {user.email}
                         </p>
 
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
                             <div className="bg-slate-50 p-6 rounded-[1.5rem] border border-slate-100">
                                 <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">Liquidity</p>
                                 <p className="text-xl font-black text-[#009E49]">{(user.walletBalance ?? 0).toLocaleString()} <span className="text-[10px] opacity-30">ETB</span></p>
+                            </div>
+                            <div className="bg-slate-50 p-6 rounded-[1.5rem] border border-slate-100">
+                                <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">Protocol Credits</p>
+                                <p className="text-xl font-black text-indigo-600">{(user.coinsBalance ?? 0).toLocaleString()} <span className="text-[10px] opacity-30">λ</span></p>
                             </div>
                             {user.role === UserRole.PICKER && (
                                 <>
@@ -293,7 +297,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
                                     </div>
                                 </>
                             )}
-                            <div className="bg-slate-50 p-6 rounded-[1.5rem] border border-slate-100">
+                            <div className="bg-slate-50 p-6 rounded-[1.5rem] border border-slate-100 col-span-1">
                                 <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">Protocol History</p>
                                 <p className="text-xl font-black text-slate-900">{user.itemsCountThisMonth || 0} <span className="text-[10px] opacity-30">UNIT</span></p>
                             </div>

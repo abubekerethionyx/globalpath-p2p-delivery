@@ -12,17 +12,6 @@ export const CATEGORIES = [
 
 export const PLATFORM_FEE_PERCENTAGE = 0.15; // 15% platform fee for picker earnings
 
-export const SENDER_PLANS: SubscriptionPlan[] = [
-  { id: 's-free', name: 'Starter', price: 0, limit: 1, role: UserRole.SENDER, description: 'Post 1 item per month' },
-  { id: 's-basic', name: 'Standard', price: 800, limit: 5, role: UserRole.SENDER, description: 'Post up to 5 items per month' },
-  { id: 's-pro', name: 'Premium Business', price: 2500, limit: 100, role: UserRole.SENDER, description: 'Unlimited global posting' }
-];
-
-export const PICKER_PLANS: SubscriptionPlan[] = [
-  { id: 'p-free', name: 'Casual Traveler', price: 0, limit: 1, role: UserRole.PICKER, description: 'Pick 1 active item at a time' },
-  { id: 'p-pro', name: 'Professional Picker', price: 1200, limit: 5, role: UserRole.PICKER, description: 'Handle up to 5 active deliveries' },
-  { id: 'p-elite', name: 'Elite Agent', price: 3000, limit: 100, role: UserRole.PICKER, description: 'No limits on active picks' }
-];
 
 export const MOCK_USERS: User[] = [
   {
@@ -33,6 +22,7 @@ export const MOCK_USERS: User[] = [
     role: UserRole.SENDER,
     avatar: 'https://i.pravatar.cc/150?u=frank@example.com',
     walletBalance: 150.00,
+    coinsBalance: 500,
     currentPlanId: '',
     itemsCountThisMonth: 0,
     verificationStatus: VerificationStatus.VERIFIED,
@@ -49,6 +39,7 @@ export const MOCK_USERS: User[] = [
     role: UserRole.SENDER,
     avatar: 'https://i.pravatar.cc/150?u=grace@example.com',
     walletBalance: 50.00,
+    coinsBalance: 20,
     currentPlanId: '',
     itemsCountThisMonth: 0,
     verificationStatus: VerificationStatus.VERIFIED,
@@ -68,6 +59,7 @@ export const MOCK_USERS: User[] = [
     completedDeliveries: 12,
     earnings: 1200.00,
     walletBalance: 0,
+    coinsBalance: 100,
     currentPlanId: '',
     itemsCountThisMonth: 0,
     verificationStatus: VerificationStatus.VERIFIED,
@@ -84,6 +76,7 @@ export const MOCK_USERS: User[] = [
     role: UserRole.ADMIN,
     avatar: 'https://i.pravatar.cc/150?u=admin@example.com',
     walletBalance: 0,
+    coinsBalance: 1000,
     itemsCountThisMonth: 0,
     verificationStatus: VerificationStatus.VERIFIED,
     isEmailVerified: true,

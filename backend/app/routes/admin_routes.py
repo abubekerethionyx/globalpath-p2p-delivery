@@ -186,3 +186,31 @@ def trigger_maintenance():
     run_system_maintenance()
     
     return jsonify({'message': 'System maintenance protocol executed successfully'})
+
+@bp.route('/rewards/all', methods=['POST'])
+@jwt_required()
+def award_all_users():
+    current_user = User.query.get(get_jwt_identity())
+    if not current_user or current_user.role != UserRole.ADMIN:
+        return jsonify({'message': 'Admin access required'}), 403
+        
+    data = request.get_json()
+    try:
+        amount = int(data.get('amount', 0))
+    except (TypeError, ValueError):
+        return jsonify({'message': 'Invalid amount'}), 400
+        
+    if amount <= 0:
+        return jsonify({'message': 'Amount must be greater than 0'}), 400
+        
+    reason = data.get('reason', 'Global Protocol Bonus')
+    
+    from app.services.user_service import reward_user_coins
+    users = User.query.all()
+    count = 0
+    for user in users:
+        if reward_user_coins(user.id, amount, reason):
+            count += 1
+        
+    return jsonify({'message': f'Broadcasted {amount} λ to {count} users successfully'})
+

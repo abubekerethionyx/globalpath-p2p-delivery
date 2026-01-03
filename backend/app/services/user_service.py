@@ -124,6 +124,11 @@ def create_user(data):
     # Auto-subscribe to default promo plan
     assign_default_subscription(user)
 
+    # Award Registration Bonus
+    from app.constants import SETTING_REGISTRATION_BONUS
+    reg_bonus = int(GlobalSetting.get_value(SETTING_REGISTRATION_BONUS, default=10))
+    reward_user_coins(user.id, reg_bonus, "New Account Protocol Initialization")
+
     return user
 
   
@@ -272,6 +277,12 @@ def google_login(token, role=None):
             
             # Auto-subscribe new Google user to default promo plan
             assign_default_subscription(user)
+
+            # Award Registration Bonus for new Google User
+            from app.models.setting import GlobalSetting
+            from app.constants import SETTING_REGISTRATION_BONUS
+            reg_bonus = int(GlobalSetting.get_value(SETTING_REGISTRATION_BONUS, default=10))
+            reward_user_coins(user.id, reg_bonus, "Google Protocol Authentication Bonus")
         elif not user.google_id:
             # Link Google ID to existing account
             user.google_id = google_id

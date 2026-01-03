@@ -139,6 +139,17 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onNavigate, currentPage
                   <span className="text-[8px] text-[#009E49] font-black uppercase tracking-widest">{user.role} Partner</span>
                 </div>
 
+                {/* Protocol Credits */}
+                {user && (
+                  <div
+                    onClick={() => handleNavigate('packaging')}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-indigo-50 rounded-xl border border-slate-100 hover:border-indigo-100 transition-all cursor-pointer hidden md:flex group"
+                  >
+                    <span className="text-[10px] font-black text-slate-400 group-hover:text-indigo-600 transition-colors">{(user.coinsBalance ?? 0).toLocaleString()}</span>
+                    <span className="text-[10px] font-black text-indigo-600">λ</span>
+                  </div>
+                )}
+
                 {/* Notifications */}
                 <div className="relative">
                   <button
@@ -267,9 +278,13 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onNavigate, currentPage
                       src={user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.firstName}
                       alt="Profile"
                     />
-                    <div>
+                    <div className="flex-1">
                       <h4 className="text-lg font-black text-slate-900 leading-tight">{user.firstName} {user.lastName}</h4>
-                      <p className="text-[9px] font-black text-[#009E49] uppercase tracking-widest mt-1">{user.role} Partner</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[9px] font-black text-[#009E49] uppercase tracking-widest">{user.role} Partner</span>
+                        <div className="h-1 w-1 rounded-full bg-slate-300"></div>
+                        <span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest">{(user.coinsBalance ?? 0).toLocaleString()} λ</span>
+                      </div>
                     </div>
                   </div>
 

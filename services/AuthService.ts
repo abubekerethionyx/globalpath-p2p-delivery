@@ -35,6 +35,7 @@ const transformUserData = (userData: any): User => {
         livenessVideo: userData.liveness_video,
         createdAt: userData.created_at,
         averageDeliveryTime: userData.average_delivery_time,
+        coinsBalance: userData.coins_balance,
     } as User;
 };
 
