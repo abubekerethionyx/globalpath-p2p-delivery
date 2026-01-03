@@ -31,16 +31,17 @@ def assign_default_subscription(user):
     setting_key = SETTING_FREE_PROMO_PICKER_PLAN_ID if is_picker else SETTING_FREE_PROMO_SENDER_PLAN_ID
     promo_plan_id = GlobalSetting.get_value(setting_key)
     
-    # Fallback to config if setting not found or empty
+    # If no specific ID found in settings, return without subscription (per user request)
     if not promo_plan_id:
-        promo_plan_id = current_app.config.get('DEFAULT_PICKER_PLAN_ID', DEFAULT_PICKER_PLAN_ID) if is_picker else current_app.config.get('DEFAULT_SENDER_PLAN_ID', DEFAULT_SENDER_PLAN_ID)
+        print(f"No promo plan ID configured for {'Picker' if is_picker else 'Sender'}. Skipping auto-subscription.")
+        return False
     
     promo_plan = SubscriptionPlan.query.get(promo_plan_id)
     
-    # Fallback lookup if ID not found (match names in seed.py)
     if not promo_plan:
-        target_name = "6 Month Free (Picker)" if is_picker else "6 Month Free (Sender)"
-        promo_plan = SubscriptionPlan.query.filter_by(name=target_name).first()
+        print(f"Plan with ID {promo_plan_id} not found in database. Skipping auto-subscription.")
+        return False
+
     
     if promo_plan:
         sub = SubscriptionTransaction(

@@ -15,7 +15,6 @@ import BillingPage from './pages/BillingPage';
 import PostShipmentPage from './pages/PostShipmentPage';
 import PackagingPage from './pages/PackagingPage';
 import MessagesPage from './pages/MessagesPage';
-import PickerRegistrationPage from './pages/PickerRegistrationPage';
 import AdminPage from './pages/AdminPage';
 import AuthPage from './pages/AuthPage';
 import ProfilePage from './pages/ProfilePage';
@@ -99,7 +98,7 @@ const App: React.FC = () => {
       navigate('/admin');
     } else if (u.role === UserRole.PICKER) {
       if (u.verificationStatus === VerificationStatus.UNVERIFIED) {
-        navigate('/registration');
+        navigate('/profile');
       } else {
         navigate('/marketplace');
       }
@@ -171,13 +170,7 @@ const App: React.FC = () => {
             <Route path="/support" element={user ? <SupportPage user={user} /> : <Navigate to="/login" />} />
             <Route path="/notifications" element={user ? <NotificationsPage user={user} /> : <Navigate to="/login" />} />
             <Route path="/profile" element={user ? <ProfilePage user={user} onUserUpdate={(updatedUser) => setUser(updatedUser)} /> : <Navigate to="/login" />} />
-            <Route path="/registration" element={user ? <PickerRegistrationPage user={user} onSubmit={(data) => {
-              const updatedUser = { ...user, ...data };
-              setUser(updatedUser);
-              // Optionally update local storage here if needed, though AuthService might handle login persistence
-              localStorage.setItem('user', JSON.stringify(updatedUser));
-              navigate('/marketplace');
-            }} onCancel={() => navigate('/marketplace')} /> : <Navigate to="/login" />} />
+
             <Route path="/admin" element={user && user.role === UserRole.ADMIN ? <AdminPage /> : <Navigate to="/dashboard" />} />
             <Route path="/picker-profile/:id" element={user ? <PickerProfilePage /> : <Navigate to="/login" />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />

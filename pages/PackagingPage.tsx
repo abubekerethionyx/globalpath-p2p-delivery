@@ -298,11 +298,11 @@ const PackagingPage: React.FC<PackagingPageProps> = ({ user, onPlanChanged }) =>
                 <span className="ml-3 font-bold text-xs uppercase tracking-widest text-slate-400">
                   ETB / MO
                 </span>
-                {plan.coinPrice && (
+                {plan.coin_price > 0 && (
                   <div className="ml-auto text-right">
                     <p className="text-[9px] font-black text-[#009E49] uppercase tracking-widest mb-1">Or Redeem</p>
                     <div className="flex items-center gap-1.5 text-[#009E49]">
-                      <span className="text-xl font-black">{plan.coinPrice}</span>
+                      <span className="text-xl font-black">{plan.coin_price}</span>
                       <span className="text-xs font-black">λ</span>
                     </div>
                   </div>
@@ -515,10 +515,10 @@ const PackagingPage: React.FC<PackagingPageProps> = ({ user, onPlanChanged }) =>
                   </div>
                 </button>
 
-                {selectedPlan.coinPrice && (
+                {(selectedPlan.coin_price !== undefined && selectedPlan.coin_price > 0) && (
                   <button
                     onClick={() => setPaymentMethod('coins')}
-                    disabled={!user || (user.coinsBalance || 0) < (selectedPlan.coinPrice || 0)}
+                    disabled={!user || (user.coinsBalance || 0) < (selectedPlan.coin_price || 0)}
                     className="w-full flex items-center justify-between p-5 bg-[#009E49]/5 border-2 border-[#009E49]/20 rounded-[1.5rem] hover:bg-[#009E49]/10 transition-all group disabled:opacity-50 disabled:grayscale"
                   >
                     <div className="flex items-center">
@@ -527,7 +527,7 @@ const PackagingPage: React.FC<PackagingPageProps> = ({ user, onPlanChanged }) =>
                       </div>
                       <div className="text-left">
                         <p className="font-black text-slate-900">Protocol Credits</p>
-                        <p className="text-xs font-bold text-[#009E49]">{selectedPlan.coinPrice} Credits Required</p>
+                        <p className="text-xs font-bold text-[#009E49]">{selectedPlan.coin_price} Credits Required</p>
                       </div>
                     </div>
                     <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center group-hover:bg-[#009E49] group-hover:text-white transition-colors">
@@ -554,7 +554,7 @@ const PackagingPage: React.FC<PackagingPageProps> = ({ user, onPlanChanged }) =>
                     </div>
                     <div>
                       <p className="font-black text-slate-900">Protocol Credit Authorization</p>
-                      <p className="text-xs text-[#009E49] font-bold">Consuming {selectedPlan.coinPrice} Credits</p>
+                      <p className="text-xs text-[#009E49] font-bold">Consuming {selectedPlan.coin_price} Credits</p>
                     </div>
                     <p className="text-[10px] text-slate-400 font-medium">This action will instantly upgrade your node status. All technical credits will be deducted from your secure vault.</p>
                   </div>

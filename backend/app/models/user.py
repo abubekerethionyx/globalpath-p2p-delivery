@@ -45,7 +45,15 @@ class User(db.Model):
     id_front_url = db.Column(db.String(255))
     id_back_url = db.Column(db.String(255))
     liveness_video = db.Column(db.String(255))
+    date_of_birth = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Privacy Settings
+    hide_phone_number = db.Column(db.Boolean, default=False)
+    hide_rating = db.Column(db.Boolean, default=False)
+    hide_completed_deliveries = db.Column(db.Boolean, default=False)
+    hide_email = db.Column(db.Boolean, default=False)
+
     
     @property
     def name(self):

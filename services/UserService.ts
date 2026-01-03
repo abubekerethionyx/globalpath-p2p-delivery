@@ -33,9 +33,14 @@ export const transformUserData = (userData: any): User => {
         idFrontUrl: userData.id_front_url,
         idBackUrl: userData.id_back_url,
         livenessVideo: userData.liveness_video,
+        dateOfBirth: userData.date_of_birth,
         createdAt: userData.created_at,
         averageDeliveryTime: userData.average_delivery_time,
         coinsBalance: userData.coins_balance,
+        hidePhoneNumber: userData.hide_phone_number,
+        hideRating: userData.hide_rating,
+        hideCompletedDeliveries: userData.hide_completed_deliveries,
+        hideEmail: userData.hide_email,
     } as User;
 };
 

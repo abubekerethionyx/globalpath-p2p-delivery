@@ -72,6 +72,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
                 id_type: editedUser.idType,
                 national_id: editedUser.nationalId,
                 passport_number: editedUser.passportNumber,
+                hide_phone_number: editedUser.hidePhoneNumber,
+                hide_rating: editedUser.hideRating,
+                hide_completed_deliveries: editedUser.hideCompletedDeliveries,
+                hide_email: editedUser.hideEmail,
             } as any);
             onUserUpdate(updated);
             setIsEditing(false);
@@ -460,8 +464,64 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
                     </div>
                 </div>
             )}
+
+            {/* Privacy Protocols */}
+            <div className={`bg-white rounded-[2.5rem] p-10 border transition-all ${isEditing ? 'border-indigo-200 shadow-xl' : 'border-slate-100'}`}>
+                <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                        </div>
+                        <div>
+                            <h3 className="text-xl font-black text-slate-900 tracking-tight">Privacy Protocols</h3>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Data Visibility Logic</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-6">
+                        {[
+                            { label: 'Broadcast Email', field: 'hideEmail', desc: 'Allow other nodes to see your communication address.' },
+                            { label: 'Broadcast Phone', field: 'hidePhoneNumber', desc: 'Display your registry contact to active partners.' },
+                            { label: 'Public Reputation', field: 'hideRating', fieldReversed: true, desc: 'Show your current protocol score to pickers/senders.' },
+                            { label: 'Transmission History', field: 'hideCompletedDeliveries', fieldReversed: true, desc: 'Display number of successful node fulfillments.' }
+                        ].map((item) => {
+                            const isHidden = (editedUser as any)[item.field];
+                            const isActive = item.fieldReversed ? !isHidden : !isHidden;
+
+                            return (
+                                <div key={item.field} className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
+                                    <div className="flex-1">
+                                        <p className="text-sm font-black text-slate-900">{item.label}</p>
+                                        <p className="text-[10px] font-medium text-slate-500 mt-1">{item.desc}</p>
+                                    </div>
+                                    <button
+                                        disabled={!isEditing}
+                                        onClick={() => setEditedUser({ ...editedUser, [item.field]: !isHidden })}
+                                        className={`w-12 h-7 rounded-full relative transition-all duration-300 ${!isEditing ? 'opacity-50 grayscale' : ''} ${isActive ? 'bg-[#009E49]' : 'bg-slate-200'}`}
+                                    >
+                                        <div className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow-lg transition-transform duration-300 transform ${isActive ? 'translate-x-5' : 'translate-x-0'}`} />
+                                    </button>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    <div className="p-8 bg-amber-50 rounded-3xl border border-amber-200 flex flex-col justify-center text-center">
+                        <div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                        </div>
+                        <h4 className="text-sm font-black text-amber-900 uppercase tracking-widest mb-2">Protocol Warning</h4>
+                        <p className="text-xs text-amber-700 italic font-medium leading-relaxed">
+                            Restricting data visibility may decrease your <strong>Handover Approval Chance</strong>. Most logistics nodes require verified visibility of the partner's reputation and contact history to establish trust.
+                        </p>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };
+
 
 export default ProfilePage;

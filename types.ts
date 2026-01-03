@@ -128,7 +128,13 @@ export interface User {
   idBackUrl?: string;
   // Added livenessVideo property to track video verification status
   livenessVideo?: string;
+  dateOfBirth?: string;
   createdAt?: string;
+  // Privacy Settings
+  hidePhoneNumber?: boolean;
+  hideRating?: boolean;
+  hideCompletedDeliveries?: boolean;
+  hideEmail?: boolean;
 }
 
 export interface ShipmentItem {
