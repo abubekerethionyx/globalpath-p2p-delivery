@@ -26,7 +26,7 @@ const BillingPage: React.FC<BillingPageProps> = ({ user }) => {
           ShipmentService.getAllShipments(),
           SubscriptionService.getUserTransactions(user.id)
         ]);
-        setItems(fetchedItems);
+        setItems(fetchedItems.shipments);
         setSubs(fetchedSubs);
         setLoading(false);
       } catch (e) {

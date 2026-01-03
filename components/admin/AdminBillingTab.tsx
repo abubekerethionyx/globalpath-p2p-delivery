@@ -170,26 +170,26 @@ const AdminBillingTab: React.FC<AdminBillingTabProps> = ({ users: propsUsers }) 
                               Let's assume standard Schema dump.
                            */}
                       <div className="flex flex-col">
-                        <span className="text-xs font-black text-slate-900">UID: {tx.userId?.slice(0, 8)}</span>
+                        <span className="text-xs font-black text-slate-900">UID: {tx.user_id?.slice(0, 8)}</span>
                         {/* Ideally backend should return user name/email flattened or nested */}
                       </div>
                     </td>
                     <td className="px-8 py-6">
                       <div className="flex flex-col">
                         <span className="text-sm font-black text-[#009E49]">{tx.amount.toLocaleString()} <span className="text-[10px] text-slate-400">ETB</span></span>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Plan ID: {tx.planId}</span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Plan ID: {tx.plan_id}</span>
                       </div>
                     </td>
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-2">
                         <div className="flex flex-col">
-                          <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md border w-fit ${tx.paymentMethod === 'chapa' ? 'bg-indigo-50 border-indigo-100 text-indigo-700' : 'bg-slate-50 border-slate-200 text-slate-600'}`}>
-                            {tx.paymentMethod}
+                          <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md border w-fit ${tx.payment_method === 'chapa' ? 'bg-indigo-50 border-indigo-100 text-indigo-700' : 'bg-slate-50 border-slate-200 text-slate-600'}`}>
+                            {tx.payment_method}
                           </span>
                         </div>
-                        {tx.receiptUrl && (
+                        {tx.receipt_url && (
                           <button
-                            onClick={() => setModalImage(tx.receiptUrl!)}
+                            onClick={() => setModalImage(tx.receipt_url!)}
                             className="p-1.5 bg-slate-100 text-slate-500 rounded-lg hover:bg-slate-200 hover:text-slate-900 transition-colors"
                             title="View Receipt"
                           >
@@ -203,7 +203,7 @@ const AdminBillingTab: React.FC<AdminBillingTabProps> = ({ users: propsUsers }) 
                         <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border w-fit ${getStatusColor(tx.status)}`}>
                           {tx.status}
                         </span>
-                        {tx.isActive ? (
+                        {tx.is_active ? (
                           <span className="text-[9px] font-bold text-[#009E49] flex items-center gap-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-[#009E49]"></span> Active Sub
                           </span>

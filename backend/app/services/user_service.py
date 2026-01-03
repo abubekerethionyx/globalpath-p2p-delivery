@@ -128,7 +128,27 @@ def create_user(data):
     
     from app.models.setting import GlobalSetting
     require_otp = GlobalSetting.get_value('require_otp_for_signup', default=True)
-    from app.models.enums import VerificationStatus
+    from app.models.enums import VerificationStatus, UserRole
+    
+    user_role = data.get('role', 'SENDER')
+    # Determine if user is a picker
+    is_picker = False
+    if isinstance(user_role, str):
+        is_picker = user_role.upper() == 'PICKER'
+    elif hasattr(user_role, 'name'):
+        is_picker = user_role.name == 'PICKER'
+
+    # Email is verified if OTP is disabled
+    email_verified = not require_otp
+    
+    # Verification status logic:
+    # - SENDERS: VERIFIED if email is verified (no OTP or OTP disabled)
+    # - PICKERS: Always UNVERIFIED until KYC completion
+    if is_picker:
+        verification_status = VerificationStatus.UNVERIFIED
+    else:
+        # Sender
+        verification_status = VerificationStatus.VERIFIED if email_verified else VerificationStatus.UNVERIFIED
 
     user = User(
         first_name=data['first_name'],
@@ -136,12 +156,12 @@ def create_user(data):
         email=data['email'],
         phone_number=data.get('phone_number'),
         is_phone_verified=data.get('is_phone_verified', False),
-        role=data.get('role', 'SENDER'),
+        role=user_role,
         email_verification_token=secrets.token_urlsafe(32),
         email_otp=otp if require_otp else None,
         email_otp_expiry=(datetime.utcnow() + timedelta(minutes=10)) if require_otp else None,
-        is_email_verified=not require_otp,
-        verification_status=VerificationStatus.VERIFIED if not require_otp else VerificationStatus.UNVERIFIED
+        is_email_verified=email_verified,
+        verification_status=verification_status
     )
     if 'password' in data:
         user.set_password(data['password'])
@@ -259,7 +279,7 @@ def complete_password_reset(token, new_password):
 
 def verify_email_otp(email, otp):
     from datetime import datetime
-    from app.models.enums import VerificationStatus
+    from app.models.enums import VerificationStatus, UserRole
     user = User.query.filter_by(email=email).first()
     
     if not user or not user.email_otp or not user.email_otp_expiry:
@@ -274,7 +294,19 @@ def verify_email_otp(email, otp):
     user.is_email_verified = True
     user.email_otp = None
     user.email_otp_expiry = None
-    user.verification_status = VerificationStatus.VERIFIED
+    
+    # Only verify SENDERS automatically; PICKERS need KYC
+    is_picker = False
+    if hasattr(user.role, 'name'):
+        is_picker = user.role.name == 'PICKER'
+    elif isinstance(user.role, str):
+        is_picker = user.role.upper() == 'PICKER'
+    
+    if not is_picker:
+        # Sender: mark as verified
+        user.verification_status = VerificationStatus.VERIFIED
+    # else: Picker stays UNVERIFIED until KYC
+    
     db.session.commit()
     
     return True, "Email verified successfully"
@@ -306,6 +338,16 @@ def google_login(token, role=None):
                 return {"needs_role": True, "email": email}
                 
             # Create new user with provided role
+            # Determine verification status based on role
+            is_picker = False
+            if isinstance(role, str):
+                is_picker = role.upper() == 'PICKER'
+            elif hasattr(role, 'name'):
+                is_picker = role.name == 'PICKER'
+            
+            # SENDERS are verified, PICKERS need KYC
+            verification_status = VerificationStatus.UNVERIFIED if is_picker else VerificationStatus.VERIFIED
+            
             user = User(
                 email=email,
                 first_name=first_name,
@@ -314,7 +356,7 @@ def google_login(token, role=None):
                 avatar=avatar,
                 is_email_verified=True,
                 role=role,
-                verification_status=VerificationStatus.VERIFIED
+                verification_status=verification_status
             )
             db.session.add(user)
             db.session.commit()

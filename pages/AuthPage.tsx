@@ -145,7 +145,18 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete, publicSettings }) =
           role: role
         });
 
-        if (publicSettings?.require_otp_for_signup === false) {
+
+        // dynamically check OTP setting
+        let otpRequired = true;
+        try {
+          const settings = await AuthService.getAuthSettings();
+          otpRequired = settings.require_otp_for_signup;
+        } catch (settingsErr) {
+          console.warn("Could not fetch auth settings, defaulting to OTP required or prop value", settingsErr);
+          if (publicSettings?.require_otp_for_signup === false) otpRequired = false;
+        }
+
+        if (otpRequired === false) {
           // Auto login if OTP is not required
           const loginResp = await AuthService.login(formData.email, formData.password);
           if (loginResp.user) {

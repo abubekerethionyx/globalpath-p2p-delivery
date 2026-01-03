@@ -12,6 +12,25 @@ bp = Blueprint('users', __name__, url_prefix='/api/users')
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)
 
+from app.models.setting import GlobalSetting
+
+@bp.route('/auth-settings', methods=['GET'])
+def get_auth_settings():
+    # Simple security to prevent public scraping, matching frontend
+    token = request.headers.get('X-Auth-Page-Token')
+    if token != 'globalpath-secure-auth-token-v1':
+        return jsonify({'message': 'Unauthorized'}), 401
+    
+    otp_enabled = GlobalSetting.get_value('require_otp_for_signup', default=True)
+    
+    # Ensure boolean
+    if isinstance(otp_enabled, str):
+        otp_enabled = otp_enabled.lower() == 'true'
+        
+    return jsonify({
+        'require_otp_for_signup': otp_enabled
+    })
+
 @bp.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
@@ -27,9 +46,11 @@ def register():
     if not user:
         return jsonify({'message': 'User already exists'}), 400
         
-    # Send Actual OTP Email
-    from app.services.email_service import send_otp_email
-    send_otp_email(user.email, user.email_otp)
+    # Send Actual OTP Email if OTP is enabled
+    otp_enabled = GlobalSetting.get_value('require_otp_for_signup', default=True)
+    if otp_enabled:
+        from app.services.email_service import send_otp_email
+        send_otp_email(user.email, user.email_otp)
     
     return jsonify(user_schema.dump(user)), 201
 
