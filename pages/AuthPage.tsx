@@ -3,6 +3,7 @@ import { UserRole } from '../types';
 import { AuthService } from '../services/AuthService';
 import { PublicSettings } from '../services/AdminService';
 import { MOCK_USERS } from '../constants';
+import { UI_FLAGS } from '../constants/settings';
 import { useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 
@@ -357,6 +358,17 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete, publicSettings }) =
                     </div>
                   )}
                 </div>
+
+                {UI_FLAGS.SHOW_OTP_STATUS && publicSettings && !isLogin && !showForgot && !showOTP && (
+                  <div className="mt-4 flex justify-center">
+                    <div className={`px-3 py-1.5 rounded-lg border ${publicSettings.require_otp_for_signup ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-green-200 bg-green-50 text-green-700'}`}>
+                      <p className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
+                        <span className={`w-1.5 h-1.5 rounded-full ${publicSettings.require_otp_for_signup ? 'bg-amber-500' : 'bg-green-500'}`}></span>
+                        OTP Check: {publicSettings.require_otp_for_signup ? 'Enabled' : 'Disabled'}
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 {(showForgot || tempGoogleToken) && (
                   <button type="button" onClick={() => { setShowForgot(false); setTempGoogleToken(null); setIsLogin(true); }} className="w-full text-slate-500 font-bold text-xs mt-4 hover:text-slate-900">

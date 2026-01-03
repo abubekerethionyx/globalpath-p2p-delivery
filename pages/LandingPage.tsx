@@ -146,6 +146,111 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                 </div>
             </section>
 
+
+
+            {/* Courier Animation Section */}
+            <div className="relative w-full h-64 bg-slate-50 border-t border-b border-slate-100 overflow-hidden">
+                {/* Parallax Cityscape Background (Abstract) */}
+                <div className="absolute bottom-0 left-0 w-[200%] h-full flex items-end animate-city-scroll opacity-[0.03] text-slate-900">
+                    {[...Array(30)].map((_, i) => (
+                        <div key={i} className="bg-current mx-0.5" style={{
+                            width: `${Math.random() * 40 + 20}px`,
+                            height: `${Math.random() * 100 + 40}px`,
+                            borderTopLeftRadius: Math.random() > 0.5 ? '4px' : '0',
+                            borderTopRightRadius: Math.random() > 0.5 ? '4px' : '0'
+                        }}></div>
+                    ))}
+                </div>
+
+                {/* Road */}
+                <div className="absolute bottom-0 w-full h-16 bg-white border-t border-slate-100"></div>
+                <div className="absolute bottom-8 left-0 w-[200%] flex animate-road-scroll">
+                    {[...Array(20)].map((_, i) => (
+                        <div key={i} className="w-24 h-2 bg-slate-50 mx-12 rounded-full"></div>
+                    ))}
+                </div>
+
+                {/* Moving Character Group */}
+                <div className="absolute bottom-6 animate-courier-walk flex items-end">
+
+                    {/* Speed Lines */}
+                    <div className="absolute top-10 -left-20 space-y-1 opacity-40">
+                        <div className="w-16 h-0.5 bg-slate-400 rounded-full animate-wind"></div>
+                        <div className="w-8 h-0.5 bg-slate-400 rounded-full animate-wind delay-75"></div>
+                        <div className="w-12 h-0.5 bg-slate-400 rounded-full animate-wind delay-150"></div>
+                    </div>
+
+                    {/* The Bag (Roller Suitcase) */}
+                    <div className="relative z-10 -mr-6 group">
+                        {/* Handle/Strap */}
+                        <div className="absolute bottom-20 right-0 w-16 h-1 bg-slate-800 origin-right rotate-[-15deg]"></div>
+
+                        {/* Suitcase */}
+                        <div className="w-20 h-28 bg-[#009E49] rounded-2xl relative flex flex-col items-center justify-center shadow-xl border-t border-white/20 overflow-hidden transform skew-x-2 animate-bounce-custom">
+                            {/* Reflection/Shine */}
+                            <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-white/10 to-transparent"></div>
+                            {/* Sticker */}
+                            <div className="w-8 h-8 rounded-full bg-[#FDD100] border-2 border-dashed border-[#B89800] opacity-80 rotate-12 mb-2 flex items-center justify-center">
+                                <span className="text-[6px] font-black">FLY</span>
+                            </div>
+                            <div className="w-12 h-0.5 bg-black/10 my-1"></div>
+                            <div className="w-12 h-0.5 bg-black/10 my-1"></div>
+                            <span className="text-white font-black text-[10px] tracking-widest mt-4 uppercase">Global</span>
+                        </div>
+
+                        {/* Wheels */}
+                        <div className="absolute -bottom-3 left-2 w-5 h-5 bg-slate-800 rounded-full border-2 border-slate-600 animate-spin-fast z-0">
+                            <div className="w-full h-0.5 bg-slate-500 absolute top-1/2 left-0 -translate-y-1/2"></div>
+                            <div className="h-full w-0.5 bg-slate-500 absolute top-0 left-1/2 -translate-x-1/2"></div>
+                        </div>
+                        <div className="absolute -bottom-3 right-2 w-5 h-5 bg-slate-800 rounded-full border-2 border-slate-600 animate-spin-fast z-0">
+                            <div className="w-full h-0.5 bg-slate-500 absolute top-1/2 left-0 -translate-y-1/2"></div>
+                            <div className="h-full w-0.5 bg-slate-500 absolute top-0 left-1/2 -translate-x-1/2"></div>
+                        </div>
+                    </div>
+
+                    {/* The Courier */}
+                    <div className="relative z-20 ml-12 mb-1">
+                        <svg className="w-24 h-36" viewBox="0 0 100 150" fill="none" stroke="currentColor" strokeWidth="0">
+                            {/* Head */}
+                            <g className="animate-head-bob">
+                                <circle cx="50" cy="30" r="14" className="fill-slate-900" />
+                                {/* Cap */}
+                                <path d="M35 25 L65 25 L75 30 L35 30 Z" className="fill-[#FDD100]" />
+                            </g>
+
+                            {/* Torso */}
+                            <path d="M40 45 L60 45 L65 95 L35 95 Z" className="fill-slate-900" />
+                            <rect x="42" y="55" width="16" height="20" rx="4" className="fill-slate-800" /> {/* Backpack strap */}
+
+                            {/* Arms */}
+                            <g className="stroke-slate-900 stroke-[6px] stroke-linecap-round">
+                                {/* Back Arm (Pulling) */}
+                                <path d="M50 50 L30 75" className="animate-arm-back origin-[50px_50px]" />
+                                {/* Front Arm */}
+                                <path d="M50 50 L70 80" className="animate-arm-front origin-[50px_50px]" />
+                            </g>
+
+                            {/* Legs */}
+                            <g className="stroke-slate-900 stroke-[7px] stroke-linecap-round">
+                                <path d="M45 95 L30 135 L15 135" className="animate-leg-back origin-[45px_95px]" />
+                                <path d="M55 95 L80 125 L95 125" className="animate-leg-front origin-[55px_95px]" />
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+
+                {/* Passing Objects (For speed reference) */}
+                <div className="absolute bottom-16 w-[300%] flex animate-city-scroll opacity-20 z-0">
+                    {[...Array(10)].map((_, i) => (
+                        <div key={i} className="mx-32">
+                            <div className="w-2 h-32 bg-slate-300"></div> {/* Lamp post */}
+                            <div className="w-8 h-2 bg-slate-300 -ml-3"></div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
             {/* Platform Trust Ticker */}
             <div className="bg-slate-900 py-12 relative overflow-hidden">
                 <div className="max-w-7xl mx-auto px-6 flex flex-wrap justify-center lg:justify-between items-center gap-12 relative z-10">
@@ -259,14 +364,93 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                     0%, 100% { transform: translate(0, 0); }
                     50% { transform: translate(10px, -10px); }
                 }
+                @keyframes bounce-slow {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-20px); }
+                }
+                @keyframes float {
+                    0%, 100% { transform: translate(0, 0); }
+                    50% { transform: translate(10px, -10px); }
+                }
+                @keyframes courier-walk {
+                    from { left: -300px; }
+                    to { left: 110%; }
+                }
+                 @keyframes city-scroll {
+                    from { transform: translateX(0); }
+                    to { transform: translateX(-50%); }
+                }
+                 @keyframes road-scroll {
+                    from { transform: translateX(0); }
+                    to { transform: translateX(-50%); }
+                }
+                @keyframes spin {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+                @keyframes bounce-custom {
+                     0%, 100% { transform: translateY(0) skewX(2deg); }
+                     50% { transform: translateY(-4px) skewX(2deg); }
+                }
+                @keyframes swing-leg {
+                    from { transform: rotate(-30deg); }
+                    to { transform: rotate(30deg); }
+                }
+                @keyframes swing-arm {
+                    from { transform: rotate(-20deg); }
+                    to { transform: rotate(20deg); }
+                }
+                @keyframes wind-blow {
+                    0% { transform: translateX(100px); opacity: 0; }
+                    50% { opacity: 1; }
+                    100% { transform: translateX(-50px); opacity: 0; }
+                }
+                @keyframes head-bob {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(1px); }
+                }
+
                 .animate-bounce-slow {
                     animation: bounce-slow 4s ease-in-out infinite;
                 }
                 .animate-float {
                     animation: float 6s ease-in-out infinite;
                 }
+                .animate-courier-walk {
+                    animation: courier-walk 10s linear infinite;
+                }
+                .animate-city-scroll {
+                    animation: city-scroll 20s linear infinite;
+                }
+                .animate-road-scroll {
+                    animation: road-scroll 1s linear infinite;
+                }
+                .animate-spin-fast {
+                    animation: spin 0.5s linear infinite;
+                }
+                .animate-bounce-custom {
+                    animation: bounce-custom 0.4s ease-in-out infinite;
+                }
+                .animate-leg-front {
+                    animation: swing-leg 0.6s ease-in-out infinite alternate;
+                }
+                .animate-leg-back {
+                    animation: swing-leg 0.6s ease-in-out infinite alternate-reverse;
+                }
+                .animate-arm-front {
+                    animation: swing-arm 0.6s ease-in-out infinite alternate-reverse;
+                }
+                .animate-arm-back {
+                    animation: swing-arm 0.6s ease-in-out infinite alternate;
+                }
+                .animate-wind {
+                    animation: wind-blow 1s linear infinite;
+                }
+                .animate-head-bob {
+                    animation: head-bob 0.6s ease-in-out infinite;
+                }
             `}</style>
-        </div>
+        </div >
     );
 };
 

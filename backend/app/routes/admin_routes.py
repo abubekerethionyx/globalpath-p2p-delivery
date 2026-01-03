@@ -49,11 +49,28 @@ def get_public_settings():
         'enable_google_login',
         'maintenance_interval_hours'
     ]
+    boolean_keys = [
+        'require_subscription_for_details', 
+        'require_subscription_for_chat',
+        'require_otp_for_signup',
+        'enable_free_promo_sender',
+        'enable_free_promo_picker',
+        'enable_google_login'
+    ]
+    
     settings = {}
     for key in keys:
         val = GlobalSetting.get_value(key)
+        
         if val is not None:
-            settings[key] = val
+            # Type conversion for boolean keys
+            if key in boolean_keys:
+                if isinstance(val, str):
+                    settings[key] = val.lower() == 'true'
+                else:
+                    settings[key] = bool(val)
+            else:
+                settings[key] = val
         else:
             # Defaults
             if key in ['require_otp_for_signup', 'enable_free_promo_sender', 'enable_free_promo_picker', 'enable_google_login']:

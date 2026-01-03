@@ -28,3 +28,8 @@ export const SETTINGS_KEYS = {
     KYC_BONUS: 'kyc_verification_bonus_amount',
     HOLIDAY_BONUS_AMOUNT: 'holiday_bonus_amount'
 };
+
+// UI Flags for frontend toggles
+export const UI_FLAGS = {
+    SHOW_OTP_STATUS: true
+};
