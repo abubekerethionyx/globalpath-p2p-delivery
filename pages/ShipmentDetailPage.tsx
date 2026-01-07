@@ -26,6 +26,7 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser, pu
   const navigate = useNavigate();
   const [item, setItem] = useState<ShipmentItem | null>(null);
   const [loading, setLoading] = useState(true);
+  const [pickRequestStatus, setPickRequestStatus] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchItem = async () => {
@@ -33,6 +34,19 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser, pu
       try {
         const fetchedItem = await ShipmentService.getShipment(id);
         setItem(fetchedItem);
+
+        // Check if current user has already requested this shipment
+        if (currentUser.role === 'PICKER') {
+          try {
+            const myRequests = await ShipmentService.getMyRequests();
+            const existingRequest = myRequests.find((r: any) => r.shipment.id === id);
+            if (existingRequest) {
+              setPickRequestStatus(existingRequest.status);
+            }
+          } catch (e) {
+            console.error("Failed to fetch pick requests", e);
+          }
+        }
       } catch (e) {
         console.error("Failed to fetch shipment", e);
       } finally {
@@ -51,6 +65,25 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser, pu
 
   const handleMessage = async (otherUserId: string) => {
     if (!item) return;
+
+    // Check if picker has requested this item before allowing chat (based on admin setting)
+    const chatRequestStatusRequired = publicSettings?.chat_request_status_required || 'REQUESTED';
+
+    if (currentUser.role === 'PICKER' && item.senderId === otherUserId) {
+      // Check based on the configured requirement
+      if (chatRequestStatusRequired === 'NONE') {
+        // No restriction - allow chat
+      } else if (chatRequestStatusRequired === 'REQUESTED' && !pickRequestStatus) {
+        alert("You must request to pick this item before you can message the sender.");
+        return;
+      } else if (chatRequestStatusRequired === 'PENDING' && pickRequestStatus !== 'PENDING' && pickRequestStatus !== 'APPROVED') {
+        alert("Your pick request must be at least pending before you can message the sender.");
+        return;
+      } else if (chatRequestStatusRequired === 'APPROVED' && pickRequestStatus !== 'APPROVED') {
+        alert("Your pick request must be approved before you can message the sender.");
+        return;
+      }
+    }
 
     if (publicSettings?.require_subscription_for_chat && !currentUser.isSubscriptionActive && currentUser.role !== 'ADMIN') {
       alert("Chat access requires an active protocol subscription. Please upgrade your plan.");
@@ -81,6 +114,19 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser, pu
     } catch (e) {
       console.error(e);
       alert("Failed to update status");
+    }
+  };
+
+  const handlePickRequest = async () => {
+    if (!item) return;
+
+    try {
+      await ShipmentService.pickShipment(item.id);
+      setPickRequestStatus('PENDING');
+      alert("Pick request sent successfully! The sender will be notified.");
+    } catch (e) {
+      console.error(e);
+      alert("Failed to send pick request. You may have already requested this item.");
     }
   };
 
@@ -180,6 +226,33 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser, pu
               )}
             </div>
           )}
+
+          {/* Request to Pick Button - For pickers who haven't partnered yet */}
+          {currentUser.role === 'PICKER' &&
+            item.senderId !== currentUser.id &&
+            !item.partnerId &&
+            item.status === ItemStatus.POSTED && (
+              <button
+                onClick={handlePickRequest}
+                disabled={!!pickRequestStatus}
+                className={`text-[9px] font-black px-4 py-2 rounded-full uppercase tracking-tighter flex items-center gap-1 shadow-lg transition ${pickRequestStatus
+                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none'
+                  : 'bg-indigo-600 text-white shadow-indigo-100 hover:bg-indigo-700'
+                  }`}
+              >
+                {pickRequestStatus ? (
+                  <>
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    Request {pickRequestStatus}
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>
+                    Request to Pick
+                  </>
+                )}
+              </button>
+            )}
 
           {/* Sender Delivery Confirmation */}
           {item.senderId === currentUser.id && item.status === ItemStatus.WAITING_CONFIRMATION && (
@@ -445,10 +518,47 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser, pu
                   </div>
                 </div>
                 {item.sender.id !== currentUser.id && (
-                  <button onClick={() => handleMessage(item.sender!.id)} className="w-full py-4 bg-slate-900 hover:bg-black text-white rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all shadow-xl shadow-slate-100 flex items-center justify-center gap-3">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
-                    Send Message
-                  </button>
+                  <>
+                    {(() => {
+                      const chatRequestStatusRequired = publicSettings?.chat_request_status_required || 'REQUESTED';
+                      const isPickerRestricted = currentUser.role === 'PICKER' && (
+                        (chatRequestStatusRequired === 'REQUESTED' && !pickRequestStatus) ||
+                        (chatRequestStatusRequired === 'PENDING' && pickRequestStatus !== 'PENDING' && pickRequestStatus !== 'APPROVED') ||
+                        (chatRequestStatusRequired === 'APPROVED' && pickRequestStatus !== 'APPROVED')
+                      );
+
+                      const getRestrictionMessage = () => {
+                        if (chatRequestStatusRequired === 'REQUESTED') {
+                          return { title: 'Request to Pick First', subtitle: 'You must request this item before messaging' };
+                        } else if (chatRequestStatusRequired === 'PENDING') {
+                          return { title: 'Request Must Be Pending', subtitle: 'Your pick request must be at least pending' };
+                        } else if (chatRequestStatusRequired === 'APPROVED') {
+                          return { title: 'Request Must Be Approved', subtitle: 'Your pick request must be approved by sender' };
+                        }
+                        return { title: 'Restricted', subtitle: 'Chat access restricted' };
+                      };
+
+                      if (isPickerRestricted) {
+                        const message = getRestrictionMessage();
+                        return (
+                          <div className="w-full py-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-center gap-3 cursor-not-allowed">
+                            <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                            <div className="text-center">
+                              <p className="text-[10px] font-black uppercase tracking-widest text-amber-700">{message.title}</p>
+                              <p className="text-[8px] font-medium text-amber-600">{message.subtitle}</p>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <button onClick={() => handleMessage(item.sender!.id)} className="w-full py-4 bg-slate-900 hover:bg-black text-white rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all shadow-xl shadow-slate-100 flex items-center justify-center gap-3">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+                          Send Message
+                        </button>
+                      );
+                    })()}
+                  </>
                 )}
               </div>
             ) : (

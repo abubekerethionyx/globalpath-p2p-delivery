@@ -37,6 +37,7 @@ const AdminSettingsTab: React.FC = () => {
             const defaults: AdminSettings = {
                 [SETTINGS_KEYS.REQUIRE_SUB_FOR_DETAILS]: { value: 'false', description: 'Block shipment detail viewing if no active subscription' },
                 [SETTINGS_KEYS.REQUIRE_SUB_FOR_CHAT]: { value: 'false', description: 'Block chatting if no active subscription' },
+                [SETTINGS_KEYS.CHAT_REQUEST_STATUS_REQUIRED]: { value: 'REQUESTED', description: 'Minimum request status required for pickers to chat (NONE/REQUESTED/PENDING/APPROVED)' },
                 [SETTINGS_KEYS.REQUIRE_OTP_FOR_SIGNUP]: { value: 'true', description: 'Require email OTP verification for new accounts' },
                 [SETTINGS_KEYS.ENABLE_FREE_PROMO_SENDER]: { value: 'true', description: 'Enable free welcome plan for new Senders' },
                 [SETTINGS_KEYS.ENABLE_FREE_PROMO_PICKER]: { value: 'true', description: 'Enable free welcome plan for new Pickers' },
@@ -105,7 +106,7 @@ const AdminSettingsTab: React.FC = () => {
             id: "gov",
             description: "Premium feature gating & membership enforcements.",
             icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>,
-            keys: [SETTINGS_KEYS.REQUIRE_SUB_FOR_DETAILS, SETTINGS_KEYS.REQUIRE_SUB_FOR_CHAT]
+            keys: [SETTINGS_KEYS.REQUIRE_SUB_FOR_DETAILS, SETTINGS_KEYS.REQUIRE_SUB_FOR_CHAT, SETTINGS_KEYS.CHAT_REQUEST_STATUS_REQUIRED]
         },
         {
             title: "Automation",
@@ -272,6 +273,7 @@ const AdminSettingsTab: React.FC = () => {
                             if (!info) return null;
 
                             const isPlanSelector = key === SETTINGS_KEYS.FREE_PROMO_SENDER_PLAN_ID || key === SETTINGS_KEYS.FREE_PROMO_PICKER_PLAN_ID;
+                            const isChatStatusSelector = key === SETTINGS_KEYS.CHAT_REQUEST_STATUS_REQUIRED;
                             const isTextInput = [
                                 SETTINGS_KEYS.MAINTENANCE_INTERVAL,
                                 SETTINGS_KEYS.REWARD_DAILY_SENDER,
@@ -314,6 +316,22 @@ const AdminSettingsTab: React.FC = () => {
                                                             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" /></svg>
                                                         </div>
                                                     </div>
+                                                ) : isChatStatusSelector ? (
+                                                    <div className="relative flex-1">
+                                                        <select
+                                                            value={String(info.value)}
+                                                            onChange={(e) => setSettings({ ...settings, [key]: { ...info, value: e.target.value } })}
+                                                            className="w-full appearance-none bg-slate-50 border border-slate-100 rounded-xl px-4 py-2 pr-10 text-[10px] font-black uppercase tracking-tight outline-none focus:ring-4 focus:ring-[#009E49]/10 transition-all cursor-pointer"
+                                                        >
+                                                            <option value="NONE">NONE - No Restriction</option>
+                                                            <option value="REQUESTED">REQUESTED - Must Send Request</option>
+                                                            <option value="PENDING">PENDING - Request Must Be Pending</option>
+                                                            <option value="APPROVED">APPROVED - Request Must Be Approved</option>
+                                                        </select>
+                                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" /></svg>
+                                                        </div>
+                                                    </div>
                                                 ) : isTextInput ? (
                                                     <div className="flex items-center gap-2 flex-1">
                                                         <input
@@ -334,7 +352,7 @@ const AdminSettingsTab: React.FC = () => {
                                                 )}
 
                                                 <div className="flex items-center gap-1.5 ml-auto">
-                                                    <div className={`w-1.5 h-1.5 rounded-full ${isToggleActive || (!isTextInput && !isPlanSelector && isToggleActive) || (isTextInput && info.value) || (isPlanSelector && info.value) ? 'bg-green-500 animate-pulse' : 'bg-slate-200'}`} />
+                                                    <div className={`w-1.5 h-1.5 rounded-full ${isToggleActive || (!isTextInput && !isPlanSelector && !isChatStatusSelector && isToggleActive) || (isTextInput && info.value) || (isPlanSelector && info.value) || (isChatStatusSelector && info.value) ? 'bg-green-500 animate-pulse' : 'bg-slate-200'}`} />
                                                     <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">Status</span>
                                                 </div>
                                             </div>

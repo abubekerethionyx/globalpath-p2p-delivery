@@ -338,6 +338,18 @@ const PickerDashboard: React.FC<PickerDashboardProps> = ({ user }) => {
                     </div>
                 </div>
 
+                <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:border-[#009E49] transition-all cursor-pointer group" onClick={() => navigate('/my-travels')}>
+                    <div className="flex justify-between items-start mb-4">
+                        <div className="p-3 bg-green-50 rounded-2xl text-green-500 group-hover:bg-[#009E49] group-hover:text-white transition-all">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 002 2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                        <svg className="w-4 h-4 text-slate-300 group-hover:text-[#009E49] transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" /></svg>
+                    </div>
+                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Active Travels</p>
+                    <p className="text-4xl font-black text-slate-900 mt-2">Manage</p>
+                    <p className="text-[10px] font-bold text-[#009E49] mt-2 uppercase tracking-widest leading-none">Global Trip Nodes</p>
+                </div>
+
                 <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
                     <div className="flex justify-between items-start mb-4">
                         <div className="p-3 bg-green-50 rounded-2xl text-green-500">

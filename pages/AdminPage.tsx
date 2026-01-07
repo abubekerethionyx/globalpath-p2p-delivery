@@ -13,8 +13,9 @@ import AdminSupportTab from '../components/admin/AdminSupportTab';
 import AdminSettingsTab from '../components/admin/AdminSettingsTab';
 import AdminNotificationsTab from '../components/admin/AdminNotificationsTab';
 import AdminCountriesTab from '../components/admin/AdminCountriesTab';
+import AdminTravelsTab from '../components/admin/AdminTravelsTab';
 
-type AdminTab = 'users' | 'items' | 'packages' | 'billing' | 'support' | 'notifications' | 'settings' | 'countries';
+type AdminTab = 'users' | 'items' | 'travels' | 'packages' | 'billing' | 'support' | 'notifications' | 'settings' | 'countries';
 
 const AdminPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AdminTab>('users');
@@ -60,6 +61,8 @@ const AdminPage: React.FC = () => {
         return <AdminUsersTab onVerify={handleVerify} />;
       case 'items':
         return <AdminItemsTab onUpdateStatus={handleUpdateItemStatus} />;
+      case 'travels':
+        return <AdminTravelsTab />;
       case 'packages':
         return <AdminPackagesTab onRefresh={() => { }} />;
       case 'billing':
@@ -88,6 +91,7 @@ const AdminPage: React.FC = () => {
         <div className="flex-1 py-4 overflow-y-auto custom-scrollbar">
           <SidebarItem tab="users" label="Users & Verification" icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>} />
           <SidebarItem tab="items" label="Shipments" icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>} />
+          <SidebarItem tab="travels" label="Travel Announcements" icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 002 2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>} />
           <SidebarItem tab="packages" label="Packages" icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>} />
           <SidebarItem tab="billing" label="Billing" icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>} />
           <SidebarItem tab="support" label="Support" icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" /></svg>} />

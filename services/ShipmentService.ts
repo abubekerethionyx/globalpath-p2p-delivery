@@ -3,7 +3,7 @@ import { ShipmentItem, ItemStatus } from '../types';
 import { transformUserData } from './UserService';
 
 // Transform snake_case to camelCase
-const transformShipmentData = (data: any): ShipmentItem => {
+export const transformShipmentData = (data: any): ShipmentItem => {
     return {
         id: data.id,
         senderId: data.sender_id,

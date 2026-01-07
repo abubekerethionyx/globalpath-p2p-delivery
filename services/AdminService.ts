@@ -12,6 +12,7 @@ export interface AdminSettings {
 export interface PublicSettings {
     require_subscription_for_details: boolean;
     require_subscription_for_chat: boolean;
+    chat_request_status_required?: string;
     require_otp_for_signup: boolean;
     enable_free_promo_sender: boolean;
     enable_free_promo_picker: boolean;

@@ -5,6 +5,7 @@ from .message_routes import bp as message_bp
 from .support_routes import bp as support_bp
 from .notification_routes import bp as notification_bp
 from .admin_routes import bp as admin_bp
+from .travel_routes import bp as travel_bp
 
 def register_routes(app):
     # Register blueprints with v1 API versioning
@@ -15,3 +16,4 @@ def register_routes(app):
     app.register_blueprint(support_bp, url_prefix='/api/v1/support')
     app.register_blueprint(notification_bp, url_prefix='/api/v1/notifications')
     app.register_blueprint(admin_bp, url_prefix='/api/v1/admin')
+    app.register_blueprint(travel_bp, url_prefix='/api/v1/travels')

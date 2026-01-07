@@ -200,6 +200,33 @@ export interface Message {
   receiver?: User;
 }
 
+export interface Travel {
+  id: string;
+  user: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    avatar: string;
+    verification_status: VerificationStatus;
+    is_subscription_active?: boolean;
+  };
+  origin_country: string;
+  destination_country: string;
+  travel_date: string;
+  weight_capacity?: number;
+  description?: string;
+  status: 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
+  created_at: string;
+  pins_count: number;
+}
+
+export interface TravelPin {
+  id: string;
+  shipment: ShipmentItem;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  created_at: string;
+}
+
 export interface AppState {
   currentUser: User | null;
   items: ShipmentItem[];

@@ -106,9 +106,95 @@ def seed_data():
         db.session.add_all(default_settings)
         db.session.commit()
 
+        print("Creating Fake Users (Pickers & Senders)...")
+        picker1 = User(
+            first_name="Abubeker", last_name="Siraj", email="picker@example.com",
+            role=UserRole.PICKER, verification_status=VerificationStatus.VERIFIED,
+            is_phone_verified=True, is_email_verified=True, coins_balance=500
+        )
+        picker1.set_password("password123")
+        picker1.avatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=Abubeker"
+
+        sender1 = User(
+            first_name="Sara", last_name="Tadesse", email="sender@example.com",
+            role=UserRole.SENDER, verification_status=VerificationStatus.VERIFIED,
+            is_phone_verified=True, is_email_verified=True, coins_balance=300
+        )
+        sender1.set_password("password123")
+        sender1.avatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=Sara"
+
+        db.session.add_all([picker1, sender1])
+        db.session.commit()
+
+        print("Creating Shipment Items...")
+        from app.models.shipment import ShipmentItem
+        from app.models.enums import ItemStatus
+        shipment1 = ShipmentItem(
+            sender_id=sender1.id,
+            category="Electronics",
+            description="MacBook Pro 14 inch",
+            pickup_country="USA",
+            dest_country="Ethiopia",
+            address="123 Apple way, Cupertino",
+            receiver_name="Abebe Bikila",
+            receiver_phone="+251911223344",
+            weight=1.6,
+            fee=2500,
+            status=ItemStatus.POSTED,
+            image_urls=["https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800"]
+        )
+        shipment2 = ShipmentItem(
+            sender_id=sender1.id,
+            category="Clothing",
+            description="Designer Handbag",
+            pickup_country="Germany",
+            dest_country="Ethiopia",
+            address="Berlin Fashion St",
+            receiver_name="Hanan Ahmed",
+            receiver_phone="+251922334455",
+            weight=2.0,
+            fee=1800,
+            status=ItemStatus.POSTED,
+            image_urls=["https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800"]
+        )
+        db.session.add_all([shipment1, shipment2])
+        db.session.commit()
+
+        print("Creating Travel Announcements...")
+        from app.models.travel import Travel, TravelPin
+        from datetime import timedelta
+        travel1 = Travel(
+            user_id=picker1.id,
+            origin_country="USA",
+            destination_country="Ethiopia",
+            travel_date=datetime.utcnow() + timedelta(days=15),
+            weight_capacity=10.0,
+            description="Traveling from New York to Addis Ababa. I have extra space for light electronics."
+        )
+        travel2 = Travel(
+            user_id=admin.id, # Admin also travels!
+            origin_country="China",
+            destination_country="Ethiopia",
+            travel_date=datetime.utcnow() + timedelta(days=7),
+            weight_capacity=23.0,
+            description="Regular business trip from Guangzhou. Can carry assorted items."
+        )
+        db.session.add_all([travel1, travel2])
+        db.session.commit()
+
+        print("Creating Travel Pins...")
+        pin1 = TravelPin(
+            travel_id=travel1.id,
+            shipment_id=shipment1.id,
+            status='APPROVED'
+        )
+        db.session.add(pin1)
+        db.session.commit()
+
         print("Seeding complete!")
-        print(f"Admin Email: {admin.email}")
-        print(f"Admin Password: admin123")
+        print(f"Admin Email: {admin.email} / admin123")
+        print(f"Picker Email: {picker1.email} / password123")
+        print(f"Sender Email: {sender1.email} / password123")
 
 if __name__ == "__main__":
     seed_data()

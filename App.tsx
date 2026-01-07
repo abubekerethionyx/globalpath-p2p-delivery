@@ -27,6 +27,10 @@ import PrivacyPage from './pages/PrivacyPage';
 
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
+import FeedPage from './pages/FeedPage';
+import MyTravelsPage from './pages/MyTravelsPage';
+import TravelDetailPage from './pages/TravelDetailPage';
+
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -111,6 +115,7 @@ const App: React.FC = () => {
   const getCurrentPageName = () => {
     const path = location.pathname;
     if (path === '/' || path === '/landing') return 'landing';
+    if (path.includes('feed')) return 'feed';
     if (path.includes('dashboard')) return 'dashboard';
     if (path.includes('marketplace')) return 'marketplace';
     if (path.includes('messages')) return 'messages';
@@ -146,6 +151,9 @@ const App: React.FC = () => {
             <Route path="/" element={user ? <Navigate to="/dashboard" /> : <LandingPage onNavigate={(page) => navigate(page === 'landing' ? '/' : `/${page}`)} />} />
             <Route path="/login" element={<AuthPage onAuthComplete={handleAuthComplete} publicSettings={publicSettings} />} />
             <Route path="/packaging" element={<PackagingPage user={user} onPlanChanged={refreshUser} />} />
+            <Route path="/feed" element={<FeedPage user={user} />} />
+            <Route path="/travel/:id" element={<TravelDetailPage user={user} />} />
+            <Route path="/my-travels" element={user ? <MyTravelsPage user={user} /> : <Navigate to="/login" />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
 

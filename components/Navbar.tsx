@@ -51,12 +51,14 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onNavigate, currentPage
   };
 
   const navLinks = [
+    { id: 'feed', label: 'Feed', roles: [UserRole.PICKER, UserRole.SENDER, null] },
     { id: 'dashboard', label: 'Dashboard', roles: [UserRole.PICKER, UserRole.SENDER] },
+    { id: 'my-travels', label: 'My Travels', roles: [UserRole.PICKER] },
     { id: 'marketplace', label: 'Marketplace', roles: [UserRole.PICKER] },
     { id: 'messages', label: 'Messages', roles: [UserRole.PICKER, UserRole.SENDER], dot: true },
     { id: 'billing', label: 'Finance', roles: [UserRole.PICKER, UserRole.SENDER] },
     { id: 'support', label: 'Support', roles: [UserRole.PICKER, UserRole.SENDER, UserRole.ADMIN] },
-    { id: 'packaging', label: 'Pricing', roles: [UserRole.PICKER, UserRole.SENDER, UserRole.ADMIN, null] },
+    { id: 'packaging', label: 'Pricing', roles: [UserRole.PICKER, UserRole.SENDER, null] },
   ];
 
   const handleNavigate = (page: string) => {
@@ -104,7 +106,13 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onNavigate, currentPage
             )}
 
             {(!user || user.role === UserRole.ADMIN) && (
-              <div className="hidden lg:ml-10 lg:flex">
+              <div className="hidden lg:ml-10 lg:flex lg:space-x-4">
+                <button
+                  onClick={() => handleNavigate('feed')}
+                  className={`px-3 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${currentPage === 'feed' ? 'text-[#009E49]' : 'text-slate-400 hover:text-slate-900'}`}
+                >
+                  Feed
+                </button>
                 <button
                   onClick={() => handleNavigate('packaging')}
                   className={`px-3 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${currentPage === 'packaging' ? 'text-[#009E49]' : 'text-slate-400 hover:text-slate-900'}`}

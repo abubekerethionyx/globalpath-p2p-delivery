@@ -13,6 +13,7 @@ export const SETTINGS_KEYS = {
     // Governance
     REQUIRE_SUB_FOR_DETAILS: 'require_subscription_for_details',
     REQUIRE_SUB_FOR_CHAT: 'require_subscription_for_chat',
+    CHAT_REQUEST_STATUS_REQUIRED: 'chat_request_status_required',
 
     // Automation
     MAINTENANCE_INTERVAL: 'maintenance_interval_hours',
