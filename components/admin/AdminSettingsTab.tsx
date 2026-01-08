@@ -53,7 +53,8 @@ const AdminSettingsTab: React.FC = () => {
                 [SETTINGS_KEYS.HOLIDAY_NAME]: { value: 'New Year', description: 'Name of the current manual holiday' },
                 [SETTINGS_KEYS.REGISTRATION_BONUS]: { value: '10', description: 'Coins awarded to new users upon registration' },
                 [SETTINGS_KEYS.KYC_BONUS]: { value: '50', description: 'Coins awarded upon successful KYC verification' },
-                [SETTINGS_KEYS.HOLIDAY_BONUS_AMOUNT]: { value: '15', description: 'Automatic weekly/national holiday pulse reward' }
+                [SETTINGS_KEYS.HOLIDAY_BONUS_AMOUNT]: { value: '15', description: 'Automatic weekly/national holiday pulse reward' },
+                [SETTINGS_KEYS.REWARD_TRAVEL_POST]: { value: '10', description: 'Coins awarded for posting a new travel announcement' }
             };
             setSettings({ ...defaults, ...data });
         } catch (err) {
@@ -127,6 +128,7 @@ const AdminSettingsTab: React.FC = () => {
                 SETTINGS_KEYS.REWARD_DAILY_PICKER,
                 SETTINGS_KEYS.REWARD_STATUS_CHANGE,
                 SETTINGS_KEYS.HOLIDAY_BONUS_AMOUNT,
+                SETTINGS_KEYS.REWARD_TRAVEL_POST,
                 SETTINGS_KEYS.ENABLE_HOLIDAY_MODE,
                 SETTINGS_KEYS.REWARD_HOLIDAY_BONUS,
                 SETTINGS_KEYS.HOLIDAY_NAME
@@ -283,7 +285,8 @@ const AdminSettingsTab: React.FC = () => {
                                 SETTINGS_KEYS.HOLIDAY_NAME,
                                 SETTINGS_KEYS.REGISTRATION_BONUS,
                                 SETTINGS_KEYS.KYC_BONUS,
-                                SETTINGS_KEYS.HOLIDAY_BONUS_AMOUNT
+                                SETTINGS_KEYS.HOLIDAY_BONUS_AMOUNT,
+                                SETTINGS_KEYS.REWARD_TRAVEL_POST
                             ].includes(key);
                             const isNumberInput = isTextInput && key !== SETTINGS_KEYS.HOLIDAY_NAME;
                             const isToggleActive = String(info.value) === 'true';

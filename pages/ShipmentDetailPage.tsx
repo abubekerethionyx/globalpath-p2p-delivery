@@ -65,10 +65,11 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser, pu
 
   const handleMessage = async (otherUserId: string) => {
     if (!item) return;
-
+    console.log(item);
+    console.log(publicSettings);
     // Check if picker has requested this item before allowing chat (based on admin setting)
     const chatRequestStatusRequired = publicSettings?.chat_request_status_required || 'REQUESTED';
-
+    console.log(chatRequestStatusRequired);
     if (currentUser.role === 'PICKER' && item.senderId === otherUserId) {
       // Check based on the configured requirement
       if (chatRequestStatusRequired === 'NONE') {

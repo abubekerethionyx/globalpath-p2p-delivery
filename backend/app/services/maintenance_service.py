@@ -3,6 +3,7 @@ from app.extensions import db
 from app.models.shipment import ShipmentItem
 from app.models.subscription import SubscriptionTransaction, SubscriptionPlan
 from app.models.user import User
+from app.models.travel import Travel
 
 def recalculate_rankings():
     """
@@ -131,6 +132,7 @@ def process_holiday_bonuses():
     print(f"Checking for public holidays on {today_str}...")
     
     try:
+        holiday_name = None
         # Fetch Ethiopian holidays for the current year
         year = today.year
         # Protocol Note: We use the ET country code for GlobalPath's primary operations region
@@ -139,36 +141,90 @@ def process_holiday_bonuses():
         if response.status_code == 200:
             holidays = response.json()
             holiday_today = next((h for h in holidays if h['date'] == today_str), None)
-            
             if holiday_today:
                 holiday_name = holiday_today['name']
-                print(f"National Holiday Detected: {holiday_name}! Initiating global reward sequence...")
-                
-                bonus_amount = int(GlobalSetting.get_value(SETTING_HOLIDAY_BONUS_AMOUNT, default=15))
-                users = User.query.all()
-                
-                for user in users:
-                    user.coins_balance += bonus_amount
-                    create_notification(
-                        user_id=user.id,
-                        title=f"Happy {holiday_name}! 🎊",
-                        message=f"To celebrate the holiday, we've awarded you {bonus_amount} technical credits. Protocol connectivity for all!",
-                        type='SUCCESS',
-                        link='/packaging'
-                    )
-                
-                # Sync settings to prevent re-processing
-                GlobalSetting.set_value('current_holiday_protocol', holiday_name)
-                print(f"Distributed {bonus_amount} coins to each of {len(users)} users for {holiday_name}.")
-            
-            # Mark today as checked regardless of whether it was a holiday or not
-            GlobalSetting.set_value(SETTING_LAST_HOLIDAY_CHECK, today_str)
-            db.session.commit()
         else:
-            print(f"Holiday API returned unexpected status: {response.status_code}")
+            print(f"Holiday API returned status: {response.status_code}. Checking local fallback...")
+
+        # Fallback local check for major Ethiopian fixed-date holidays
+        if not holiday_name:
+            if today.month == 1 and today.day == 7:
+                holiday_name = "Genna (Ethiopian Christmas)"
+            elif today.month == 1 and today.day == 19:
+                holiday_name = "Timkat (Epiphany)"
+            elif today.month == 3 and today.day == 2:
+                holiday_name = "Adwa Victory Day"
+            elif today.month == 5 and today.day == 1:
+                holiday_name = "International Workers' Day"
+            elif today.month == 5 and today.day == 5:
+                holiday_name = "Patriots' Victory Day"
+            elif today.month == 5 and today.day == 28:
+                holiday_name = "Derg Downfall Day"
+            elif today.month == 9 and today.day == 11:
+                holiday_name = "Enkutatash (Ethiopian New Year)"
+            elif today.month == 9 and today.day == 27:
+                holiday_name = "Meskel"
+        
+        if holiday_name:
+            print(f"National Holiday Detected: {holiday_name}! Initiating global reward sequence...")
+            
+            bonus_amount = int(GlobalSetting.get_value(SETTING_HOLIDAY_BONUS_AMOUNT, default=15))
+            users = User.query.all()
+            
+            for user in users:
+                user.coins_balance += bonus_amount
+                create_notification(
+                    user_id=user.id,
+                    title=f"Happy {holiday_name}! 🎊",
+                    message=f"To celebrate the holiday, we've awarded you {bonus_amount} technical credits. Protocol connectivity for all!",
+                    type='SUCCESS',
+                    link='/packaging'
+                )
+            
+            # Sync settings to prevent re-processing
+            GlobalSetting.set_value('current_holiday_protocol', holiday_name)
+            print(f"Distributed {bonus_amount} coins to each of {len(users)} users for {holiday_name}.")
+        
+        # Mark today as checked regardless of whether it was a holiday or not
+        GlobalSetting.set_value(SETTING_LAST_HOLIDAY_CHECK, today_str)
+        db.session.commit()
 
     except Exception as e:
         print(f"Failed to process holiday bonuses: {str(e)}")
+
+def cancel_expired_travels():
+    """
+    Automatically cancels (marks as COMPLETED) travels whose travel_date has passed.
+    This keeps the travel feed clean and prevents users from pinning to expired travels.
+    """
+    print("Checking for expired travel posts...")
+    now = datetime.utcnow()
+    
+    # Find all ACTIVE travels where the travel_date has passed
+    expired_travels = Travel.query.filter(
+        Travel.status == 'ACTIVE',
+        Travel.travel_date < now
+    ).all()
+    
+    from app.models.notification import create_notification
+    count = 0
+    
+    for travel in expired_travels:
+        travel.status = 'COMPLETED'
+        count += 1
+        
+        # Notify the travel poster
+        create_notification(
+            user_id=travel.user_id,
+            title="Travel Post Completed",
+            message=f"Your travel from {travel.origin_country} to {travel.destination_country} has been automatically marked as completed since the travel date has passed.",
+            type='INFO',
+            link=f'/travel/{travel.id}'
+        )
+        print(f"Marked travel {travel.id} as COMPLETED (travel date: {travel.travel_date})")
+    
+    db.session.commit()
+    print(f"Travel cleanup complete. Total expired travels processed: {count}")
 
 def run_system_maintenance():
     """Run all maintenance tasks"""
@@ -177,4 +233,5 @@ def run_system_maintenance():
     recalculate_rankings()
     award_daily_activity_coins()
     process_holiday_bonuses()
+    cancel_expired_travels()
     print("--- Maintenance Session Finished ---")

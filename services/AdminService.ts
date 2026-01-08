@@ -68,5 +68,10 @@ export const AdminService = {
     toggleCountry: async (id: string): Promise<any> => {
         const response = await api.post(`/admin/countries/${id}/toggle`);
         return response.data;
+    },
+
+    getAnalytics: async (): Promise<any> => {
+        const response = await api.get('/admin/analytics');
+        return response.data;
     }
 };

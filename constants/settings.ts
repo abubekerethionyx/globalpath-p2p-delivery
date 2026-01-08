@@ -27,7 +27,8 @@ export const SETTINGS_KEYS = {
     HOLIDAY_NAME: 'holiday_name',
     REGISTRATION_BONUS: 'registration_bonus_amount',
     KYC_BONUS: 'kyc_verification_bonus_amount',
-    HOLIDAY_BONUS_AMOUNT: 'holiday_bonus_amount'
+    HOLIDAY_BONUS_AMOUNT: 'holiday_bonus_amount',
+    REWARD_TRAVEL_POST: 'reward_travel_post_amount'
 };
 
 // UI Flags for frontend toggles

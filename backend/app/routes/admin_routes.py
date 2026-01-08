@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from app.models.setting import GlobalSetting
-from app.models.user import User, UserRole
+from app.models.user import User
+from app.models.enums import UserRole, ItemStatus
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.extensions import db
 from app.models.notification import Notification, create_notification
@@ -43,6 +44,7 @@ def get_public_settings():
     keys = [
         'require_subscription_for_details', 
         'require_subscription_for_chat',
+        'chat_request_status_required',
         'require_otp_for_signup',
         'enable_free_promo_sender',
         'enable_free_promo_picker',
@@ -77,6 +79,8 @@ def get_public_settings():
                 settings[key] = True
             elif key == 'maintenance_interval_hours':
                 settings[key] = '24'
+            elif key == 'chat_request_status_required':
+                settings[key] = 'REQUESTED'
             else:
                 settings[key] = False
             
@@ -231,3 +235,178 @@ def award_all_users():
         
     return jsonify({'message': f'Broadcasted {amount} λ to {count} users successfully'})
 
+@bp.route('/analytics', methods=['GET'])
+@jwt_required()
+def get_analytics():
+    current_user = User.query.get(get_jwt_identity())
+    if not current_user or current_user.role != UserRole.ADMIN:
+        return jsonify({'message': 'Admin access required'}), 403
+    
+    from sqlalchemy import func, and_
+    from datetime import datetime, timedelta
+    
+    now = datetime.utcnow()
+    seven_days_ago = now - timedelta(days=7)
+    yesterday = now - timedelta(days=1)
+    
+    # --- 1. User Sector ---
+    total_users = User.query.count()
+    users_last_week = User.query.filter(User.created_at >= seven_days_ago).count()
+    growth_rate = (users_last_week / (total_users - users_last_week)) * 100 if (total_users - users_last_week) > 0 else 0
+    
+    senders = User.query.filter_by(role=UserRole.SENDER).count()
+    pickers = User.query.filter_by(role=UserRole.PICKER).count()
+    admins = User.query.filter_by(role=UserRole.ADMIN).count()
+    
+    # Active Users (Action in last 24h - Approximation based on recent items/logins if tracked, 
+    # but here we'll use recent shipments/travels/subscriptions as proxy)
+    # Using a simple proxy: 'verified' users as 'active' for now, or just users who created something recently
+    active_users = db.session.query(User).filter(User.created_at >= yesterday).count() # New users are certainly active
+    
+    # --- 2. Financial Sector ---
+    from app.models.subscription import SubscriptionTransaction
+    
+    # Subscription Revenue (Sum of COMPLETED transactions)
+    sub_revenue = db.session.query(func.sum(SubscriptionTransaction.amount)).filter_by(status='COMPLETED').scalar() or 0.0
+    
+    # Logistics Revenue (Sum of fees of all POSTED/DELIVERED items)
+    # Assuming platform takes 100% of 'fee' or 'fee' is the platform cut. Let's assume 'fee' is total volume.
+    logistics_volume = db.session.query(func.sum(ShipmentItem.fee)).filter(ShipmentItem.status != 'CANCELLED').scalar() or 0.0
+    
+    total_revenue = sub_revenue + logistics_volume
+    arpu = total_revenue / total_users if total_users > 0 else 0
+    
+    # --- 3. Logistics Sector ---
+    total_shipments = ShipmentItem.query.count()
+    delivered_count = ShipmentItem.query.filter_by(status='DELIVERED').count()
+    conversion_rate = (delivered_count / total_shipments * 100) if total_shipments > 0 else 0
+    
+    # Status Breakdown
+    shipment_stats = db.session.query(
+        ShipmentItem.status, func.count(ShipmentItem.id)
+    ).group_by(ShipmentItem.status).all()
+    shipments_by_status = {status.value: count for status, count in shipment_stats}
+    
+    # Volume Last 7 Days (for chart)
+    # Group by day
+    date_series = []
+    for i in range(7):
+        date_series.append((now - timedelta(days=i)).date())
+    
+    volume_trend = []
+    revenue_trend = []
+    status_trend = []
+    
+    for d in reversed(date_series):
+        # Shipments per day (Total)
+        cnt = ShipmentItem.query.filter(func.date(ShipmentItem.created_at) == d).count()
+        
+        # Shipments per day (by Status)
+        day_status_data = {"name": d.strftime("%m-%d"), "Total": cnt}
+        # Initialize common statuses
+        for s in [ItemStatus.POSTED, ItemStatus.PICKED, ItemStatus.DELIVERED]:
+            day_status_data[s.value] = 0
+            
+        stats = db.session.query(
+            ShipmentItem.status, func.count(ShipmentItem.id)
+        ).filter(func.date(ShipmentItem.created_at) == d).group_by(ShipmentItem.status).all()
+        
+        for status, total in stats:
+            if status:
+                day_status_data[status.value] = total
+        
+        status_trend.append(day_status_data)
+        
+        # Revenue per day
+        # Subscriptions
+        sub_rev_day = db.session.query(func.sum(SubscriptionTransaction.amount)).filter(
+            and_(SubscriptionTransaction.status == 'COMPLETED', func.date(SubscriptionTransaction.timestamp) == d)
+        ).scalar() or 0
+        
+        # Shipments
+        ship_rev_day = db.session.query(func.sum(ShipmentItem.fee)).filter(
+            and_(ShipmentItem.status != 'CANCELLED', func.date(ShipmentItem.created_at) == d)
+        ).scalar() or 0
+        
+        volume_trend.append({"name": d.strftime("%m-%d"), "value": cnt})
+        revenue_trend.append({"name": d.strftime("%m-%d"), "value": sub_rev_day + ship_rev_day})
+
+    # --- 4. Travel/Network Sector ---
+    from app.models.travel import Travel
+    total_travels = Travel.query.count()
+    active_travels = Travel.query.filter_by(status='ACTIVE').count()
+    
+    # Calculate Capacity Utilization (Shipment Weight / Travel Capacity) - Advanced
+    # Sum of all shipment weights currently IN_TRANSIT
+    shipping_weight = db.session.query(func.sum(ShipmentItem.weight)).filter(ShipmentItem.status == 'IN_TRANSIT').scalar() or 0
+    # Sum of capacity of active travels
+    available_capacity_kg = db.session.query(func.sum(Travel.weight_capacity)).filter(Travel.status == 'ACTIVE').scalar() or 0
+    
+    network_load = (shipping_weight / available_capacity_kg * 100) if available_capacity_kg > 0 else 0
+    
+    # Top Routes (Origin -> Destination)
+    route_stats = db.session.query(
+        Travel.origin_country, 
+        Travel.destination_country, 
+        func.count(Travel.id)
+    ).group_by(Travel.origin_country, Travel.destination_country)\
+    .order_by(func.count(Travel.id).desc())\
+    .limit(5).all()
+    
+    top_routes = [
+        {'origin': origin, 'destination': dest, 'count': count} 
+        for origin, dest, count in route_stats
+    ]
+
+    # High Impact Travelers (Users with most capacity provided)
+    traveler_stats = db.session.query(
+        User.first_name,
+        User.last_name,
+        func.count(Travel.id),
+        func.sum(Travel.weight_capacity)
+    ).join(Travel, User.id == Travel.user_id)\
+    .filter(Travel.status != 'CANCELLED')\
+    .group_by(User.id, User.first_name, User.last_name)\
+    .order_by(func.sum(Travel.weight_capacity).desc())\
+    .limit(5).all()
+    
+    top_travelers = [
+        {'name': f"{fname} {lname}", 'trips': trips, 'total_capacity': capacity}
+        for fname, lname, trips, capacity in traveler_stats
+    ]
+
+    return jsonify({
+        'users': {
+            'total': total_users,
+            'active_proxy': active_users,
+            'distribution': {
+                'senders': senders,
+                'pickers': pickers,
+                'admins': admins
+            },
+            'growth_rate': round(growth_rate, 2)
+        },
+        'financial': {
+            'total_revenue': round(total_revenue, 2),
+            'logistics_volume': round(logistics_volume, 2),
+            'subscription_revenue': round(sub_revenue, 2),
+            'arpu': round(arpu, 2),
+            'trend': revenue_trend
+        },
+        'logistics': {
+            'total_shipments': total_shipments,
+            'delivered': delivered_count,
+            'conversion_rate': round(conversion_rate, 2),
+            'by_status': shipments_by_status,
+            'trend': volume_trend,
+            'status_trend': status_trend
+        },
+        'travels': {
+            'total': total_travels,
+            'active': active_travels,
+            'network_load': round(network_load, 2),
+            'capacity_kg': available_capacity_kg,
+            'top_routes': top_routes,
+            'top_travelers': top_travelers
+        }
+    })

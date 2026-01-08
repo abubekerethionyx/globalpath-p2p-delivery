@@ -1,11 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { AdminService } from '../../services/AdminService';
+import { COUNTRIES } from '../../constants';
 
 const AdminCountriesTab: React.FC = () => {
     const [countries, setCountries] = useState<any[]>([]);
     const [newCountry, setNewCountry] = useState('');
+    const [suggestions, setSuggestions] = useState<string[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const suggestionRef = useRef<HTMLDivElement>(null);
 
     const fetchCountries = async () => {
         try {
@@ -20,7 +24,37 @@ const AdminCountriesTab: React.FC = () => {
 
     useEffect(() => {
         fetchCountries();
+
+        const handleClickOutside = (event: MouseEvent) => {
+            if (suggestionRef.current && !suggestionRef.current.contains(event.target as Node)) {
+                setShowSuggestions(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setNewCountry(value);
+        if (value.trim()) {
+            const filtered = COUNTRIES.filter(c =>
+                c.toLowerCase().includes(value.toLowerCase()) &&
+                !countries.some(existing => existing.name.toLowerCase() === c.toLowerCase())
+            ).slice(0, 10);
+            setSuggestions(filtered);
+            setShowSuggestions(true);
+        } else {
+            setSuggestions([]);
+            setShowSuggestions(false);
+        }
+    };
+
+    const handleSelectSuggestion = (suggestion: string) => {
+        setNewCountry(suggestion);
+        setSuggestions([]);
+        setShowSuggestions(false);
+    };
 
     const handleAdd = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -29,6 +63,7 @@ const AdminCountriesTab: React.FC = () => {
         try {
             await AdminService.addCountry(newCountry);
             setNewCountry('');
+            setShowSuggestions(false);
             fetchCountries();
         } catch (err: any) {
             alert(err.response?.data?.message || 'Failed to add country');
@@ -66,17 +101,37 @@ const AdminCountriesTab: React.FC = () => {
                 <h3 className="text-xl font-black text-slate-900 mb-2">Supported Geographies</h3>
                 <p className="text-slate-500 text-sm mb-8 font-medium">Manage operational origin and destination countries for the GlobalPath platform.</p>
 
-                <form onSubmit={handleAdd} className="flex gap-4 mb-10">
-                    <input
-                        type="text"
-                        placeholder="Enter country name (e.g. Ethiopia)"
-                        value={newCountry}
-                        onChange={(e) => setNewCountry(e.target.value)}
-                        className="flex-1 px-6 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-600 outline-none"
-                    />
+                <form onSubmit={handleAdd} className="flex flex-col md:flex-row gap-4 mb-10 relative">
+                    <div className="flex-1 relative" ref={suggestionRef}>
+                        <input
+                            type="text"
+                            placeholder="Enter country name (e.g. Ethiopia)"
+                            value={newCountry}
+                            onChange={handleInputChange}
+                            onFocus={() => newCountry.trim() && setShowSuggestions(true)}
+                            className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-indigo-600 outline-none"
+                        />
+                        {showSuggestions && suggestions.length > 0 && (
+                            <div className="absolute z-50 w-full mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-top-2 duration-200">
+                                {suggestions.map((suggestion, idx) => (
+                                    <div
+                                        key={idx}
+                                        onClick={() => handleSelectSuggestion(suggestion)}
+                                        className="px-6 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 cursor-pointer transition-colors flex items-center justify-between"
+                                    >
+                                        <span>{suggestion}</span>
+                                        <svg className="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                                        </svg>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                     <button
                         type="submit"
-                        className="px-8 py-4 bg-slate-900 text-white rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-black transition-all shadow-xl shadow-slate-100"
+                        disabled={!newCountry.trim()}
+                        className="px-8 py-4 bg-slate-900 text-white rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-black transition-all shadow-xl shadow-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Register Node
                     </button>

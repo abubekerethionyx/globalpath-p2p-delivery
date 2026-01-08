@@ -242,6 +242,7 @@ const MarketplacePage: React.FC<MarketplacePageProps> = ({ user, publicSettings 
                   isSubscriptionActive={user.isSubscriptionActive}
                   requireSubscriptionForDetails={publicSettings?.require_subscription_for_details}
                   requireSubscriptionForChat={publicSettings?.require_subscription_for_chat}
+                  chatRequestStatusRequired={publicSettings?.chat_request_status_required}
                 />
                 {(!hasPaid) && (
                   <div className="absolute top-14 right-4 bg-slate-900/10 p-2 rounded-xl backdrop-blur-md border border-white/20 z-10">

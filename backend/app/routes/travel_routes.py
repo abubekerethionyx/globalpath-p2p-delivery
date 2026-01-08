@@ -96,6 +96,14 @@ def create_travel():
     db.session.add(travel)
     db.session.commit()
     
+    # Check for reward
+    from app.models.setting import GlobalSetting
+    from app.services.user_service import reward_user_coins
+    
+    reward_amount = GlobalSetting.get_value('reward_travel_post_amount')
+    if reward_amount and int(reward_amount) > 0:
+        reward_user_coins(current_user_id, int(reward_amount), "Travel Announcement Reward")
+    
     return jsonify({'message': 'Travel announced successfully', 'id': travel.id}), 201
 
 @bp.route('/<travel_id>', methods=['DELETE'])

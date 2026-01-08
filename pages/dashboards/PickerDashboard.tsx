@@ -5,13 +5,16 @@ import { ShipmentService } from '../../services/ShipmentService';
 import ShipmentCard from '../../components/ShipmentCard';
 import { useNavigate } from 'react-router-dom';
 
+import { PublicSettings } from '../../services/AdminService';
+
 interface PickerDashboardProps {
     user: User;
+    publicSettings?: PublicSettings;
 }
 
 type PickerTab = 'APPLICATIONS' | 'REQUESTS' | 'LOCKED' | 'TRANSIT' | 'COMPLETED';
 
-const PickerDashboard: React.FC<PickerDashboardProps> = ({ user }) => {
+const PickerDashboard: React.FC<PickerDashboardProps> = ({ user, publicSettings }) => {
     const navigate = useNavigate();
     const [items, setItems] = useState<ShipmentItem[]>([]);
     const [requests, setRequests] = useState<any[]>([]);
@@ -117,6 +120,7 @@ const PickerDashboard: React.FC<PickerDashboardProps> = ({ user }) => {
                             isSelected={selectedIds.has(item.id)}
                             currentUserId={user.id}
                             requestStatus={(item as any).requestStatus}
+                            chatRequestStatusRequired={publicSettings?.chat_request_status_required}
                         />
                         <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button

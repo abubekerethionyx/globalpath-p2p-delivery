@@ -37,6 +37,7 @@ const App: React.FC = () => {
   const [publicSettings, setPublicSettings] = useState<PublicSettings>({
     require_subscription_for_details: false,
     require_subscription_for_chat: false,
+    chat_request_status_required: 'REQUESTED',
     require_otp_for_signup: true,
     enable_free_promo_sender: true,
     enable_free_promo_picker: true,
@@ -158,7 +159,7 @@ const App: React.FC = () => {
             <Route path="/privacy" element={<PrivacyPage />} />
 
             {/* Protected Routes */}
-            <Route path="/dashboard" element={user ? <DashboardPage user={user} /> : <Navigate to="/login" />} />
+            <Route path="/dashboard" element={user ? <DashboardPage user={user} publicSettings={publicSettings} /> : <Navigate to="/login" />} />
             <Route path="/shipment-detail/:id" element={user ? <ShipmentDetailPage currentUser={user} publicSettings={publicSettings} /> : <Navigate to="/login" />} />
             <Route path="/marketplace" element={user ? <MarketplacePage user={user} publicSettings={publicSettings} /> : <Navigate to="/login" />} />
             <Route path="/billing" element={user ? <BillingPage user={user} /> : <Navigate to="/login" />} />

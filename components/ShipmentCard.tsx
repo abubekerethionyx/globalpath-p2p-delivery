@@ -19,6 +19,7 @@ interface ShipmentCardProps {
   isSubscriptionActive?: boolean;
   requireSubscriptionForDetails?: boolean;
   requireSubscriptionForChat?: boolean;
+  chatRequestStatusRequired?: string;
 }
 
 const ShipmentCard: React.FC<ShipmentCardProps> = ({
@@ -35,7 +36,8 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
   currentUserId,
   isSubscriptionActive = true,
   requireSubscriptionForDetails = false,
-  requireSubscriptionForChat = false
+  requireSubscriptionForChat = false,
+  chatRequestStatusRequired = 'REQUESTED'
 }) => {
   const navigate = useNavigate();
 
@@ -49,6 +51,20 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
       alert("Chat access requires an active protocol subscription. Please upgrade your plan.");
       navigate('/packaging');
       return;
+    }
+
+    // Check if picker has requested this item before allowing chat (based on admin setting)
+    if (role === UserRole.PICKER && item.senderId) {
+      if (chatRequestStatusRequired === 'REQUESTED' && !requestStatus) {
+        alert("You must request to pick this item before you can message the sender.");
+        return;
+      } else if (chatRequestStatusRequired === 'PENDING' && requestStatus !== 'PENDING' && requestStatus !== 'APPROVED') {
+        alert("Your pick request must be at least pending before you can message the sender.");
+        return;
+      } else if (chatRequestStatusRequired === 'APPROVED' && requestStatus !== 'APPROVED') {
+        alert("Your pick request must be approved before you can message the sender.");
+        return;
+      }
     }
 
     if (onChat) {

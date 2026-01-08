@@ -14,11 +14,12 @@ import AdminSettingsTab from '../components/admin/AdminSettingsTab';
 import AdminNotificationsTab from '../components/admin/AdminNotificationsTab';
 import AdminCountriesTab from '../components/admin/AdminCountriesTab';
 import AdminTravelsTab from '../components/admin/AdminTravelsTab';
+import AdminAnalyticsTab from '../components/admin/AdminAnalyticsTab';
 
-type AdminTab = 'users' | 'items' | 'travels' | 'packages' | 'billing' | 'support' | 'notifications' | 'settings' | 'countries';
+type AdminTab = 'analytics' | 'users' | 'items' | 'travels' | 'packages' | 'billing' | 'support' | 'notifications' | 'settings' | 'countries';
 
 const AdminPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<AdminTab>('users');
+  const [activeTab, setActiveTab] = useState<AdminTab>('analytics');
 
   const handleVerify = async (userId: string, status: VerificationStatus) => {
     try {
@@ -27,8 +28,6 @@ const AdminPage: React.FC = () => {
       } else {
         await UserService.updateUser(userId, { verification_status: status } as any);
       }
-      // Re-fetching is handled by the tab components internally if they listen for updates
-      // or we can pass a refresh trigger if needed, but for now we rely on internal tab state.
     } catch (error) {
       console.error("Failed to update verification status", error);
     }
@@ -57,6 +56,8 @@ const AdminPage: React.FC = () => {
 
   const renderActiveTab = () => {
     switch (activeTab) {
+      case 'analytics':
+        return <AdminAnalyticsTab />;
       case 'users':
         return <AdminUsersTab onVerify={handleVerify} />;
       case 'items':
@@ -89,6 +90,7 @@ const AdminPage: React.FC = () => {
           <h2 className="text-2xl font-black text-white">Admin Hub</h2>
         </div>
         <div className="flex-1 py-4 overflow-y-auto custom-scrollbar">
+          <SidebarItem tab="analytics" label="System Analytics" icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>} />
           <SidebarItem tab="users" label="Users & Verification" icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>} />
           <SidebarItem tab="items" label="Shipments" icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>} />
           <SidebarItem tab="travels" label="Travel Announcements" icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 002 2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>} />

@@ -6,7 +6,7 @@ import time
 from datetime import datetime
 
 # Configuration - Update these for your production environment if necessary
-BASE_URL = "http://localhost:5000/api"
+BASE_URL = "http://localhost:5000/api/v1"
 ADMIN_EMAIL = "admin@globalpath.com"
 ADMIN_PASSWORD = "admin123" # Use an environment variable in production
 
