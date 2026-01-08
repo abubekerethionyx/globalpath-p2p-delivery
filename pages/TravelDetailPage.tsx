@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { User, Travel, TravelPin, UserRole, ItemStatus } from '../types';
 import { TravelService } from '../services/TravelService';
 import { ShipmentService } from '../services/ShipmentService';
+import { useToast } from '../components/ToastContext';
 
 interface TravelDetailPageProps {
     user: User | null;
@@ -15,6 +16,7 @@ const TravelDetailPage: React.FC<TravelDetailPageProps> = ({ user }) => {
     const [pins, setPins] = useState<TravelPin[]>([]);
     const [loading, setLoading] = useState(true);
     const [myRequestsStatus, setMyRequestsStatus] = useState<Record<string, string>>({});
+    const { showToast } = useToast();
 
     useEffect(() => {
         if (id) {
@@ -52,12 +54,12 @@ const TravelDetailPage: React.FC<TravelDetailPageProps> = ({ user }) => {
 
         try {
             await ShipmentService.pickShipment(shipmentId);
-            alert("Pick request sent! The sender has been notified.");
+            showToast("Pick request sent! The sender has been notified.", 'SUCCESS');
             setMyRequestsStatus(prev => ({ ...prev, [shipmentId]: 'PENDING' }));
             // Optionally refresh travel details if status changes
             fetchTravelDetails();
         } catch (e) {
-            alert("Failed to pick shipment. It might be already requested.");
+            showToast("Failed to pick shipment. It might be already requested.", 'ERROR');
         }
     };
 
@@ -273,7 +275,7 @@ const TravelDetailPage: React.FC<TravelDetailPageProps> = ({ user }) => {
                                             <svg className="w-5 h-5 flex-shrink-0 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                                             <div>
                                                 <p className="text-[10px] font-black uppercase tracking-widest">Access Protocol Locked</p>
-                                                <p className="text-[9px] font-medium opacity-80">This traveler is on the Free Tier. Details are restricted to Premium members.</p>
+                                                <p className="text-[9px] font-medium opacity-80">This traveler is seen as a logged-in user. Details are authorized users only.</p>
                                             </div>
                                         </div>
                                     </div>

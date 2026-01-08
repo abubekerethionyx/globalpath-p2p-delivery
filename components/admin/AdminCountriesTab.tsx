@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { AdminService } from '../../services/AdminService';
 import { COUNTRIES } from '../../constants';
+import { useToast } from '../ToastContext';
+import ConfirmationModal from '../ConfirmationModal';
 
 const AdminCountriesTab: React.FC = () => {
     const [countries, setCountries] = useState<any[]>([]);
@@ -10,6 +12,21 @@ const AdminCountriesTab: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const suggestionRef = useRef<HTMLDivElement>(null);
+    const { showToast } = useToast();
+
+    const [modalConfig, setModalConfig] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        type: 'DANGER' | 'INFO';
+        onConfirm: () => void;
+    }>({
+        isOpen: false,
+        title: '',
+        message: '',
+        type: 'INFO',
+        onConfirm: () => { }
+    });
 
     const fetchCountries = async () => {
         try {
@@ -64,28 +81,40 @@ const AdminCountriesTab: React.FC = () => {
             await AdminService.addCountry(newCountry);
             setNewCountry('');
             setShowSuggestions(false);
+            showToast(`${newCountry} registered successfully`, 'SUCCESS');
             fetchCountries();
         } catch (err: any) {
-            alert(err.response?.data?.message || 'Failed to add country');
+            showToast(err.response?.data?.message || 'Failed to add country', 'ERROR');
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (!window.confirm('Are you sure you want to remove this country? It will no longer be available for new shipments.')) return;
-        try {
-            await AdminService.deleteCountry(id);
-            fetchCountries();
-        } catch (err) {
-            alert('Failed to delete country');
-        }
+    const handleDelete = (id: string) => {
+        setModalConfig({
+            isOpen: true,
+            title: 'Delete Node',
+            message: 'Are you sure you want to remove this country? It will no longer be available for new shipments.',
+            type: 'DANGER',
+            onConfirm: async () => {
+                try {
+                    await AdminService.deleteCountry(id);
+                    showToast('Country node deleted', 'SUCCESS');
+                    fetchCountries();
+                } catch (err) {
+                    showToast('Failed to delete country', 'ERROR');
+                } finally {
+                    setModalConfig(prev => ({ ...prev, isOpen: false }));
+                }
+            }
+        });
     };
 
     const handleToggle = async (id: string) => {
         try {
             await AdminService.toggleCountry(id);
+            showToast('Node status updated', 'SUCCESS');
             fetchCountries();
         } catch (err) {
-            alert('Failed to toggle country status');
+            showToast('Failed to toggle country status', 'ERROR');
         }
     };
 
@@ -179,6 +208,14 @@ const AdminCountriesTab: React.FC = () => {
                     </div>
                 )}
             </div>
+            <ConfirmationModal
+                isOpen={modalConfig.isOpen}
+                title={modalConfig.title}
+                message={modalConfig.message}
+                type={modalConfig.type}
+                onConfirm={modalConfig.onConfirm}
+                onCancel={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}
+            />
         </div>
     );
 };

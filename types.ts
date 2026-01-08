@@ -159,6 +159,10 @@ export interface ShipmentItem {
   picked_at?: string;
   availablePickupTime?: string;
   available_pickup_time?: string;
+  showAddress?: boolean;
+  show_address?: boolean;
+  autoApproveFirst?: boolean;
+  auto_approve_first?: boolean;
   // User objects populated from backend
   sender?: User;
   partner?: User;

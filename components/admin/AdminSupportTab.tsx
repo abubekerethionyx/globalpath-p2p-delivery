@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { SupportService } from '../../services/SupportService';
 import { SupportTicket, TicketStatus } from '../../types';
 import { debounce } from 'lodash';
+import { useToast } from '../../components/ToastContext';
 
 const AdminSupportTab: React.FC = () => {
     const [tickets, setTickets] = useState<SupportTicket[]>([]);
@@ -10,6 +11,7 @@ const AdminSupportTab: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [replyMessage, setReplyMessage] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const { showToast } = useToast();
 
     // Pagination & Filter State
     const [currentPage, setCurrentPage] = useState(1);
@@ -57,7 +59,7 @@ const AdminSupportTab: React.FC = () => {
             const fullTicket = await SupportService.getTicket(ticket.id);
             setSelectedTicket(fullTicket);
         } catch (error) {
-            alert('Failed to load ticket details');
+            showToast('Failed to load ticket details', 'ERROR');
         }
     };
 
@@ -75,7 +77,7 @@ const AdminSupportTab: React.FC = () => {
             // Optional: refresh list to update status in sidebar
             fetchTickets(currentPage, filterStatus, filterCategory, searchTerm);
         } catch (error) {
-            alert('Failed to send reply');
+            showToast('Failed to send reply', 'ERROR');
         } finally {
             setIsSubmitting(false);
         }
@@ -88,7 +90,7 @@ const AdminSupportTab: React.FC = () => {
             setSelectedTicket({ ...selectedTicket, status });
             fetchTickets(currentPage, filterStatus, filterCategory, searchTerm);
         } catch (error) {
-            alert('Failed to update status');
+            showToast('Failed to update status', 'ERROR');
         }
     };
 
@@ -223,7 +225,7 @@ const AdminSupportTab: React.FC = () => {
                                                 ...selectedTicket,
                                                 replies: [...(selectedTicket.replies || []), reply]
                                             });
-                                        } catch (e) { alert('Analysis failed'); }
+                                        } catch (e) { showToast('Analysis failed', 'ERROR'); }
                                         finally { setIsSubmitting(false); }
                                     }}
                                     disabled={isSubmitting}
@@ -272,8 +274,8 @@ const AdminSupportTab: React.FC = () => {
                                     </div>
                                     <div className={`flex-1 ${reply.user_role === 'ADMIN' ? 'text-right' : ''}`}>
                                         <div className={`p-6 rounded-[1.5rem] shadow-sm inline-block text-left max-w-[90%] ${reply.user_role === 'ADMIN'
-                                                ? 'bg-gradient-to-br from-indigo-600 to-violet-700 text-white rounded-tr-none'
-                                                : 'bg-white border border-slate-100 text-slate-700 rounded-tl-none'
+                                            ? 'bg-gradient-to-br from-indigo-600 to-violet-700 text-white rounded-tr-none'
+                                            : 'bg-white border border-slate-100 text-slate-700 rounded-tl-none'
                                             }`}>
                                             <p className="text-sm leading-relaxed font-medium whitespace-pre-wrap">{reply.message}</p>
                                         </div>

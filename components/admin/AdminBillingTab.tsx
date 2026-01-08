@@ -3,6 +3,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { SubscriptionService } from '../../services/SubscriptionService';
 import { User, SubscriptionTransaction } from '../../types';
 import { debounce } from 'lodash';
+import { useToast } from '../../components/ToastContext';
+import ConfirmationModal from '../../components/ConfirmationModal';
 
 interface AdminBillingTabProps {
   users?: User[]; // Optional prop if we want to pass users
@@ -20,6 +22,22 @@ const AdminBillingTab: React.FC<AdminBillingTabProps> = ({ users: propsUsers }) 
   const [filterStatus, setFilterStatus] = useState<string>('ALL');
   const [filterMethod, setFilterMethod] = useState<string>('ALL');
   const [searchTerm, setSearchTerm] = useState('');
+  const { showToast } = useToast();
+
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: 'DANGER' | 'INFO';
+    confirmLabel?: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'INFO',
+    onConfirm: () => { }
+  });
 
   const fetchTransactions = async (page: number, status: string, method: string, search: string) => {
     setLoading(true);
@@ -54,15 +72,43 @@ const AdminBillingTab: React.FC<AdminBillingTabProps> = ({ users: propsUsers }) 
   }, [currentPage, filterStatus, filterMethod, searchTerm, debouncedFetch]);
 
   const handleUpdateStatus = async (txId: string, status: string) => {
-    try {
-      if (status === 'COMPLETED' && !window.confirm("Verify: Confirm successful receipt of funds? This will activate the user's subscription.")) return;
-      if (status === 'REJECTED' && !window.confirm("Verify: Reject this transaction? This will invalidate the payment attempt.")) return;
+    const executeUpdate = async () => {
+      try {
+        await SubscriptionService.updateTransactionStatus(txId, status);
+        fetchTransactions(currentPage, filterStatus, filterMethod, searchTerm);
+        showToast(`Transaction ${status.toLowerCase()} successfully.`, 'SUCCESS');
+      } catch (error) {
+        showToast("Failed to update status", 'ERROR');
+      } finally {
+        setModalConfig(prev => ({ ...prev, isOpen: false }));
+      }
+    };
 
-      await SubscriptionService.updateTransactionStatus(txId, status);
-      fetchTransactions(currentPage, filterStatus, filterMethod, searchTerm);
-    } catch (error) {
-      alert("Failed to update status");
+    if (status === 'COMPLETED') {
+      setModalConfig({
+        isOpen: true,
+        title: 'Complete Transaction',
+        message: "Verify: Confirm successful receipt of funds? This will activate the user's subscription.",
+        type: 'INFO',
+        confirmLabel: 'Confirm Payment',
+        onConfirm: executeUpdate
+      });
+      return;
     }
+
+    if (status === 'REJECTED') {
+      setModalConfig({
+        isOpen: true,
+        title: 'Reject Transaction',
+        message: "Verify: Reject this transaction? This will invalidate the payment attempt.",
+        type: 'DANGER',
+        confirmLabel: 'Reject Payment',
+        onConfirm: executeUpdate
+      });
+      return;
+    }
+
+    executeUpdate();
   };
 
   const copyToClipboard = (text: string) => {
@@ -291,6 +337,16 @@ const AdminBillingTab: React.FC<AdminBillingTabProps> = ({ users: propsUsers }) 
           <img src={modalImage} className="max-w-full max-h-[85vh] rounded-2xl shadow-2xl border-4 border-white" alt="Receipt" onClick={e => e.stopPropagation()} />
         </div>
       )}
+
+      <ConfirmationModal
+        isOpen={modalConfig.isOpen}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        type={modalConfig.type}
+        confirmLabel={modalConfig.confirmLabel}
+        onConfirm={modalConfig.onConfirm}
+        onCancel={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 };

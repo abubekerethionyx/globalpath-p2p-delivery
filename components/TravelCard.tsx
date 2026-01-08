@@ -52,8 +52,8 @@ const TravelCard: React.FC<TravelCardProps> = ({ travel, onPinClick, currentUser
                             </p>
                         </div>
                     </div>
-                    <div className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${isExpired ? 'bg-slate-100 text-slate-400' : 'bg-green-50 text-[#009E49]'}`}>
-                        {isExpired ? 'Completed' : 'Upcoming'}
+                    <div className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${isExpired || travel.status === 'COMPLETED' || travel.status === 'CANCELLED' ? 'bg-slate-100 text-slate-400' : 'bg-green-50 text-[#009E49]'}`}>
+                        {travel.status === 'CANCELLED' ? 'Cancelled' : (isExpired || travel.status === 'COMPLETED') ? 'Completed' : 'Upcoming'}
                     </div>
                 </div>
 
@@ -122,10 +122,12 @@ const TravelCard: React.FC<TravelCardProps> = ({ travel, onPinClick, currentUser
                         {currentUser?.role !== UserRole.PICKER && (
                             <button
                                 onClick={() => onPinClick(travel)}
-                                disabled={isPinned}
+                                disabled={isPinned || travel.status === 'COMPLETED' || travel.status === 'CANCELLED' || isExpired}
                                 className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition shadow-lg ${isPinned
                                     ? 'bg-green-100 text-[#009E49] cursor-not-allowed shadow-green-50'
-                                    : 'bg-slate-900 text-white hover:bg-black shadow-slate-100'
+                                    : (travel.status === 'COMPLETED' || travel.status === 'CANCELLED' || isExpired)
+                                        ? 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none'
+                                        : 'bg-slate-900 text-white hover:bg-black shadow-slate-100'
                                     }`}
                             >
                                 {isPinned ? (
@@ -133,7 +135,7 @@ const TravelCard: React.FC<TravelCardProps> = ({ travel, onPinClick, currentUser
                                         <svg className="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
                                         Already Pinned
                                     </>
-                                ) : 'Pin Item'}
+                                ) : (travel.status === 'COMPLETED' || travel.status === 'CANCELLED' || isExpired) ? 'Trip Closed' : 'Pin Item'}
                             </button>
                         )}
                     </div>

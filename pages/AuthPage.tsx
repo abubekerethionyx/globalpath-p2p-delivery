@@ -6,6 +6,7 @@ import { MOCK_USERS } from '../constants';
 import { UI_FLAGS } from '../constants/settings';
 import { useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
+import { useToast } from '../components/ToastContext';
 
 interface AuthPageProps {
   onAuthComplete: (user: any) => void;
@@ -14,6 +15,7 @@ interface AuthPageProps {
 
 const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete, publicSettings }) => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [isLogin, setIsLogin] = useState(true);
   const [showForgot, setShowForgot] = useState(false);
   const [showOTP, setShowOTP] = useState(false);
@@ -39,7 +41,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete, publicSettings }) =
     setIsLoading(true);
     try {
       await AuthService.forgotPassword(formData.email);
-      alert("Password reset link sent to your email!");
+      showToast("Password reset link sent to your email!", 'SUCCESS');
       setShowForgot(false);
     } catch (err) {
       setError("Failed to send reset link.");
@@ -57,7 +59,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete, publicSettings }) =
     setIsLoading(true);
     try {
       await AuthService.verifyOTP(formData.email, otp);
-      alert("Email verified! You can now sign in.");
+      showToast("Email verified! You can now sign in.", 'SUCCESS');
       setShowOTP(false);
       setIsLogin(true);
     } catch (err: any) {
@@ -76,7 +78,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete, publicSettings }) =
         setTempGoogleToken(credentialResponse.credential);
         setFormData({ ...formData, email: response.email || '' });
         setIsLogin(false); // Move to "Create Account" view to show role selection
-        alert("Please select your role to complete registration.");
+        showToast("Please select your role to complete registration.", 'INFO');
       } else if (response.user) {
         onAuthComplete(response.user);
       }

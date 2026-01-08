@@ -4,6 +4,7 @@ import { TravelService } from '../services/TravelService';
 import { ShipmentService } from '../services/ShipmentService';
 import TravelCard from '../components/TravelCard';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../components/ToastContext';
 
 interface FeedPageProps {
     user: User | null;
@@ -11,6 +12,7 @@ interface FeedPageProps {
 
 const FeedPage: React.FC<FeedPageProps> = ({ user }) => {
     const navigate = useNavigate();
+    const { showToast } = useToast();
     const [travels, setTravels] = useState<Travel[]>([]);
     const [myItems, setMyItems] = useState<ShipmentItem[]>([]);
     const [myPinnedTravelIds, setMyPinnedTravelIds] = useState<Set<string>>(new Set());
@@ -96,9 +98,9 @@ const FeedPage: React.FC<FeedPageProps> = ({ user }) => {
             await TravelService.createTravel(postForm);
             setShowPostModal(false);
             fetchData();
-            alert("Travel announced successfully!");
+            showToast("Travel announced successfully!", 'SUCCESS');
         } catch (e) {
-            alert("Failed to post travel.");
+            showToast("Failed to post travel.", 'ERROR');
         }
     };
 
@@ -109,9 +111,9 @@ const FeedPage: React.FC<FeedPageProps> = ({ user }) => {
             setShowPinModal(false);
             setMyPinnedTravelIds(prev => new Set(prev).add(selectedTravel.id));
             fetchData();
-            alert("Item pinned successfully!");
-        } catch (e) {
-            alert("Failed to pin item.");
+            showToast("Item pinned successfully!", 'SUCCESS');
+        } catch (e: any) {
+            showToast("Failed to pin item. " + e.message, 'ERROR');
         }
     };
 
@@ -217,12 +219,16 @@ const FeedPage: React.FC<FeedPageProps> = ({ user }) => {
                         currentUser={user}
                         isPinned={myPinnedTravelIds.has(travel.id)}
                         onPinClick={(t) => {
+                            const isClosed = t.status === 'COMPLETED' || t.status === 'CANCELLED' || (new Date(t.travel_date) < new Date());
+
                             if (!user) {
                                 navigate('/login');
                             } else if (user.role !== 'SENDER') {
-                                alert('Only senders can pin items to travels.');
+                                showToast('Only senders can pin items to travels.', 'WARNING');
+                            } else if (isClosed) {
+                                showToast('This travel is closed and cannot accept new pins.', 'WARNING');
                             } else if (myPinnedTravelIds.has(t.id)) {
-                                alert('You have already pinned an item to this travel.');
+                                showToast('You have already pinned an item to this travel.', 'WARNING');
                             } else {
                                 setSelectedTravel(t);
                                 setShowPinModal(true);

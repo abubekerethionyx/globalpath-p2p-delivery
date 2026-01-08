@@ -6,6 +6,8 @@ import { ShipmentService } from '../services/ShipmentService';
 import { MessageService } from '../services/MessageService';
 import { PublicSettings } from '../services/AdminService';
 import { BASE_URL } from '../config';
+import { useToast } from '../components/ToastContext';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 // Helper to get full image URL
 const getImageUrl = (url: string) => {
@@ -27,6 +29,22 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser, pu
   const [item, setItem] = useState<ShipmentItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [pickRequestStatus, setPickRequestStatus] = useState<string | null>(null);
+  const { showToast } = useToast();
+
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: 'DANGER' | 'INFO';
+    confirmLabel?: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'INFO',
+    onConfirm: () => { }
+  });
 
   useEffect(() => {
     const fetchItem = async () => {
@@ -58,7 +76,7 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser, pu
     // Check if user is allowed to see the details based on subscription settings
     const subActive = currentUser.isSubscriptionActive !== false;
     if (publicSettings?.require_subscription_for_details && !subActive && currentUser.role !== 'ADMIN') {
-      alert("Viewing detailed shipment analytics requires an active protocol subscription. Please upgrade your plan.");
+      showToast("Subscription required to view analytics.", 'WARNING');
       navigate('/packaging');
     }
   }, [id, publicSettings, currentUser.isSubscriptionActive, navigate]);
@@ -75,19 +93,19 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser, pu
       if (chatRequestStatusRequired === 'NONE') {
         // No restriction - allow chat
       } else if (chatRequestStatusRequired === 'REQUESTED' && !pickRequestStatus) {
-        alert("You must request to pick this item before you can message the sender.");
+        showToast("Request to pick this item first.", 'WARNING');
         return;
       } else if (chatRequestStatusRequired === 'PENDING' && pickRequestStatus !== 'PENDING' && pickRequestStatus !== 'APPROVED') {
-        alert("Your pick request must be at least pending before you can message the sender.");
+        showToast("Pick request must be pending or approved.", 'WARNING');
         return;
       } else if (chatRequestStatusRequired === 'APPROVED' && pickRequestStatus !== 'APPROVED') {
-        alert("Your pick request must be approved before you can message the sender.");
+        showToast("Pick request must be approved first.", 'WARNING');
         return;
       }
     }
 
     if (publicSettings?.require_subscription_for_chat && !currentUser.isSubscriptionActive && currentUser.role !== 'ADMIN') {
-      alert("Chat access requires an active protocol subscription. Please upgrade your plan.");
+      showToast("Chat access requires an active subscription.", 'WARNING');
       navigate('/packaging');
       return;
     }
@@ -100,22 +118,32 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser, pu
     }
   };
 
-  const handleUpdateStatus = async (newStatus: ItemStatus) => {
+  const handleUpdateStatus = (newStatus: ItemStatus) => {
     if (!item) return;
     const confirmMsg = newStatus === ItemStatus.DELIVERED
       ? "Confirm that you have received the shipment and are satisfied?"
       : `Change status to ${newStatus.replace('_', ' ')}?`;
 
-    if (!window.confirm(confirmMsg)) return;
-
-    try {
-      await ShipmentService.updateStatus(item.id, newStatus);
-      const updated = await ShipmentService.getShipment(item.id);
-      setItem(updated);
-    } catch (e) {
-      console.error(e);
-      alert("Failed to update status");
-    }
+    setModalConfig({
+      isOpen: true,
+      title: 'Update Protocol Status',
+      message: confirmMsg,
+      type: newStatus === ItemStatus.DELIVERED ? 'INFO' : 'INFO',
+      confirmLabel: 'Update Status',
+      onConfirm: async () => {
+        try {
+          await ShipmentService.updateStatus(item.id, newStatus);
+          const updated = await ShipmentService.getShipment(item.id);
+          setItem(updated);
+          showToast(`Status updated to ${newStatus.replace('_', ' ')}`, 'SUCCESS');
+        } catch (e) {
+          console.error(e);
+          showToast("Failed to update status", 'ERROR');
+        } finally {
+          setModalConfig(prev => ({ ...prev, isOpen: false }));
+        }
+      }
+    });
   };
 
   const handlePickRequest = async () => {
@@ -124,10 +152,10 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser, pu
     try {
       await ShipmentService.pickShipment(item.id);
       setPickRequestStatus('PENDING');
-      alert("Pick request sent successfully! The sender will be notified.");
+      showToast("Pick request sent successfully! The sender will be notified.", 'SUCCESS');
     } catch (e) {
       console.error(e);
-      alert("Failed to send pick request. You may have already requested this item.");
+      showToast("Failed to send pick request.", 'ERROR');
     }
   };
 
@@ -161,7 +189,8 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser, pu
   const isAuthorized = currentUser.role === 'ADMIN' || isParticipant;
 
   const formatPrivateInfo = (info: string | undefined, label: string) => {
-    if (isAuthorized) return info;
+    const showAlways = (label === 'Address' && (item?.showAddress || item?.show_address || publicSettings?.remove_shipment_address_restriction));
+    if (isAuthorized || showAlways) return info;
     return (
       <span className="text-slate-500 italic flex items-center gap-2">
         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
@@ -625,6 +654,15 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser, pu
           </div>
         </div>
       </div>
+      <ConfirmationModal
+        isOpen={modalConfig.isOpen}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        type={modalConfig.type}
+        confirmLabel={modalConfig.confirmLabel}
+        onConfirm={modalConfig.onConfirm}
+        onCancel={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 };

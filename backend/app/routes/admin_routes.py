@@ -49,7 +49,8 @@ def get_public_settings():
         'enable_free_promo_sender',
         'enable_free_promo_picker',
         'enable_google_login',
-        'maintenance_interval_hours'
+        'maintenance_interval_hours',
+        'remove_shipment_address_restriction'
     ]
     boolean_keys = [
         'require_subscription_for_details', 
@@ -57,7 +58,8 @@ def get_public_settings():
         'require_otp_for_signup',
         'enable_free_promo_sender',
         'enable_free_promo_picker',
-        'enable_google_login'
+        'enable_google_login',
+        'remove_shipment_address_restriction'
     ]
     
     settings = {}

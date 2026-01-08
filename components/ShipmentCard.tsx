@@ -1,7 +1,7 @@
 import React from 'react';
 import { ShipmentItem, ItemStatus, UserRole } from '../types';
-
 import { useNavigate } from 'react-router-dom';
+import { useToast } from './ToastContext';
 import { MessageService } from '../services/MessageService';
 
 interface ShipmentCardProps {
@@ -40,6 +40,7 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
   chatRequestStatusRequired = 'REQUESTED'
 }) => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const handleMessage = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -48,7 +49,7 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
     const subActive = isSubscriptionActive !== false;
 
     if (requireSubscriptionForChat && !subActive && role !== UserRole.ADMIN) {
-      alert("Chat access requires an active protocol subscription. Please upgrade your plan.");
+      showToast("Subscription required for chat.", 'WARNING');
       navigate('/packaging');
       return;
     }
@@ -56,13 +57,13 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
     // Check if picker has requested this item before allowing chat (based on admin setting)
     if (role === UserRole.PICKER && item.senderId) {
       if (chatRequestStatusRequired === 'REQUESTED' && !requestStatus) {
-        alert("You must request to pick this item before you can message the sender.");
+        showToast("Request to pick this item first to chat.", 'WARNING');
         return;
       } else if (chatRequestStatusRequired === 'PENDING' && requestStatus !== 'PENDING' && requestStatus !== 'APPROVED') {
-        alert("Your pick request must be at least pending before you can message the sender.");
+        showToast("Pick request must be pending or approved.", 'WARNING');
         return;
       } else if (chatRequestStatusRequired === 'APPROVED' && requestStatus !== 'APPROVED') {
-        alert("Your pick request must be approved before you can message the sender.");
+        showToast("Pick request must be approved to chat.", 'WARNING');
         return;
       }
     }
@@ -97,7 +98,7 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
     const subActive = isSubscriptionActive !== false;
 
     if (requireSubscriptionForDetails && !subActive && role !== UserRole.ADMIN) {
-      alert("Viewing detailed shipment analytics requires an active protocol subscription. Please upgrade your plan.");
+      showToast("Subscription required to view details.", 'WARNING');
       navigate('/packaging');
       return;
     }

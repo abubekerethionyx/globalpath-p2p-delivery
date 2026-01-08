@@ -4,6 +4,7 @@ import { User, ShipmentItem, ItemStatus, VerificationStatus } from '../../types'
 import { ShipmentService } from '../../services/ShipmentService';
 import ShipmentCard from '../../components/ShipmentCard';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../../components/ToastContext';
 
 import { PublicSettings } from '../../services/AdminService';
 
@@ -16,6 +17,7 @@ type PickerTab = 'APPLICATIONS' | 'REQUESTS' | 'LOCKED' | 'TRANSIT' | 'COMPLETED
 
 const PickerDashboard: React.FC<PickerDashboardProps> = ({ user, publicSettings }) => {
     const navigate = useNavigate();
+    const { showToast } = useToast();
     const [items, setItems] = useState<ShipmentItem[]>([]);
     const [requests, setRequests] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -90,7 +92,7 @@ const PickerDashboard: React.FC<PickerDashboardProps> = ({ user, publicSettings 
         }
         setSelectedIds(new Set());
         fetchItems();
-        alert(`Successfully updated ${selectedIds.size} items to ${bulkStatus.replace('_', ' ')}`);
+        showToast(`Successfully updated ${selectedIds.size} items to ${bulkStatus.replace('_', ' ')}`, 'SUCCESS');
     };
 
     if (loading) return (

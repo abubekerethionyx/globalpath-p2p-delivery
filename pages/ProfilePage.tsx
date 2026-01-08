@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { User, UserRole, VerificationStatus } from '../types';
 import { UserService } from '../services/UserService';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../components/ToastContext';
 import { COUNTRIES } from '../constants.tsx';
 
 interface ProfilePageProps {
@@ -46,6 +47,7 @@ const InfoField: React.FC<{
 
 const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
     const navigate = useNavigate();
+    const { showToast } = useToast();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -124,7 +126,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
 
             if (hasFilesToUpload) {
                 if (!agreedToTerms || !agreedToBackgroundCheck) {
-                    alert("You must agree to the Terms of Service and Background Check to submit verification documents.");
+                    showToast("Consent required for verification.", 'WARNING');
                     setLoading(false);
                     return;
                 }
@@ -158,7 +160,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
 
                 const updated = await UserService.updateRegistration(user.id, submitData);
                 onUserUpdate(updated);
-                alert('Verification documents submitted for review.');
+                showToast('Documents submitted for review.', 'SUCCESS');
             } else {
                 // Standard profile update
                 const updated = await UserService.updateUser(user.id, {
@@ -181,12 +183,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
                     hide_email: editedUser.hideEmail,
                 } as any);
                 onUserUpdate(updated);
-                alert('Profile updated successfully.');
+                showToast('Profile updated successfully.', 'SUCCESS');
             }
             setIsEditing(false);
         } catch (error) {
             console.error('Failed to update profile', error);
-            alert('Failed to update profile. Please try again.');
+            showToast('Failed to update profile.', 'ERROR');
         }
         setLoading(false);
     };
@@ -211,10 +213,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
         try {
             const updated = await UserService.updateAvatar(user.id, file);
             onUserUpdate(updated);
-            alert('Avatar updated successfully!');
+            showToast('Avatar updated!', 'SUCCESS');
         } catch (error) {
             console.error('Failed to upload avatar', error);
-            alert('Failed to upload avatar.');
+            showToast('Failed to upload avatar.', 'ERROR');
         } finally {
             setUploadingAvatar(false);
         }

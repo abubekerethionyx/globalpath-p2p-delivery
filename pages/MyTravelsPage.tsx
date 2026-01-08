@@ -3,6 +3,8 @@ import { User, Travel, TravelPin } from '../types';
 import { TravelService } from '../services/TravelService';
 import { ShipmentService } from '../services/ShipmentService';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../components/ToastContext';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 interface MyTravelsPageProps {
     user: User;
@@ -15,6 +17,21 @@ const MyTravelsPage: React.FC<MyTravelsPageProps> = ({ user }) => {
     const [selectedTravelPins, setSelectedTravelPins] = useState<{ [key: string]: TravelPin[] }>({});
     const [loadingPins, setLoadingPins] = useState<{ [key: string]: boolean }>({});
     const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED'>('ACTIVE');
+    const { showToast } = useToast();
+
+    const [modalConfig, setModalConfig] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        type: 'DANGER' | 'INFO';
+        onConfirm: () => void;
+    }>({
+        isOpen: false,
+        title: '',
+        message: '',
+        type: 'INFO',
+        onConfirm: () => { }
+    });
 
     const fetchMyTravels = async () => {
         try {
@@ -59,32 +76,41 @@ const MyTravelsPage: React.FC<MyTravelsPageProps> = ({ user }) => {
                 }
             }
 
-            alert(`Pin ${status.toLowerCase()} successfully!`);
+            showToast(`Pin ${status.toLowerCase()} successfully!`, 'SUCCESS');
             // Reload pins for this travel
             loadPinsForTravel(travelId);
         } catch (e) {
-            alert("Failed to update pin status");
+            showToast("Failed to update pin status", 'ERROR');
         }
     };
 
-    const handleDeleteTravel = async (id: string) => {
-        if (!window.confirm("Are you sure you want to delete this travel announcement?")) return;
-        try {
-            await TravelService.deleteTravel(id);
-            setTravels(prev => prev.filter(t => t.id !== id));
-            alert("Travel deleted successfully");
-        } catch (e) {
-            alert("Failed to delete travel");
-        }
+    const handleDeleteTravel = (id: string) => {
+        setModalConfig({
+            isOpen: true,
+            title: 'Delete Announcement',
+            message: 'Are you sure you want to remove this travel announcement? This action cannot be undone.',
+            type: 'DANGER',
+            onConfirm: async () => {
+                try {
+                    await TravelService.deleteTravel(id);
+                    setTravels(prev => prev.filter(t => t.id !== id));
+                    showToast("Travel deleted successfully", 'SUCCESS');
+                } catch (e) {
+                    showToast("Failed to delete travel", 'ERROR');
+                } finally {
+                    setModalConfig(prev => ({ ...prev, isOpen: false }));
+                }
+            }
+        });
     };
 
     const handleUpdateTravelStatus = async (id: string, status: 'ACTIVE' | 'COMPLETED' | 'CANCELLED') => {
         try {
             await TravelService.updateTravelStatus(id, status);
             setTravels(prev => prev.map(t => t.id === id ? { ...t, status } : t));
-            alert(`Travel status updated to ${status}`);
+            showToast(`Travel status updated to ${status}`, 'SUCCESS');
         } catch (e) {
-            alert("Failed to update travel status");
+            showToast("Failed to update travel status", 'ERROR');
         }
     };
 
@@ -116,18 +142,24 @@ const MyTravelsPage: React.FC<MyTravelsPageProps> = ({ user }) => {
 
             {/* Status Filter Tabs */}
             <div className="flex items-center gap-3 overflow-x-auto pb-2 custom-scrollbar">
-                {(['ALL', 'ACTIVE', 'COMPLETED', 'CANCELLED'] as const).map(status => (
-                    <button
-                        key={status}
-                        onClick={() => setStatusFilter(status)}
-                        className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap transition-all ${statusFilter === status
-                            ? 'bg-slate-900 text-white shadow-xl shadow-slate-200'
-                            : 'bg-white border border-slate-100 text-slate-400 hover:text-slate-900 hover:border-slate-200'
-                            }`}
-                    >
-                        {status} Travels
-                    </button>
-                ))}
+                {(['ALL', 'ACTIVE', 'COMPLETED', 'CANCELLED'] as const).map(status => {
+                    const count = status === 'ALL' ? travels.length : travels.filter(t => t.status === status).length;
+                    return (
+                        <button
+                            key={status}
+                            onClick={() => setStatusFilter(status)}
+                            className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap transition-all flex items-center gap-2 ${statusFilter === status
+                                ? 'bg-slate-900 text-white shadow-xl shadow-slate-200'
+                                : 'bg-white border border-slate-100 text-slate-400 hover:text-slate-900 hover:border-slate-200'
+                                }`}
+                        >
+                            <span>{status}</span>
+                            <span className={`px-2 py-0.5 rounded-lg text-[8px] ${statusFilter === status ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                                {count}
+                            </span>
+                        </button>
+                    );
+                })}
             </div>
 
             <div className="grid grid-cols-1 gap-8">
@@ -167,7 +199,15 @@ const MyTravelsPage: React.FC<MyTravelsPageProps> = ({ user }) => {
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-4">
+                                    <div className="flex flex-wrap items-center gap-4">
+                                        {/* Travel Status Badge */}
+                                        <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${travel.status === 'ACTIVE' ? 'bg-green-50 text-green-600 border-green-100' :
+                                            travel.status === 'COMPLETED' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                                                'bg-red-50 text-red-600 border-red-100'
+                                            }`}>
+                                            • {travel.status}
+                                        </div>
+
                                         <div className="px-6 py-3 bg-slate-50 rounded-2xl border border-slate-100">
                                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Capacity</p>
                                             <p className="text-sm font-black text-slate-900">{travel.weight_capacity || 'N/A'} kg</p>
@@ -248,6 +288,14 @@ const MyTravelsPage: React.FC<MyTravelsPageProps> = ({ user }) => {
                                                                 <p className="text-xs font-black text-[#009E49]">{pin.shipment.fee.toLocaleString()} ETB</p>
                                                             </div>
                                                         </div>
+
+                                                        <button
+                                                            onClick={() => navigate(`/shipment-detail/${pin.shipment.id}`)}
+                                                            className="w-full mb-3 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all flex items-center justify-center gap-2"
+                                                        >
+                                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                                            View Cargo Profile
+                                                        </button>
                                                     </div>
 
                                                     <div className="flex gap-2">
@@ -297,6 +345,14 @@ const MyTravelsPage: React.FC<MyTravelsPageProps> = ({ user }) => {
                     ))
                 )}
             </div>
+            <ConfirmationModal
+                isOpen={modalConfig.isOpen}
+                title={modalConfig.title}
+                message={modalConfig.message}
+                type={modalConfig.type}
+                onConfirm={modalConfig.onConfirm}
+                onCancel={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}
+            />
         </div>
     );
 };

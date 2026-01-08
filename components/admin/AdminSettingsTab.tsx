@@ -4,6 +4,8 @@ import { SubscriptionService } from '../../services/SubscriptionService';
 import { SubscriptionPlan, UserRole } from '../../types';
 import api from '../../services/api';
 import { SETTINGS_KEYS } from '../../constants/settings';
+import { useToast } from '../../components/ToastContext';
+import ConfirmationModal from '../../components/ConfirmationModal';
 
 const AdminSettingsTab: React.FC = () => {
     const [settings, setSettings] = useState<AdminSettings>({});
@@ -16,6 +18,22 @@ const AdminSettingsTab: React.FC = () => {
     const [rewardAmount, setRewardAmount] = useState('10');
     const [rewardReason, setRewardReason] = useState('System Loyalty Reward');
     const [rewarding, setRewarding] = useState(false);
+    const { showToast } = useToast();
+
+    const [modalConfig, setModalConfig] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        type: 'DANGER' | 'INFO';
+        confirmLabel?: string;
+        onConfirm: () => void;
+    }>({
+        isOpen: false,
+        title: '',
+        message: '',
+        type: 'INFO',
+        onConfirm: () => { }
+    });
 
     useEffect(() => {
         Promise.all([fetchSettings(), fetchPlans()]);
@@ -54,7 +72,8 @@ const AdminSettingsTab: React.FC = () => {
                 [SETTINGS_KEYS.REGISTRATION_BONUS]: { value: '10', description: 'Coins awarded to new users upon registration' },
                 [SETTINGS_KEYS.KYC_BONUS]: { value: '50', description: 'Coins awarded upon successful KYC verification' },
                 [SETTINGS_KEYS.HOLIDAY_BONUS_AMOUNT]: { value: '15', description: 'Automatic weekly/national holiday pulse reward' },
-                [SETTINGS_KEYS.REWARD_TRAVEL_POST]: { value: '10', description: 'Coins awarded for posting a new travel announcement' }
+                [SETTINGS_KEYS.REWARD_TRAVEL_POST]: { value: '10', description: 'Coins awarded for posting a new travel announcement' },
+                [SETTINGS_KEYS.REMOVE_SHIPMENT_ADDRESS_RESTRICTION]: { value: 'false', description: 'Globally reveal shipment pickup addresses to all users' }
             };
             setSettings({ ...defaults, ...data });
         } catch (err) {
@@ -107,7 +126,7 @@ const AdminSettingsTab: React.FC = () => {
             id: "gov",
             description: "Premium feature gating & membership enforcements.",
             icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>,
-            keys: [SETTINGS_KEYS.REQUIRE_SUB_FOR_DETAILS, SETTINGS_KEYS.REQUIRE_SUB_FOR_CHAT, SETTINGS_KEYS.CHAT_REQUEST_STATUS_REQUIRED]
+            keys: [SETTINGS_KEYS.REQUIRE_SUB_FOR_DETAILS, SETTINGS_KEYS.REQUIRE_SUB_FOR_CHAT, SETTINGS_KEYS.CHAT_REQUEST_STATUS_REQUIRED, SETTINGS_KEYS.REMOVE_SHIPMENT_ADDRESS_RESTRICTION]
         },
         {
             title: "Automation",
@@ -209,8 +228,8 @@ const AdminSettingsTab: React.FC = () => {
                                 e.stopPropagation();
                                 try {
                                     await api.post('/admin/maintenance/run');
-                                    alert("Marketplace synchronized.");
-                                } catch (e) { alert("Uplink timeout."); }
+                                    showToast("Marketplace synchronized.", 'SUCCESS');
+                                } catch (e) { showToast("Uplink timeout.", 'ERROR'); }
                             }}
                             className="relative z-20 w-full py-2.5 bg-white/10 hover:bg-white hover:text-slate-900 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer active:scale-95 shadow-sm"
                         >
@@ -249,16 +268,28 @@ const AdminSettingsTab: React.FC = () => {
                             disabled={rewarding}
                             onClick={async (e) => {
                                 e.stopPropagation();
-                                if (!window.confirm(`Award ${rewardAmount} λ to EVERY user?`)) return;
-                                setRewarding(true);
-                                try {
-                                    const resp = await api.post('/admin/rewards/all', {
-                                        amount: parseInt(rewardAmount),
-                                        reason: rewardReason
-                                    });
-                                    alert(resp.data.message);
-                                } catch (e) { alert("Broadcast failed."); }
-                                finally { setRewarding(false); }
+                                setModalConfig({
+                                    isOpen: true,
+                                    title: 'Distribute Rewards',
+                                    message: `Are you sure you want to award ${rewardAmount} λ to EVERY user? This action is irreversible.`,
+                                    type: 'INFO',
+                                    confirmLabel: 'Distribute Credits',
+                                    onConfirm: async () => {
+                                        setRewarding(true);
+                                        try {
+                                            const resp = await api.post('/admin/rewards/all', {
+                                                amount: parseInt(rewardAmount),
+                                                reason: rewardReason
+                                            });
+                                            showToast(resp.data.message || 'Rewards distributed!', 'SUCCESS');
+                                        } catch (e) {
+                                            showToast("Broadcast failed.", 'ERROR');
+                                        } finally {
+                                            setRewarding(false);
+                                            setModalConfig(prev => ({ ...prev, isOpen: false }));
+                                        }
+                                    }
+                                });
                             }}
                             className="relative z-20 w-full py-2.5 bg-white text-[#009E49] hover:bg-slate-900 hover:text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-lg cursor-pointer active:scale-95 disabled:opacity-50"
                         >
@@ -382,6 +413,16 @@ const AdminSettingsTab: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            <ConfirmationModal
+                isOpen={modalConfig.isOpen}
+                title={modalConfig.title}
+                message={modalConfig.message}
+                type={modalConfig.type}
+                confirmLabel={modalConfig.confirmLabel}
+                onConfirm={modalConfig.onConfirm}
+                onCancel={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}
+            />
         </div>
     );
 };

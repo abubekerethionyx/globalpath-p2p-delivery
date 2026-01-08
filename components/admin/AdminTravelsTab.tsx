@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Travel, TravelPin } from '../../types';
 import { TravelService } from '../../services/TravelService';
+import { useToast } from '../../components/ToastContext';
+import ConfirmationModal from '../../components/ConfirmationModal';
 
 const AdminTravelsTab: React.FC = () => {
     const [travels, setTravels] = useState<Travel[]>([]);
@@ -9,6 +11,22 @@ const AdminTravelsTab: React.FC = () => {
     const [pins, setPins] = useState<TravelPin[]>([]);
     const [loadingPins, setLoadingPins] = useState(false);
     const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED'>('ALL');
+    const { showToast } = useToast();
+
+    const [modalConfig, setModalConfig] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        type: 'DANGER' | 'INFO';
+        confirmLabel?: string;
+        onConfirm: () => void;
+    }>({
+        isOpen: false,
+        title: '',
+        message: '',
+        type: 'INFO',
+        onConfirm: () => { }
+    });
 
     useEffect(() => {
         fetchTravels();
@@ -47,22 +65,33 @@ const AdminTravelsTab: React.FC = () => {
                 setSelectedTravel(prev => prev ? { ...prev, status } : null);
             }
         } catch (e) {
-            alert("Failed to update status");
+            showToast("Failed to update status", 'ERROR');
         }
     };
 
     const handleDeleteTravel = async (travelId: string) => {
-        if (!window.confirm("Are you sure you want to delete this travel?")) return;
-        try {
-            await TravelService.deleteTravel(travelId);
-            setTravels(prev => prev.filter(t => t.id !== travelId));
-            if (selectedTravel?.id === travelId) {
-                setSelectedTravel(null);
-                setPins([]);
+        setModalConfig({
+            isOpen: true,
+            title: 'Delete Travel Announcement',
+            message: "Are you sure you want to permanently delete this travel and all associated pins? This action cannot be undone.",
+            type: 'DANGER',
+            confirmLabel: 'Delete Permanently',
+            onConfirm: async () => {
+                try {
+                    await TravelService.deleteTravel(travelId);
+                    setTravels(prev => prev.filter(t => t.id !== travelId));
+                    if (selectedTravel?.id === travelId) {
+                        setSelectedTravel(null);
+                        setPins([]);
+                    }
+                    showToast("Travel deleted successfully.", 'SUCCESS');
+                } catch (e) {
+                    showToast("Failed to delete travel", 'ERROR');
+                } finally {
+                    setModalConfig(prev => ({ ...prev, isOpen: false }));
+                }
             }
-        } catch (e) {
-            alert("Failed to delete travel");
-        }
+        });
     };
 
     const filteredTravels = travels.filter(t => statusFilter === 'ALL' || t.status === statusFilter);
@@ -93,8 +122,8 @@ const AdminTravelsTab: React.FC = () => {
                         key={status}
                         onClick={() => setStatusFilter(status)}
                         className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all ${statusFilter === status
-                                ? 'bg-slate-900 text-white shadow-xl'
-                                : 'bg-white border border-slate-100 text-slate-400 hover:text-slate-900'
+                            ? 'bg-slate-900 text-white shadow-xl'
+                            : 'bg-white border border-slate-100 text-slate-400 hover:text-slate-900'
                             }`}
                     >
                         {status}
@@ -161,8 +190,8 @@ const AdminTravelsTab: React.FC = () => {
                                             value={travel.status}
                                             onChange={(e) => handleUpdateStatus(travel.id, e.target.value as 'ACTIVE' | 'COMPLETED' | 'CANCELLED')}
                                             className={`text-xs font-black border-none bg-transparent focus:ring-0 cursor-pointer uppercase tracking-widest ${travel.status === 'ACTIVE' ? 'text-[#009E49]' :
-                                                    travel.status === 'COMPLETED' ? 'text-blue-600' :
-                                                        'text-red-500'
+                                                travel.status === 'COMPLETED' ? 'text-blue-600' :
+                                                    'text-red-500'
                                                 }`}
                                         >
                                             <option value="ACTIVE">ACTIVE</option>
@@ -223,8 +252,8 @@ const AdminTravelsTab: React.FC = () => {
                                                     </div>
                                                 </div>
                                                 <div className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest ${pin.status === 'APPROVED' ? 'bg-green-100 text-[#009E49]' :
-                                                        pin.status === 'REJECTED' ? 'bg-red-100 text-red-500' :
-                                                            'bg-amber-100 text-amber-600'
+                                                    pin.status === 'REJECTED' ? 'bg-red-100 text-red-500' :
+                                                        'bg-amber-100 text-amber-600'
                                                     }`}>
                                                     {pin.status}
                                                 </div>
@@ -247,6 +276,16 @@ const AdminTravelsTab: React.FC = () => {
                     </div>
                 </div>
             )}
+
+            <ConfirmationModal
+                isOpen={modalConfig.isOpen}
+                title={modalConfig.title}
+                message={modalConfig.message}
+                type={modalConfig.type}
+                confirmLabel={modalConfig.confirmLabel}
+                onConfirm={modalConfig.onConfirm}
+                onCancel={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}
+            />
         </div>
     );
 };

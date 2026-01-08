@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { User, UserRole, SubscriptionPlan, SubscriptionTransaction } from '../types';
 import { SubscriptionService } from '../services/SubscriptionService';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../components/ToastContext';
 
 interface PackagingPageProps {
   user: User | null;
@@ -11,6 +12,7 @@ interface PackagingPageProps {
 
 const PackagingPage: React.FC<PackagingPageProps> = ({ user, onPlanChanged }) => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [viewRole, setViewRole] = useState<UserRole>(user?.role === UserRole.ADMIN ? UserRole.SENDER : (user?.role || UserRole.SENDER));
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
   const [showCheckout, setShowCheckout] = useState(false);
@@ -63,7 +65,7 @@ const PackagingPage: React.FC<PackagingPageProps> = ({ user, onPlanChanged }) =>
     if (!user || !selectedPlan || !paymentMethod) return;
 
     if (paymentMethod !== 'chapa' && !txnRef) {
-      alert("Please enter the Transaction Reference Number");
+      showToast("Enter transaction reference.", 'WARNING');
       return;
     }
 
@@ -92,9 +94,9 @@ const PackagingPage: React.FC<PackagingPageProps> = ({ user, onPlanChanged }) =>
 
       const status = response.status || 'PENDING';
       if (status === 'COMPLETED') {
-        alert("Subscription Activated Successfully!");
+        showToast("Subscription Activated!", 'SUCCESS');
       } else {
-        alert(`Payment Submitted! Status: PENDING Verification. \nRef: ${txnRef}`);
+        showToast(`Payment Submitted! Ref: ${txnRef}`, 'INFO');
       }
 
       setShowCheckout(false);
@@ -108,7 +110,7 @@ const PackagingPage: React.FC<PackagingPageProps> = ({ user, onPlanChanged }) =>
       setTransactions(txData);
     } catch (e) {
       console.error(e);
-      alert("Payment submission failed");
+      showToast("Payment submission failed.", 'ERROR');
     } finally {
       setIsSubmitting(false);
     }
@@ -355,7 +357,7 @@ const PackagingPage: React.FC<PackagingPageProps> = ({ user, onPlanChanged }) =>
                     setSelectedPlan(plan);
                     setShowCheckout(true);
                   } else if (hasOtherActive) {
-                    alert("You already have an active subscription for another plan. Please wait for it to expire or finish usage before switching.");
+                    showToast("Plan change restricted until current one expires.", 'WARNING');
                   }
                 }}
                 disabled={(isPlanActive && activeTx && activeTx.remaining_usage > 0) || isPlanPending || (hasOtherActive && !isPlanActive)}

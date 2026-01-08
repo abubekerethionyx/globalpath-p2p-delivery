@@ -7,6 +7,7 @@ import { CATEGORIES } from '../constants';
 import ShipmentCard from '../components/ShipmentCard';
 import { ShipmentService } from '../services/ShipmentService';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../components/ToastContext';
 
 interface MarketplacePageProps {
   user: User;
@@ -15,6 +16,7 @@ interface MarketplacePageProps {
 
 const MarketplacePage: React.FC<MarketplacePageProps> = ({ user, publicSettings }) => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [items, setItems] = useState<ShipmentItem[]>([]);
   const [myRequestsStatus, setMyRequestsStatus] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
@@ -105,18 +107,18 @@ const MarketplacePage: React.FC<MarketplacePageProps> = ({ user, publicSettings 
 
     // 3. Check Quota
     if (remainingPicks <= 0) {
-      alert("Monthly Quota Exceeded! You have reached the limit of your current subscription. Please upgrade your plan to accept more deliveries.");
+      showToast("Monthly pick quota reached. Upgrade your plan.", 'WARNING');
       navigate('/packaging');
       return;
     }
 
     try {
       await ShipmentService.pickShipment(id);
-      alert("You have requested to pick this shipment! The sender will be notified.");
+      showToast("Pick request sent to the sender!", 'SUCCESS');
       setMyRequestsStatus(prev => ({ ...prev, [id]: 'PENDING' }));
       fetchItems();
     } catch (e) {
-      alert("Failed to pick shipment. It might be already taken.");
+      showToast("Failed to pick shipment.", 'ERROR');
       fetchItems();
     }
   };

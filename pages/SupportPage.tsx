@@ -3,6 +3,7 @@ import ErrorBoundary from '../components/common/ErrorBoundary';
 import { SupportService } from '../services/SupportService';
 import { SupportTicket, TicketStatus, TicketPriority, User } from '../types';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../components/ToastContext';
 
 interface SupportPageProps {
     user: User;
@@ -13,6 +14,7 @@ const SupportPage: React.FC<SupportPageProps> = ({ user }) => {
     const [loading, setLoading] = useState(true);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
+    const { showToast } = useToast();
 
     // New Ticket Form
     const [subject, setSubject] = useState('');
@@ -48,8 +50,9 @@ const SupportPage: React.FC<SupportPageProps> = ({ user }) => {
             setSubject('');
             setDescription('');
             fetchTickets();
+            showToast('Ticket created successfully', 'SUCCESS');
         } catch (error) {
-            alert('Failed to create ticket');
+            showToast('Failed to create ticket', 'ERROR');
         } finally {
             setIsSubmitting(false);
         }
@@ -61,7 +64,7 @@ const SupportPage: React.FC<SupportPageProps> = ({ user }) => {
             const fullTicket = await SupportService.getTicket(ticket.id);
             setSelectedTicket(fullTicket);
         } catch (error) {
-            alert('Failed to load ticket details');
+            showToast('Failed to load ticket details', 'ERROR');
         } finally {
             setLoading(false);
         }
@@ -77,8 +80,9 @@ const SupportPage: React.FC<SupportPageProps> = ({ user }) => {
                 replies: [...(selectedTicket.replies || []), reply]
             });
             setReplyMessage('');
+            showToast('Reply sent', 'SUCCESS');
         } catch (error) {
-            alert('Failed to send reply');
+            showToast('Failed to send reply', 'ERROR');
         } finally {
             setIsReplying(false);
         }

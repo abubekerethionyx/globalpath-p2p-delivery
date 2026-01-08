@@ -4,12 +4,14 @@ import { User, VerificationStatus } from '../types';
 import { UserService } from '../services/UserService';
 
 import { MessageService } from '../services/MessageService';
+import { useToast } from '../components/ToastContext';
 
 const PickerProfilePage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [picker, setPicker] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+    const { showToast } = useToast();
 
     useEffect(() => {
         const loadPicker = async () => {
@@ -51,7 +53,7 @@ const PickerProfilePage: React.FC = () => {
             navigate('/messages', { state: { threadId: thread.id } });
         } catch (e) {
             console.error("Failed to start conversation", e);
-            alert("Could not start conversation");
+            showToast("Could not start conversation.", 'ERROR');
         }
     };
 

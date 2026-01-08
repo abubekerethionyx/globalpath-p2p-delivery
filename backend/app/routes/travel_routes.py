@@ -179,7 +179,7 @@ def pin_item(travel_id):
         title="New Item Pinned",
         message=f"{shipment.sender.first_name} pinned an item to your travel from {travel.origin_country} to {travel.destination_country}.",
         type='INFO',
-        link=f'/feed'
+        link=f'/my-travels'
     )
     
     db.session.commit()

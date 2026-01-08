@@ -23,6 +23,8 @@ class ShipmentItem(db.Model):
     image_urls = db.Column(db.JSON) # List of image URLs
     picked_at = db.Column(db.DateTime)
     available_pickup_time = db.Column(db.DateTime)
+    show_address = db.Column(db.Boolean, default=False)
+    auto_approve_first = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     ranking_score = db.Column(db.Float, default=0.0)
 

@@ -17,6 +17,7 @@ export interface PublicSettings {
     enable_free_promo_sender: boolean;
     enable_free_promo_picker: boolean;
     enable_google_login: boolean;
+    remove_shipment_address_restriction: boolean;
 }
 
 export const AdminService = {

@@ -6,6 +6,7 @@ import { SubscriptionService } from '../services/SubscriptionService';
 import { SubscriptionTransaction } from '../types';
 import { useNavigate, useParams } from 'react-router-dom';
 import { BASE_URL } from '../config';
+import { useToast } from '../components/ToastContext';
 
 // Helper to get full image URL
 const getImageUrl = (url: string) => {
@@ -22,6 +23,7 @@ const PostShipmentPage: React.FC<PostShipmentPageProps> = ({ user }) => {
   const navigate = useNavigate();
   const { id } = useParams<{ id?: string }>();
   const isEditMode = !!id;
+  const { showToast } = useToast();
 
   const [activeSub, setActiveSub] = useState<SubscriptionTransaction | null>(null);
   const [loadingQuota, setLoadingQuota] = useState(true);
@@ -38,7 +40,9 @@ const PostShipmentPage: React.FC<PostShipmentPageProps> = ({ user }) => {
     weight: 1,
     fee: 500,
     notes: '',
-    availablePickupTime: ''
+    availablePickupTime: '',
+    showAddress: false,
+    autoApproveFirst: false
   });
 
   const [images, setImages] = useState<File[]>([]);
@@ -87,13 +91,15 @@ const PostShipmentPage: React.FC<PostShipmentPageProps> = ({ user }) => {
           weight: shipment.weight,
           fee: shipment.fee,
           notes: shipment.notes || '',
-          availablePickupTime: shipment.availablePickupTime ? new Date(shipment.availablePickupTime).toISOString().slice(0, 16) : ''
+          availablePickupTime: shipment.availablePickupTime ? new Date(shipment.availablePickupTime).toISOString().slice(0, 16) : '',
+          showAddress: shipment.showAddress || shipment.show_address || false,
+          autoApproveFirst: shipment.autoApproveFirst || shipment.auto_approve_first || false
         });
         setExistingImageUrls(shipment.imageUrls || []);
         setLoadingShipment(false);
       }).catch((err) => {
         console.error('Failed to load shipment', err);
-        alert('Failed to load shipment data');
+        showToast('Failed to load shipment data', 'ERROR');
         navigate('/dashboard');
       });
     }
@@ -105,7 +111,7 @@ const PostShipmentPage: React.FC<PostShipmentPageProps> = ({ user }) => {
     e.preventDefault();
 
     if (!isEditMode && remainingPosts <= 0) {
-      alert("Monthly Posting Quota Exceeded! Please upgrade your plan.");
+      showToast("Monthly Posting Quota Exceeded! Please upgrade your plan.", 'WARNING');
       return;
     }
 
@@ -121,6 +127,8 @@ const PostShipmentPage: React.FC<PostShipmentPageProps> = ({ user }) => {
     formData.append('fee', form.fee.toString());
     formData.append('notes', form.notes);
     formData.append('availablePickupTime', form.availablePickupTime);
+    formData.append('show_address', form.showAddress.toString());
+    formData.append('auto_approve_first', form.autoApproveFirst.toString());
 
     images.forEach(file => {
       formData.append('images', file);
@@ -129,16 +137,16 @@ const PostShipmentPage: React.FC<PostShipmentPageProps> = ({ user }) => {
     try {
       if (isEditMode && id) {
         await ShipmentService.updateShipment(id, formData as any);
-        alert("Shipment Updated Successfully!");
+        showToast("Shipment Updated Successfully!", 'SUCCESS');
       } else {
         await ShipmentService.createShipment(formData as any);
-        alert("Shipment Posted Successfully!");
+        showToast("Shipment Posted Successfully!", 'SUCCESS');
       }
       navigate('/dashboard');
     } catch (e: any) {
       console.error(e);
       const errorMessage = e?.response?.data?.message || e?.message || 'Unknown error occurred';
-      alert(isEditMode ? `Failed to update shipment: ${errorMessage}` : `Failed to post shipment: ${errorMessage}`);
+      showToast(isEditMode ? `Failed to update shipment: ${errorMessage}` : `Failed to post shipment: ${errorMessage}`, 'ERROR');
     }
   };
 
@@ -309,6 +317,38 @@ const PostShipmentPage: React.FC<PostShipmentPageProps> = ({ user }) => {
           <div>
             <label className="block text-sm font-bold text-slate-700 mb-2">Additional Instructions</label>
             <textarea rows={3} placeholder="Fragile, habesha dress, spices, etc..." className="w-full border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-[#009E49]" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} />
+          </div>
+
+          <div className="bg-slate-50 p-6 rounded-3xl space-y-4 border border-slate-100">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Privacy & Automation</p>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-bold text-slate-900">Show Exact Address to All</p>
+                <p className="text-[10px] text-slate-500 font-medium">Allow pickers to see the exact pickup address before approval.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, showAddress: !form.showAddress })}
+                className={`w-12 h-6 rounded-full transition-colors relative ${form.showAddress ? 'bg-[#009E49]' : 'bg-slate-200'}`}
+              >
+                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${form.showAddress ? 'left-7' : 'left-1'}`} />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-bold text-slate-900">Auto-Approve First Request</p>
+                <p className="text-[10px] text-slate-500 font-medium">Automatically assign the shipment to the first verified picker who applies.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, autoApproveFirst: !form.autoApproveFirst })}
+                className={`w-12 h-6 rounded-full transition-colors relative ${form.autoApproveFirst ? 'bg-[#009E49]' : 'bg-slate-200'}`}
+              >
+                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${form.autoApproveFirst ? 'left-7' : 'left-1'}`} />
+              </button>
+            </div>
           </div>
 
           <div className="flex gap-4 pt-4">

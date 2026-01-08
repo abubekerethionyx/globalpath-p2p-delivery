@@ -4,6 +4,8 @@ import { User, ShipmentItem, ItemStatus } from '../../types';
 import { ShipmentService } from '../../services/ShipmentService';
 import ShipmentCard from '../../components/ShipmentCard';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../../components/ToastContext';
+import ConfirmationModal from '../../components/ConfirmationModal';
 
 interface SenderDashboardProps {
     user: User;
@@ -19,6 +21,22 @@ const SenderDashboard: React.FC<SenderDashboardProps> = ({ user }) => {
     const [loading, setLoading] = useState(true);
     const [selectedPicker, setSelectedPicker] = useState<User | null>(null);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const { showToast } = useToast();
+
+    const [modalConfig, setModalConfig] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        type: 'DANGER' | 'INFO';
+        confirmLabel?: string;
+        onConfirm: () => void;
+    }>({
+        isOpen: false,
+        title: '',
+        message: '',
+        type: 'INFO',
+        onConfirm: () => { }
+    });
 
     const handleSelect = (id: string, selected: boolean) => {
         const newSelected = new Set(selectedIds);
@@ -28,18 +46,28 @@ const SenderDashboard: React.FC<SenderDashboardProps> = ({ user }) => {
     };
 
     const handleBulkConfirm = async () => {
-        if (!window.confirm(`Confirm delivery for ${selectedIds.size} shipments?`)) return;
-        try {
-            await Promise.all(Array.from(selectedIds).map(id =>
-                ShipmentService.updateStatus(id as string, ItemStatus.DELIVERED)
-            ));
-            fetchItems();
-            setSelectedIds(new Set());
-            alert("Deliveries Confirmed!");
-        } catch (e) {
-            console.error(e);
-            alert("Error confirming deliveries");
-        }
+        setModalConfig({
+            isOpen: true,
+            title: 'Confirm Bulk Delivery',
+            message: `Are you sure you want to confirm delivery for ${selectedIds.size} shipments?`,
+            type: 'INFO',
+            confirmLabel: 'Confirm All',
+            onConfirm: async () => {
+                try {
+                    await Promise.all(Array.from(selectedIds).map(id =>
+                        ShipmentService.updateStatus(id as string, ItemStatus.DELIVERED)
+                    ));
+                    fetchItems();
+                    setSelectedIds(new Set());
+                    showToast("Deliveries Confirmed!", 'SUCCESS');
+                } catch (e) {
+                    console.error(e);
+                    showToast("Error confirming deliveries", 'ERROR');
+                } finally {
+                    setModalConfig(prev => ({ ...prev, isOpen: false }));
+                }
+            }
+        });
     };
 
     const fetchItems = async () => {
@@ -100,21 +128,32 @@ const SenderDashboard: React.FC<SenderDashboardProps> = ({ user }) => {
     const handleApproveRequest = async (requestId: string) => {
         try {
             await ShipmentService.approveRequest(requestId);
-            alert("Partner assigned! All other pending requests for this shipment have been automatically declined.");
+            showToast("Partner assigned! Other pending requests declined.", 'SUCCESS');
             fetchItems();
         } catch (e) {
-            alert("Error approving request");
+            showToast("Error approving request", 'ERROR');
         }
     };
 
     const handleRejectRequest = async (requestId: string) => {
-        if (!window.confirm("Reject this partner?")) return;
-        try {
-            await ShipmentService.rejectRequest(requestId);
-            fetchItems();
-        } catch (e) {
-            alert("Error rejecting request");
-        }
+        setModalConfig({
+            isOpen: true,
+            title: 'Reject Partner',
+            message: 'Are you sure you want to reject this partner request?',
+            type: 'DANGER',
+            confirmLabel: 'Reject Request',
+            onConfirm: async () => {
+                try {
+                    await ShipmentService.rejectRequest(requestId);
+                    fetchItems();
+                    showToast("Request rejected", 'SUCCESS');
+                } catch (e) {
+                    showToast("Error rejecting request", 'ERROR');
+                } finally {
+                    setModalConfig(prev => ({ ...prev, isOpen: false }));
+                }
+            }
+        });
     };
 
     const onUpdateStatus = async (id: string, status: ItemStatus) => {
@@ -424,7 +463,7 @@ const SenderDashboard: React.FC<SenderDashboardProps> = ({ user }) => {
                             </button>
                             <button
                                 onClick={() => {
-                                    alert("Messaging feature available upon approval.");
+                                    showToast("Messaging available after approval.", 'INFO');
                                     setSelectedPicker(null);
                                 }}
                                 className="flex-1 py-4 bg-indigo-600 text-white font-black uppercase text-[10px] tracking-widest rounded-2xl shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all hover:-translate-y-1"
@@ -435,6 +474,15 @@ const SenderDashboard: React.FC<SenderDashboardProps> = ({ user }) => {
                     </div>
                 </div>
             )}
+            <ConfirmationModal
+                isOpen={modalConfig.isOpen}
+                title={modalConfig.title}
+                message={modalConfig.message}
+                type={modalConfig.type}
+                confirmLabel={modalConfig.confirmLabel}
+                onConfirm={modalConfig.onConfirm}
+                onCancel={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}
+            />
         </div>
     );
 };

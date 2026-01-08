@@ -210,9 +210,27 @@ def pick_shipment(shipment_id, picker_id):
     # Create Request
     req = ShipmentRequest(shipment_id=shipment_id, picker_id=picker_id, status='PENDING')
     db.session.add(req)
+    
+    # Automated Request Approval if setting allows it
+    if shipment.auto_approve_first:
+        # Check if this is the first request
+        total_requests = ShipmentRequest.query.filter_by(shipment_id=shipment_id).count()
+        if total_requests == 1: # The one we just added (not yet committed but in session)
+            try:
+                # We need to commit the request first so approve_request can find it
+                db.session.commit()
+                # Attempt to approve
+                approve_request(req.id)
+                return req
+            except Exception as e:
+                # If auto-approval fails (e.g. quota), revert to pending or let it fail
+                print(f"Auto-approval failed: {e}")
+                db.session.rollback()
+                db.session.add(req) # Re-add for normal flow
+
     db.session.commit()
 
-    # Notify Sender
+    # Notify Sender (only if not auto-approved)
     from app.models.notification import create_notification
     from app.models.user import User
     partner = User.query.get(picker_id)

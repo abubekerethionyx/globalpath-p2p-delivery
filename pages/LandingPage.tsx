@@ -81,64 +81,40 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                         </div>
                     </div>
 
-                    {/* Right: Modern Visual */}
+                    {/* Right: Modern Visual - Elevated Traveler Image */}
                     <div className="lg:col-span-5 relative hidden lg:block h-[600px] z-0">
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-full bg-slate-50 rounded-[4rem] -rotate-6 border border-slate-100 -z-10"></div>
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-full bg-slate-50/50 rounded-[4rem] -rotate-6 border border-slate-100/50 -z-10 backdrop-blur-sm"></div>
 
                         <div className="relative h-full flex items-center justify-center">
-                            {/* Card 1: Live Status */}
-                            <div className="absolute top-10 -left-12 w-64 bg-white p-5 rounded-[2.5rem] shadow-2xl border border-slate-100 animate-bounce-slow z-20">
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center text-[#009E49]">
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>
+                            {/* Main Traveler Image */}
+                            <div className="relative group perspective-1000">
+                                <img
+                                    src="/assets/traveler.png"
+                                    alt="Global Traveler"
+                                    className="w-full max-w-md h-auto drop-shadow-[0_40px_80px_rgba(0,0,0,0.2)] animate-float scale-110"
+                                />
+
+                                {/* Floating Badges / Stats from the image context */}
+                                <div className="absolute -top-4 -right-8 w-48 bg-white/80 backdrop-blur-xl p-5 rounded-[2.5rem] shadow-2xl border border-white animate-bounce-slow z-20">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center text-[#009E49]">
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>
+                                        </div>
+                                        <span className="text-[9px] font-black text-[#009E49] uppercase tracking-widest">Verified Traveler</span>
                                     </div>
-                                    <span className="text-[9px] font-black text-[#009E49] uppercase tracking-widest">In Transit</span>
+                                    <p className="text-xs font-black text-slate-900">Addis → Shanghai</p>
                                 </div>
-                                <p className="text-xs font-black text-slate-900 mb-1">Shanghai → Addis</p>
-                                <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tight">ETA: 14 Hours</p>
-                            </div>
 
-                            {/* Card 2: Main Interface Mockup */}
-                            <div className="w-[320px] bg-white rounded-[3rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] border-8 border-slate-50 overflow-hidden relative z-10 group hover:scale-[1.02] transition-transform duration-500">
-                                <div className="p-8 space-y-8">
-                                    <div className="flex items-center justify-between">
-                                        <div className="p-3 bg-slate-900 text-white rounded-2xl shadow-lg">
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
-                                        </div>
-                                        <div className="w-10 h-10 rounded-full bg-slate-100"></div>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Active Shipment</p>
-                                        <h3 className="text-2xl font-black text-slate-900 leading-none">iPhone 15 Pro <br /> Max Box</h3>
-                                    </div>
-
-                                    <div className="bg-slate-50 p-5 rounded-3xl space-y-4">
-                                        <div className="flex justify-between items-center">
-                                            <p className="text-[10px] font-black text-slate-400 uppercase">Weight</p>
-                                            <p className="text-xs font-black text-slate-900 font-mono">0.45 KG</p>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <p className="text-[10px] font-black text-slate-400 uppercase">Reward</p>
-                                            <p className="text-xs font-black text-[#009E49] font-mono">2,400 ETB</p>
+                                <div className="absolute -bottom-8 -left-12 w-56 bg-slate-900/95 backdrop-blur-xl p-6 rounded-[2.5rem] shadow-2xl border border-slate-700 animate-float-delayed z-20">
+                                    <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">Network Reputation</p>
+                                    <div className="flex items-baseline gap-2">
+                                        <p className="text-2xl font-black text-white">4.98</p>
+                                        <div className="flex text-[#FDD100]">
+                                            {[...Array(5)].map((_, i) => (
+                                                <svg key={i} className="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3-.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                                            ))}
                                         </div>
                                     </div>
-
-                                    <button className="w-full bg-[#009E49] py-4 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-green-100">
-                                        Claim Assignment
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Card 3: Earnings */}
-                            <div className="absolute bottom-10 -right-12 w-60 bg-slate-900 p-6 rounded-[2.5rem] shadow-2xl border border-slate-700 animate-float z-20">
-                                <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-3">Traveler Earnings</p>
-                                <div className="flex items-baseline gap-2 mb-4">
-                                    <p className="text-2xl font-black text-white">12,500</p>
-                                    <p className="text-[10px] font-black text-[#FDD100]">ETB +</p>
-                                </div>
-                                <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-                                    <div className="h-full bg-[#FDD100] w-[80%] rounded-full shadow-[0_0_10px_#FDD100]"></div>
                                 </div>
                             </div>
                         </div>
@@ -148,18 +124,28 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
 
 
 
-            {/* Courier Animation Section */}
-            <div className="relative w-full h-64 bg-slate-50 border-t border-b border-slate-100 overflow-hidden">
-                {/* Parallax Cityscape Background (Abstract) */}
-                <div className="absolute bottom-0 left-0 w-[200%] h-full flex items-end animate-city-scroll opacity-[0.03] text-slate-900">
-                    {[...Array(30)].map((_, i) => (
-                        <div key={i} className="bg-current mx-0.5" style={{
-                            width: `${Math.random() * 40 + 20}px`,
-                            height: `${Math.random() * 100 + 40}px`,
-                            borderTopLeftRadius: Math.random() > 0.5 ? '4px' : '0',
-                            borderTopRightRadius: Math.random() > 0.5 ? '4px' : '0'
-                        }}></div>
-                    ))}
+            {/* Courier Animation Section (Restored & Enhanced) */}
+            <div className="relative w-full h-[300px] bg-slate-50/50 border-t border-b border-slate-100 overflow-hidden">
+                {/* Parallax Layers */}
+                <div className="absolute inset-0 pointer-events-none select-none">
+                    {/* World Map Background Layer */}
+                    <img
+                        src="/assets/background.png"
+                        className="absolute inset-0 w-full h-full object-cover opacity-[0.03] scale-150 animate-subtle-zoom"
+                        alt=""
+                    />
+
+                    {/* Abstract Cityscape */}
+                    <div className="absolute bottom-0 left-0 w-[200%] h-full flex items-end animate-city-scroll opacity-[0.03] text-slate-900">
+                        {[...Array(30)].map((_, i) => (
+                            <div key={i} className="bg-current mx-0.5" style={{
+                                width: `${Math.random() * 40 + 20}px`,
+                                height: `${Math.random() * 100 + 40}px`,
+                                borderTopLeftRadius: Math.random() > 0.5 ? '4px' : '0',
+                                borderTopRightRadius: Math.random() > 0.5 ? '4px' : '0'
+                            }}></div>
+                        ))}
+                    </div>
                 </div>
 
                 {/* Road */}
@@ -172,7 +158,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
 
                 {/* Moving Character Group */}
                 <div className="absolute bottom-6 animate-courier-walk flex items-end">
-
                     {/* Speed Lines */}
                     <div className="absolute top-10 -left-20 space-y-1 opacity-40">
                         <div className="w-16 h-0.5 bg-slate-400 rounded-full animate-wind"></div>
@@ -182,14 +167,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
 
                     {/* The Bag (Roller Suitcase) */}
                     <div className="relative z-10 -mr-6 group">
-                        {/* Handle/Strap */}
                         <div className="absolute bottom-20 right-0 w-16 h-1 bg-slate-800 origin-right rotate-[-15deg]"></div>
-
-                        {/* Suitcase */}
                         <div className="w-20 h-28 bg-[#009E49] rounded-2xl relative flex flex-col items-center justify-center shadow-xl border-t border-white/20 overflow-hidden transform skew-x-2 animate-bounce-custom">
-                            {/* Reflection/Shine */}
                             <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-white/10 to-transparent"></div>
-                            {/* Sticker */}
                             <div className="w-8 h-8 rounded-full bg-[#FDD100] border-2 border-dashed border-[#B89800] opacity-80 rotate-12 mb-2 flex items-center justify-center">
                                 <span className="text-[6px] font-black">FLY</span>
                             </div>
@@ -197,8 +177,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                             <div className="w-12 h-0.5 bg-black/10 my-1"></div>
                             <span className="text-white font-black text-[10px] tracking-widest mt-4 uppercase">Global</span>
                         </div>
-
-                        {/* Wheels */}
                         <div className="absolute -bottom-3 left-2 w-5 h-5 bg-slate-800 rounded-full border-2 border-slate-600 animate-spin-fast z-0">
                             <div className="w-full h-0.5 bg-slate-500 absolute top-1/2 left-0 -translate-y-1/2"></div>
                             <div className="h-full w-0.5 bg-slate-500 absolute top-0 left-1/2 -translate-x-1/2"></div>
@@ -211,27 +189,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
 
                     {/* The Courier */}
                     <div className="relative z-20 ml-12 mb-1">
-                        <svg className="w-24 h-36" viewBox="0 0 100 150" fill="none" stroke="currentColor" strokeWidth="0">
-                            {/* Head */}
+                        <svg className="w-32 h-44" viewBox="0 0 100 150" fill="none" stroke="currentColor" strokeWidth="0">
                             <g className="animate-head-bob">
                                 <circle cx="50" cy="30" r="14" className="fill-slate-900" />
-                                {/* Cap */}
                                 <path d="M35 25 L65 25 L75 30 L35 30 Z" className="fill-[#FDD100]" />
                             </g>
-
-                            {/* Torso */}
                             <path d="M40 45 L60 45 L65 95 L35 95 Z" className="fill-slate-900" />
-                            <rect x="42" y="55" width="16" height="20" rx="4" className="fill-slate-800" /> {/* Backpack strap */}
-
-                            {/* Arms */}
+                            <rect x="42" y="55" width="16" height="20" rx="4" className="fill-slate-800" />
                             <g className="stroke-slate-900 stroke-[6px] stroke-linecap-round">
-                                {/* Back Arm (Pulling) */}
                                 <path d="M50 50 L30 75" className="animate-arm-back origin-[50px_50px]" />
-                                {/* Front Arm */}
                                 <path d="M50 50 L70 80" className="animate-arm-front origin-[50px_50px]" />
                             </g>
-
-                            {/* Legs */}
                             <g className="stroke-slate-900 stroke-[7px] stroke-linecap-round">
                                 <path d="M45 95 L30 135 L15 135" className="animate-leg-back origin-[45px_95px]" />
                                 <path d="M55 95 L80 125 L95 125" className="animate-leg-front origin-[55px_95px]" />
@@ -240,14 +208,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                     </div>
                 </div>
 
-                {/* Passing Objects (For speed reference) */}
-                <div className="absolute bottom-16 w-[300%] flex animate-city-scroll opacity-20 z-0">
-                    {[...Array(10)].map((_, i) => (
-                        <div key={i} className="mx-32">
-                            <div className="w-2 h-32 bg-slate-300"></div> {/* Lamp post */}
-                            <div className="w-8 h-2 bg-slate-300 -ml-3"></div>
-                        </div>
-                    ))}
+                {/* Background Image - Absolute Bottom */}
+                <div className="absolute inset-0 pointer-events-none z-0 lg:block select-none overflow-hidden opacity-10">
+                    <img
+                        src="/assets/background.png"
+                        alt="Global Network"
+                        className="w-full h-full object-cover scale-110 animate-subtle-zoom"
+                    />
                 </div>
             </div>
 
@@ -346,15 +313,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                 </div>
             </section>
 
-            {/* Hero Background Image - Shipment Bag */}
-            <div className="absolute top-1/2 -right-40 -translate-y-1/2 w-[900px] h-[900px] pointer-events-none z-0 hidden lg:block select-none">
-                <img
-                    src="https://img.freepik.com/premium-photo/shopping-bag-minimal-style_198067-10103.jpg"
-                    alt="Shipment Bag"
-                    className="w-full h-full object-contain opacity-40 mix-blend-multiply"
-                />
-            </div>
-
             <style>{`
                 @keyframes bounce-slow {
                     0%, 100% { transform: translateY(0); }
@@ -364,13 +322,18 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                     0%, 100% { transform: translate(0, 0); }
                     50% { transform: translate(10px, -10px); }
                 }
-                @keyframes bounce-slow {
-                    0%, 100% { transform: translateY(0); }
-                    50% { transform: translateY(-20px); }
-                }
-                @keyframes float {
+                @keyframes float-delayed {
                     0%, 100% { transform: translate(0, 0); }
-                    50% { transform: translate(10px, -10px); }
+                    50% { transform: translate(-10px, 10px); }
+                }
+                @keyframes subtle-zoom {
+                    0%, 100% { transform: scale(1.1) translate(0, 0); }
+                    50% { transform: scale(1.15) translate(-1%, -1%); }
+                }
+                @keyframes traveler-float {
+                    0%, 100% { transform: translateY(0) rotate(0); }
+                    25% { transform: translateY(-5px) rotate(1deg); }
+                    75% { transform: translateY(-8px) rotate(-1deg); }
                 }
                 @keyframes courier-walk {
                     from { left: -300px; }
@@ -416,6 +379,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                 .animate-float {
                     animation: float 6s ease-in-out infinite;
                 }
+                .animate-float-delayed {
+                    animation: float-delayed 8s ease-in-out infinite;
+                }
+                .animate-subtle-zoom {
+                    animation: subtle-zoom 20s ease-in-out infinite;
+                }
                 .animate-courier-walk {
                     animation: courier-walk 10s linear infinite;
                 }
@@ -448,6 +417,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                 }
                 .animate-head-bob {
                     animation: head-bob 0.6s ease-in-out infinite;
+                }
+                .perspective-1000 {
+                    perspective: 1000px;
                 }
             `}</style>
         </div >

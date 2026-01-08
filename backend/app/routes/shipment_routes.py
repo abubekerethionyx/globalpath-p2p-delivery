@@ -63,9 +63,12 @@ def create_shipment():
         if 'fee' in data and data['fee']:
             data['fee'] = float(data['fee'])
         if 'availablePickupTime' in data and data['availablePickupTime']:
-             # Frontend sends ISO string e.g. "2023-10-27T10:30"
-             data['available_pickup_time'] = datetime.fromisoformat(data['availablePickupTime'])
-             del data['availablePickupTime']  # Remove camelCase key
+            data['available_pickup_time'] = datetime.fromisoformat(data['availablePickupTime'])
+            del data['availablePickupTime']
+        if 'show_address' in data:
+            data['show_address'] = data['show_address'].lower() == 'true'
+        if 'auto_approve_first' in data:
+            data['auto_approve_first'] = data['auto_approve_first'].lower() == 'true'
     except ValueError as e:
         return jsonify({'message': f'Invalid type: {str(e)}'}), 400
 
@@ -122,6 +125,10 @@ def update_shipment(shipment_id):
         if 'availablePickupTime' in data and data['availablePickupTime']:
             data['available_pickup_time'] = datetime.fromisoformat(data['availablePickupTime'])
             del data['availablePickupTime']
+        if 'show_address' in data:
+            data['show_address'] = data['show_address'].lower() == 'true'
+        if 'auto_approve_first' in data:
+            data['auto_approve_first'] = data['auto_approve_first'].lower() == 'true'
     except ValueError as e:
         return jsonify({'message': f'Invalid type: {str(e)}'}), 400
 
