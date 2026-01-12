@@ -1,17 +1,20 @@
+from flask import Flask, jsonify, request
 import requests
-import json
 import os
-import sys
-import time
 from datetime import datetime
 
-# Configuration - Update these for your production environment if necessary
-BASE_URL = "http://localhost:5000/api/v1"
-ADMIN_EMAIL = "admin@globalpath.com"
-ADMIN_PASSWORD = "admin123" # Use an environment variable in production
+app = Flask(__name__)
+
+# --- Configuration ---
+# Update these via environment variables in cPanel for better security
+BASE_URL = os.environ.get('CORE_API_URL') or "https://globalpathnewapi.peakstartgc.com/api/v1"
+ADMIN_EMAIL = os.environ.get('MAINTENANCE_ADMIN_EMAIL') or "admin@globalpath.com"
+ADMIN_PASSWORD = os.environ.get('MAINTENANCE_ADMIN_PASSWORD') or "admin123"
+# A secret key to prevent unauthorized triggers: yourdomain.com/run?key=xyz
+MAINTENANCE_KEY = os.environ.get('MAINTENANCE_KEY') or "globalpath-maintenance-secure-key-2024"
 
 def get_auth_token():
-    print(f"[{datetime.now()}] Authenticating as {ADMIN_EMAIL}...")
+    """Authenticates with the core API to get a JWT token."""
     try:
         login_resp = requests.post(f"{BASE_URL}/users/login", json={
             "email": ADMIN_EMAIL,
@@ -19,84 +22,64 @@ def get_auth_token():
         }, timeout=15)
         
         if login_resp.status_code != 200:
-            print(f"CRITICAL: Authentication failed with status {login_resp.status_code}")
-            return None
+            return None, f"Auth failed: {login_resp.status_code}"
             
         auth_data = login_resp.json()
-        return auth_data.get('token')
+        return auth_data.get('token'), None
         
-    except requests.exceptions.RequestException as e:
-        print(f"CRITICAL: Connection to API failed: {str(e)}")
-        return None
-
-def get_maintenance_interval(token):
-    print(f"[{datetime.now()}] Fetching system heartbeat interval...")
-    headers = {"Authorization": f"Bearer {token}"}
-    try:
-        settings_resp = requests.get(f"{BASE_URL}/admin/settings", headers=headers, timeout=15)
-        if settings_resp.status_code == 200:
-            settings = settings_resp.json()
-            interval_info = settings.get('maintenance_interval_hours')
-            if interval_info:
-                try:
-                    return float(interval_info.get('value', 24))
-                except ValueError:
-                    pass
-        return 24.0 # Default
     except Exception as e:
-        print(f"WARNING: Could not fetch interval, using 24h default. Error: {str(e)}")
-        return 24.0
+        return None, str(e)
 
-def trigger_maintenance(token):
-    print(f"[{datetime.now()}] Broadcasting maintenance trigger to Core Index...")
+@app.route('/')
+def health_check():
+    return jsonify({
+        "status": "online",
+        "service": "GlobalPath Maintenance Protocol",
+        "timestamp": datetime.now().isoformat()
+    })
+
+@app.route('/run')
+def run_maintenance():
+    # Security Check
+    key = request.args.get('key')
+    if key != MAINTENANCE_KEY:
+        return jsonify({"error": "Unauthorized Access Denied. Invalid Protocol Key."}), 401
+
+    token, err = get_auth_token()
+    if err:
+        return jsonify({"error": "Authentication Failed", "details": err}), 500
+
     headers = {
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json"
     }
     
     try:
-        maint_resp = requests.post(f"{BASE_URL}/admin/maintenance/run", headers=headers, timeout=120)
+        # Trigger the actual maintenance logic on the main core API
+        maint_resp = requests.post(f"{BASE_URL}/admin/maintenance/run", headers=headers, timeout=300)
         
         if maint_resp.status_code == 200:
-            data = maint_resp.json()
-            print(f"SUCCESS: Core protocols synchronized. Response: {data.get('message')}")
-            return True
+            return jsonify({
+                "status": "success",
+                "message": "Maintenance protocol synchronized successfully",
+                "core_response": maint_resp.json()
+            }), 200
         else:
-            print(f"FAILURE: Maintenance protocol rejected with status {maint_resp.status_code}")
-            return False
+            return jsonify({
+                "status": "failure",
+                "code": maint_resp.status_code,
+                "message": "Core API rejected maintenance request"
+            }), 502
             
     except requests.exceptions.RequestException as e:
-        print(f"CRITICAL: Maintenance broadcast interrupted: {str(e)}")
-        return False
+        return jsonify({
+            "status": "error",
+            "message": "Connection to Core API interrupted",
+            "details": str(e)
+        }), 504
 
-def run_loop():
-    print("--- GlobalPath Maintenance Microservice Initialized ---")
-    
-    while True:
-        token = get_auth_token()
-        if not token:
-            print("Retrying authentication in 60 seconds...")
-            time.sleep(60)
-            continue
-            
-        # Execute maintenance
-        trigger_maintenance(token)
-        
-        # Get next interval
-        interval_hours = get_maintenance_interval(token)
-        interval_seconds = interval_hours * 3600
-        
-        print(f"[{datetime.now()}] Maintenance cycle complete. Next cycle in {interval_hours} hours.")
-        print(f"--- Resting until next protocol synchronization ---")
-        
-        time.sleep(interval_seconds)
+# For cPanel/Passenger
+application = app
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        BASE_URL = sys.argv[1]
-    
-    try:
-        run_loop()
-    except KeyboardInterrupt:
-        print("\n--- Maintenance Service Terminated by User ---")
-        sys.exit(0)
+    app.run(port=5001)

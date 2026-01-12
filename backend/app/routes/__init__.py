@@ -8,6 +8,11 @@ from .admin_routes import bp as admin_bp
 from .travel_routes import bp as travel_bp
 
 def register_routes(app):
+    # Base health check route
+    @app.route('/api/health')
+    def health():
+        return {'status': 'healthy', 'message': 'GlobalPath API is running'}, 200
+
     # Register blueprints with v1 API versioning
     app.register_blueprint(user_bp, url_prefix='/api/v1/users')
     app.register_blueprint(subscription_bp, url_prefix='/api/v1/subscriptions')

@@ -51,7 +51,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onNavigate, currentPage
   };
 
   const navLinks = [
-    { id: 'feed', label: 'Feed', roles: [UserRole.PICKER, UserRole.SENDER, null] },
+    { id: 'feed', label: 'Feed', roles: [UserRole.PICKER, UserRole.SENDER, UserRole.ADMIN, null] },
     { id: 'dashboard', label: 'Dashboard', roles: [UserRole.PICKER, UserRole.SENDER] },
     { id: 'my-travels', label: 'My Travels', roles: [UserRole.PICKER] },
     { id: 'marketplace', label: 'Marketplace', roles: [UserRole.PICKER] },
@@ -88,7 +88,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onNavigate, currentPage
 
             {/* Desktop Navigation Links */}
             {user && user.role !== UserRole.ADMIN && (
-              <div className="hidden lg:ml-10 lg:flex lg:space-x-4">
+              <div className="hidden md:ml-10 md:flex md:space-x-4">
                 {navLinks.filter(link => link.roles.includes(user.role)).map(link => (
                   <button
                     key={link.id}
@@ -106,7 +106,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onNavigate, currentPage
             )}
 
             {(!user || user.role === UserRole.ADMIN) && (
-              <div className="hidden lg:ml-10 lg:flex lg:space-x-4">
+              <div className="hidden md:ml-10 md:flex md:space-x-4">
                 <button
                   onClick={() => handleNavigate('feed')}
                   className={`px-3 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${currentPage === 'feed' ? 'text-[#009E49]' : 'text-slate-400 hover:text-slate-900'}`}
@@ -332,6 +332,12 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onNavigate, currentPage
                 </>
               ) : (
                 <div className="space-y-4 pt-4">
+                  <button
+                    onClick={() => handleNavigate('feed')}
+                    className="w-full py-4 rounded-2xl bg-[#009E49] text-white font-black uppercase text-[11px] tracking-widest shadow-xl shadow-green-100"
+                  >
+                    Browse Feed
+                  </button>
                   <button
                     onClick={() => handleNavigate('packaging')}
                     className="w-full py-4 rounded-2xl bg-slate-50 text-slate-900 font-black uppercase text-[11px] tracking-widest border border-slate-100"
