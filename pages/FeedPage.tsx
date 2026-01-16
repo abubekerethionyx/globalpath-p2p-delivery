@@ -124,19 +124,19 @@ const FeedPage: React.FC<FeedPageProps> = ({ user }) => {
     );
 
     return (
-        <div className="space-y-12 py-6 animate-in">
+        <div className="space-y-6 py-4 animate-in">
             {/* Hero Header */}
-            <div className="flex flex-col md:flex-row justify-between items-end gap-8 bg-slate-900 p-12 rounded-[3.5rem] relative overflow-hidden shadow-2xl">
+            <div className="flex flex-col md:flex-row justify-between items-end gap-6 bg-slate-900 p-8 rounded-3xl relative overflow-hidden shadow-2xl">
                 <div className="absolute top-0 right-0 w-96 h-96 bg-[#009E49] opacity-10 blur-[100px] rounded-full -mr-48 -mt-48"></div>
                 <div className="absolute bottom-0 left-0 w-64 h-64 bg-amber-400 opacity-5 blur-[80px] rounded-full -ml-32 -mb-32"></div>
 
-                <div className="relative z-10 space-y-4">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full border border-white/10">
-                        <span className="flex h-2 w-2 rounded-full bg-[#009E49] animate-pulse"></span>
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/70">Global Logistics Protocol Active</p>
+                <div className="relative z-10 space-y-3">
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-md rounded-full border border-white/10">
+                        <span className="flex h-1.5 w-1.5 rounded-full bg-[#009E49] animate-pulse"></span>
+                        <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/70">Global Logistics Protocol Active</p>
                     </div>
-                    <h1 className="text-5xl font-black text-white tracking-tight leading-none">The Travel Feed</h1>
-                    <p className="text-slate-400 text-lg font-medium max-w-xl">
+                    <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight leading-none">The Travel Feed</h1>
+                    <p className="text-slate-400 text-sm md:text-base font-medium max-w-xl">
                         Browse upcoming international travels or announce your own trip to help others ship their items globally.
                     </p>
                 </div>
@@ -145,15 +145,15 @@ const FeedPage: React.FC<FeedPageProps> = ({ user }) => {
                     {user && user.role === 'PICKER' ? (
                         <button
                             onClick={() => setShowPostModal(true)}
-                            className="px-10 py-5 bg-[#009E49] text-white rounded-[2rem] font-black uppercase text-xs tracking-widest shadow-2xl shadow-green-900/40 hover:scale-105 transition-transform flex items-center gap-3"
+                            className="px-6 py-3 bg-[#009E49] text-white rounded-xl font-black uppercase text-[10px] tracking-widest shadow-xl shadow-green-900/40 hover:scale-105 transition-transform flex items-center gap-2"
                         >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" /></svg>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" /></svg>
                             Announce Travel
                         </button>
                     ) : !user ? (
                         <button
                             onClick={() => navigate('/login')}
-                            className="px-10 py-5 bg-white text-slate-900 rounded-[2rem] font-black uppercase text-xs tracking-widest shadow-2xl hover:scale-105 transition-transform"
+                            className="px-6 py-3 bg-white text-slate-900 rounded-xl font-black uppercase text-[10px] tracking-widest shadow-xl hover:scale-105 transition-transform"
                         >
                             Sign in to Post
                         </button>
@@ -162,21 +162,21 @@ const FeedPage: React.FC<FeedPageProps> = ({ user }) => {
             </div>
 
             {/* Filter Bar */}
-            <div className="bg-white p-3 rounded-[3rem] border border-slate-200 shadow-xl flex flex-col lg:flex-row gap-3">
+            <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-xl flex flex-col lg:flex-row gap-2">
                 <div className="flex-1 relative">
-                    <svg className="w-5 h-5 absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                    <svg className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                     <input
                         type="text"
                         placeholder="Filter by country, notes, or user..."
-                        className="w-full pl-14 pr-6 py-5 bg-transparent rounded-[2.5rem] text-sm font-bold focus:ring-0 focus:outline-none placeholder:text-slate-300"
+                        className="w-full pl-10 pr-4 py-3 bg-transparent rounded-xl text-xs font-bold focus:ring-0 focus:outline-none placeholder:text-slate-300"
                         value={search}
                         onChange={e => setSearch(e.target.value)}
                     />
                 </div>
-                <div className="h-10 w-px bg-slate-100 hidden lg:block self-center"></div>
-                <div className="flex flex-col sm:flex-row gap-3">
+                <div className="h-8 w-px bg-slate-100 hidden lg:block self-center"></div>
+                <div className="flex flex-col sm:flex-row gap-2">
                     <select
-                        className="px-8 py-4 bg-slate-50 border-none rounded-[1.8rem] text-xs font-black uppercase tracking-widest text-slate-600 focus:ring-2 focus:ring-[#009E49] cursor-pointer"
+                        className="px-4 py-2.5 bg-slate-50 border-none rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 focus:ring-2 focus:ring-[#009E49] cursor-pointer"
                         value={origin}
                         onChange={e => setOrigin(e.target.value)}
                     >
@@ -184,11 +184,11 @@ const FeedPage: React.FC<FeedPageProps> = ({ user }) => {
                         {countries.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                     <select
-                        className="px-8 py-4 bg-slate-50 border-none rounded-[1.8rem] text-xs font-black uppercase tracking-widest text-slate-600 focus:ring-2 focus:ring-[#009E49] cursor-pointer"
+                        className="px-4 py-2.5 bg-slate-50 border-none rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 focus:ring-2 focus:ring-[#009E49] cursor-pointer"
                         value={destination}
                         onChange={e => setDestination(e.target.value)}
                     >
-                        <option value="">Destination: All</option>
+                        <option value="">Dest: All</option>
                         {countries.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                 </div>
@@ -200,18 +200,18 @@ const FeedPage: React.FC<FeedPageProps> = ({ user }) => {
                     <button
                         key={status}
                         onClick={() => setStatusFilter(status)}
-                        className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap transition-all ${statusFilter === status
+                        className={`px-5 py-2 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] whitespace-nowrap transition-all ${statusFilter === status
                             ? 'bg-slate-900 text-white shadow-xl shadow-slate-200'
                             : 'bg-white border border-slate-100 text-slate-400 hover:text-slate-900 hover:border-slate-200'
                             }`}
                     >
-                        {status} Travels
+                        {status}
                     </button>
                 ))}
             </div>
 
             {/* Travel Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4">
                 {filteredTravels.map(travel => (
                     <TravelCard
                         key={travel.id}
@@ -237,38 +237,38 @@ const FeedPage: React.FC<FeedPageProps> = ({ user }) => {
                     />
                 ))}
                 {filteredTravels.length === 0 && (
-                    <div className="col-span-full py-40 text-center bg-white rounded-[4rem] border-2 border-dashed border-slate-100">
-                        <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <svg className="w-10 h-10 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 002 2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <div className="col-span-full py-20 text-center bg-white rounded-3xl border-2 border-dashed border-slate-100">
+                        <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-8 h-8 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 002 2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         </div>
-                        <p className="text-lg font-bold text-slate-400">No travels found matching your search.</p>
-                        <button onClick={() => { setSearch(''); setOrigin(''); setDestination(''); }} className="text-[#009E49] font-black uppercase text-xs tracking-widest mt-4">Reset Parameters</button>
+                        <p className="text-sm font-bold text-slate-400">No travels found matching your search.</p>
+                        <button onClick={() => { setSearch(''); setOrigin(''); setDestination(''); }} className="text-[#009E49] font-black uppercase text-[10px] tracking-widest mt-3">Reset Parameters</button>
                     </div>
                 )}
             </div>
 
             {/* Post Travel Modal */}
             {showPostModal && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xl z-[150] flex items-center justify-center p-6 animate-in fade-in duration-300">
-                    <div className="bg-white rounded-[3rem] w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in duration-300">
-                        <div className="p-10">
-                            <div className="flex justify-between items-center mb-8">
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xl z-[150] flex items-center justify-center p-4 animate-in fade-in duration-300">
+                    <div className="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in duration-300">
+                        <div className="p-6">
+                            <div className="flex justify-between items-center mb-6">
                                 <div>
-                                    <h3 className="text-3xl font-black text-slate-900 tracking-tight">Announce Your Trip</h3>
-                                    <p className="text-slate-500 font-medium">Sharing your journey helps others connect.</p>
+                                    <h3 className="text-2xl font-black text-slate-900 tracking-tight">Announce Your Trip</h3>
+                                    <p className="text-slate-500 font-medium text-xs">Sharing your journey helps others connect.</p>
                                 </div>
-                                <button onClick={() => setShowPostModal(false)} className="p-3 bg-slate-50 rounded-2xl hover:bg-slate-100 transition">
-                                    <svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                <button onClick={() => setShowPostModal(false)} className="p-2 bg-slate-50 rounded-xl hover:bg-slate-100 transition">
+                                    <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
                                 </button>
                             </div>
 
-                            <form onSubmit={handlePostTravel} className="space-y-6">
-                                <div className="grid grid-cols-2 gap-6">
+                            <form onSubmit={handlePostTravel} className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Origin</label>
+                                        <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Origin</label>
                                         <select
                                             required
-                                            className="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-[#009E49]"
+                                            className="w-full bg-slate-50 border-none rounded-xl p-3 text-xs font-bold focus:ring-2 focus:ring-[#009E49]"
                                             value={postForm.origin_country}
                                             onChange={e => setPostForm({ ...postForm, origin_country: e.target.value })}
                                         >
@@ -277,10 +277,10 @@ const FeedPage: React.FC<FeedPageProps> = ({ user }) => {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Destination</label>
+                                        <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Destination</label>
                                         <select
                                             required
-                                            className="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-[#009E49]"
+                                            className="w-full bg-slate-50 border-none rounded-xl p-3 text-xs font-bold focus:ring-2 focus:ring-[#009E49]"
                                             value={postForm.destination_country}
                                             onChange={e => setPostForm({ ...postForm, destination_country: e.target.value })}
                                         >
@@ -290,23 +290,23 @@ const FeedPage: React.FC<FeedPageProps> = ({ user }) => {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-6">
+                                <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Travel Date</label>
+                                        <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Travel Date</label>
                                         <input
                                             type="date"
                                             required
-                                            className="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-[#009E49]"
+                                            className="w-full bg-slate-50 border-none rounded-xl p-3 text-xs font-bold focus:ring-2 focus:ring-[#009E49]"
                                             value={postForm.travel_date}
                                             onChange={e => setPostForm({ ...postForm, travel_date: e.target.value })}
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Capacity (kg)</label>
+                                        <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Capacity (kg)</label>
                                         <input
                                             type="number"
                                             placeholder="e.g. 23"
-                                            className="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-[#009E49]"
+                                            className="w-full bg-slate-50 border-none rounded-xl p-3 text-xs font-bold focus:ring-2 focus:ring-[#009E49]"
                                             value={postForm.weight_capacity}
                                             onChange={e => setPostForm({ ...postForm, weight_capacity: parseFloat(e.target.value) })}
                                         />
@@ -314,11 +314,11 @@ const FeedPage: React.FC<FeedPageProps> = ({ user }) => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Trip Details</label>
+                                    <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Trip Details</label>
                                     <textarea
-                                        rows={4}
-                                        placeholder="Mention any specific items you can carry or details about your baggage allowance..."
-                                        className="w-full bg-slate-50 border-none rounded-3xl p-6 text-sm font-medium focus:ring-2 focus:ring-[#009E49]"
+                                        rows={3}
+                                        placeholder="Mention any specific items you can carry..."
+                                        className="w-full bg-slate-50 border-none rounded-2xl p-4 text-xs font-medium focus:ring-2 focus:ring-[#009E49]"
                                         value={postForm.description}
                                         onChange={e => setPostForm({ ...postForm, description: e.target.value })}
                                     />
@@ -326,7 +326,7 @@ const FeedPage: React.FC<FeedPageProps> = ({ user }) => {
 
                                 <button
                                     type="submit"
-                                    className="w-full py-5 bg-slate-900 text-white rounded-[2rem] font-black uppercase text-xs tracking-widest hover:bg-black transition-all shadow-2xl shadow-slate-200"
+                                    className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-black transition-all shadow-xl shadow-slate-200"
                                 >
                                     Broadcast Announcement
                                 </button>
@@ -338,42 +338,42 @@ const FeedPage: React.FC<FeedPageProps> = ({ user }) => {
 
             {/* Pin Item Modal */}
             {showPinModal && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xl z-[150] flex items-center justify-center p-6 animate-in fade-in duration-300">
-                    <div className="bg-white rounded-[3rem] w-full max-w-xl overflow-hidden shadow-2xl animate-in zoom-in duration-300">
-                        <div className="p-10">
-                            <div className="flex justify-between items-center mb-8">
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xl z-[150] flex items-center justify-center p-4 animate-in fade-in duration-300">
+                    <div className="bg-white rounded-3xl w-full max-w-xl overflow-hidden shadow-2xl animate-in zoom-in duration-300">
+                        <div className="p-6">
+                            <div className="flex justify-between items-center mb-6">
                                 <div>
-                                    <h3 className="text-3xl font-black text-slate-900 tracking-tight">Pin Your Item</h3>
-                                    <p className="text-slate-500 font-medium">Select a shipment to pin to this travel.</p>
+                                    <h3 className="text-2xl font-black text-slate-900 tracking-tight">Pin Your Item</h3>
+                                    <p className="text-slate-500 font-medium text-xs">Select a shipment to pin to this travel.</p>
                                 </div>
-                                <button onClick={() => setShowPinModal(false)} className="p-3 bg-slate-50 rounded-2xl hover:bg-slate-100 transition">
-                                    <svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                <button onClick={() => setShowPinModal(false)} className="p-2 bg-slate-50 rounded-xl hover:bg-slate-100 transition">
+                                    <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
                                 </button>
                             </div>
 
                             {myItems.length === 0 ? (
-                                <div className="text-center py-10">
-                                    <p className="text-slate-400 font-bold mb-6">You have no active items on the marketplace to pin.</p>
-                                    <button onClick={() => navigate('/post-item')} className="px-8 py-4 bg-[#009E49] text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-green-100">Post New Item</button>
+                                <div className="text-center py-8">
+                                    <p className="text-slate-400 font-bold mb-4 text-sm">You have no active items on the marketplace to pin.</p>
+                                    <button onClick={() => navigate('/post-item')} className="px-6 py-3 bg-[#009E49] text-white rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-green-100">Post New Item</button>
                                 </div>
                             ) : (
-                                <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                                <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                                     {myItems.map(item => (
                                         <div
                                             key={item.id}
                                             onClick={() => handlePinItem(item.id)}
-                                            className="p-5 bg-slate-50 rounded-[2rem] border border-slate-100 hover:border-[#009E49] hover:bg-green-50 transition-all cursor-pointer group flex items-center justify-between"
+                                            className="p-3 bg-slate-50 rounded-2xl border border-slate-100 hover:border-[#009E49] hover:bg-green-50 transition-all cursor-pointer group flex items-center justify-between"
                                         >
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-[#009E49] font-black shadow-sm group-hover:scale-110 transition-transform">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-[#009E49] font-black shadow-sm group-hover:scale-110 transition-transform text-xs">
                                                     {item.category?.[0] || 'S'}
                                                 </div>
                                                 <div>
                                                     <p className="text-sm font-black text-slate-900">{item.description || item.category}</p>
-                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{item.pickupCountry} → {item.destCountry}</p>
+                                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{item.pickupCountry} → {item.destCountry}</p>
                                                 </div>
                                             </div>
-                                            <svg className="w-6 h-6 text-slate-200 group-hover:text-[#009E49] group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" /></svg>
+                                            <svg className="w-5 h-5 text-slate-200 group-hover:text-[#009E49] group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" /></svg>
                                         </div>
                                     ))}
                                 </div>

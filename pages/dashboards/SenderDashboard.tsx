@@ -173,11 +173,11 @@ const SenderDashboard: React.FC<SenderDashboardProps> = ({ user }) => {
 
     const StatusGrid = ({ statusItems, emptyMessage }: { statusItems: ShipmentItem[], emptyMessage: string }) => {
         if (statusItems.length === 0) return (
-            <div className="bg-white rounded-[3rem] border border-slate-100 p-20 text-center animate-in fade-in duration-500">
-                <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <svg className="w-10 h-10 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+            <div className="bg-white rounded-3xl border border-slate-100 p-10 text-center animate-in fade-in duration-500">
+                <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
                 </div>
-                <p className="text-slate-400 font-bold uppercase tracking-widest text-sm">{emptyMessage}</p>
+                <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">{emptyMessage}</p>
             </div>
         );
         return (
@@ -211,92 +211,94 @@ const SenderDashboard: React.FC<SenderDashboardProps> = ({ user }) => {
     };
 
     return (
-        <div className="max-w-[1600px] mx-auto space-y-12 animate-in fade-in duration-700 pb-24 px-4">
+        <div className="max-w-[1600px] mx-auto space-y-6 animate-in fade-in duration-700 pb-12 px-4">
             {/* Header Area */}
-            <div className="flex flex-col md:flex-row justify-between items-end gap-6">
+            <div className="flex flex-col md:flex-row justify-between items-end gap-4">
                 <div className="space-y-1">
                     <p className="text-[#009E49] text-[10px] font-black uppercase tracking-[0.3em]">Operational Panel</p>
-                    <h1 className="text-4xl font-black text-slate-900 tracking-tight">Sender Dashboard</h1>
-                    <p className="text-slate-500 font-medium text-lg">Managing logistics for <span className="text-slate-900 font-bold">{user.firstName} {user.lastName}</span></p>
+                    <h1 className="text-2xl md:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">Sender Dashboard</h1>
+                    <p className="text-slate-500 font-medium text-sm md:text-base">Managing logistics for <span className="text-slate-900 font-bold">{user.firstName} {user.lastName}</span></p>
                 </div>
                 <button
                     onClick={() => navigate('/post-item')}
-                    className="bg-slate-900 text-white px-8 py-4 rounded-[1.5rem] font-black uppercase text-[10px] tracking-widest hover:bg-indigo-600 transform hover:-translate-y-1 transition-all shadow-xl shadow-slate-200 flex items-center gap-3"
+                    className="bg-slate-900 text-white px-6 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-indigo-600 transform hover:-translate-y-1 transition-all shadow-xl shadow-slate-200 flex items-center gap-3 w-full md:w-auto justify-center"
                 >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" /></svg>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" /></svg>
                     Initiate New Shipment
                 </button>
             </div>
 
             {/* Premium Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* ... stats ... */}
-                <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl transition-shadow group">
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="p-3 bg-amber-50 rounded-2xl text-amber-600">
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-shadow group">
+                    <div className="flex justify-between items-start mb-3">
+                        <div className="p-2 bg-amber-50 rounded-xl text-amber-600">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                         </div>
                     </div>
-                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Awaiting Decision</p>
-                    <p className="text-4xl font-black text-slate-900 mt-2">{actionCount}</p>
+                    <p className="text-slate-400 text-[9px] font-black uppercase tracking-widest truncate">Awaiting</p>
+                    <p className="text-2xl md:text-3xl font-black text-slate-900 mt-1">{actionCount}</p>
                 </div>
                 {/* ... other stats ... */}
-                <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="p-3 bg-indigo-50 rounded-2xl text-indigo-600">
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
+                    <div className="flex justify-between items-start mb-3">
+                        <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                         </div>
                     </div>
-                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">In Pipeline</p>
-                    <p className="text-4xl font-black text-slate-900 mt-2">{pipelineCount}</p>
+                    <p className="text-slate-400 text-[9px] font-black uppercase tracking-widest truncate">Pipeline</p>
+                    <p className="text-2xl md:text-3xl font-black text-slate-900 mt-1">{pipelineCount}</p>
                 </div>
 
-                <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="p-3 bg-blue-50 rounded-2xl text-blue-600">
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
+                    <div className="flex justify-between items-start mb-3">
+                        <div className="p-2 bg-blue-50 rounded-xl text-blue-600">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                         </div>
                     </div>
-                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Market Exposure</p>
-                    <p className="text-4xl font-black text-slate-900 mt-2">{marketplaceCount}</p>
+                    <p className="text-slate-400 text-[9px] font-black uppercase tracking-widest truncate">Market</p>
+                    <p className="text-2xl md:text-3xl font-black text-slate-900 mt-1">{marketplaceCount}</p>
                 </div>
 
-                <div className="bg-indigo-600 p-8 rounded-[2.5rem] shadow-xl text-white">
-                    <p className="text-indigo-200 text-[10px] font-black uppercase tracking-widest">Financial footprint</p>
-                    <div className="flex items-baseline gap-2 mt-2">
-                        <p className="text-4xl font-black">{totalSpent.toLocaleString()}</p>
-                        <p className="text-xs font-bold opacity-50 uppercase">ETB</p>
+                <div className="bg-indigo-600 p-5 rounded-3xl shadow-xl text-white">
+                    <p className="text-indigo-200 text-[9px] font-black uppercase tracking-widest truncate">Spend</p>
+                    <div className="flex items-baseline gap-2 mt-1">
+                        <p className="text-2xl md:text-3xl font-black">{totalSpent.toLocaleString()}</p>
+                        <p className="text-[10px] font-bold opacity-50 uppercase">ETB</p>
                     </div>
                 </div>
             </div>
 
             {/* Granular Tab Navigation */}
-            <div className="flex flex-wrap gap-2 bg-slate-100 p-2 rounded-[2rem] w-fit">
-                <button
-                    onClick={() => setActiveTab('ACTION')}
-                    className={`px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-3 ${activeTab === 'ACTION' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                    <span className={`w-2 h-2 rounded-full ${actionCount > 0 ? 'bg-amber-500 animate-pulse' : 'bg-slate-300'}`}></span>
-                    Needs Action {actionCount > 0 && `(${actionCount})`}
-                </button>
-                <button
-                    onClick={() => setActiveTab('PIPELINE')}
-                    className={`px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'PIPELINE' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                    In Pipeline ({pipelineCount})
-                </button>
-                <button
-                    onClick={() => setActiveTab('MARKETPLACE')}
-                    className={`px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'MARKETPLACE' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                    Active on Marketplace ({marketplaceCount})
-                </button>
-                <button
-                    onClick={() => setActiveTab('HISTORY')}
-                    className={`px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'HISTORY' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                    Historical Logs ({historyCount})
-                </button>
+            <div className="overflow-x-auto pb-4 -mb-4">
+                <div className="flex gap-2 bg-slate-100 p-1.5 rounded-xl w-fit">
+                    <button
+                        onClick={() => setActiveTab('ACTION')}
+                        className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'ACTION' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                        <span className={`w-1.5 h-1.5 rounded-full ${actionCount > 0 ? 'bg-amber-500 animate-pulse' : 'bg-slate-300'}`}></span>
+                        Action {actionCount > 0 && `(${actionCount})`}
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('PIPELINE')}
+                        className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === 'PIPELINE' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                        Pipeline ({pipelineCount})
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('MARKETPLACE')}
+                        className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === 'MARKETPLACE' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                        Market ({marketplaceCount})
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('HISTORY')}
+                        className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === 'HISTORY' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                        History ({historyCount})
+                    </button>
+                </div>
             </div>
 
             {/* Content Logic */}
@@ -306,7 +308,7 @@ const SenderDashboard: React.FC<SenderDashboardProps> = ({ user }) => {
 
                         {/* Waiting Confirmation Section */}
                         {groupedItems[ItemStatus.WAITING_CONFIRMATION].length > 0 && (
-                            <div className="bg-white p-8 rounded-[2.5rem] border border-amber-100 shadow-sm relative overflow-hidden">
+                            <div className="bg-white p-5 rounded-3xl border border-amber-100 shadow-sm relative overflow-hidden">
                                 <div className="absolute top-0 left-0 w-full h-2 bg-amber-400"></div>
                                 <div className="flex justify-between items-center mb-6">
                                     <div className="flex items-center gap-4">
@@ -347,7 +349,7 @@ const SenderDashboard: React.FC<SenderDashboardProps> = ({ user }) => {
                             const item = items.find(i => i.id === itemId);
                             if (!item) return null;
                             return (
-                                <div key={itemId} className="bg-white p-8 rounded-[2.5rem] border border-indigo-100 shadow-sm">
+                                <div key={itemId} className="bg-white p-5 rounded-3xl border border-indigo-100 shadow-sm">
                                     <div className="flex items-center gap-4 mb-6">
                                         <div className="p-3 bg-amber-50 text-amber-600 rounded-xl">
                                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>

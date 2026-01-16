@@ -135,7 +135,7 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
 
   return (
     <div
-      className={`bg-white rounded-3xl shadow-sm border transition-all duration-300 group relative overflow-hidden cursor-pointer ${isSelected ? 'border-[#009E49] ring-2 ring-[#009E49]/20 shadow-xl' : 'border-slate-200 hover:shadow-2xl hover:-translate-y-2 hover:border-[#009E49]/30'
+      className={`bg-white rounded-2xl shadow-sm border transition-all duration-300 group relative overflow-hidden cursor-pointer ${isSelected ? 'border-[#009E49] ring-2 ring-[#009E49]/20 shadow-xl' : 'border-slate-200 hover:shadow-xl hover:-translate-y-1 hover:border-[#009E49]/30'
         }`}
       onClick={handleViewDetails}
     >
@@ -145,20 +145,20 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
         (role === UserRole.SENDER && item.status === ItemStatus.WAITING_CONFIRMATION)
       ) && (
           <div
-            className="absolute top-0 left-0 p-5 z-20"
+            className="absolute top-0 left-0 p-3 z-20"
             onClick={(e) => e.stopPropagation()}
           >
             <input
               type="checkbox"
               checked={isSelected}
               onChange={(e) => onSelect(item.id, e.target.checked)}
-              className="w-5 h-5 rounded-md border-slate-300 text-[#009E49] focus:ring-[#009E49] cursor-pointer shadow-sm"
+              className="w-4 h-4 rounded border-slate-300 text-[#009E49] focus:ring-[#009E49] cursor-pointer shadow-sm"
             />
           </div>
         )}
 
       {/* Simplified Card Body (No Image Header) */}
-      <div className={`p-5 ${onSelect ? 'pt-12' : ''}`}>
+      <div className={`p-4 ${onSelect ? 'pt-10' : ''}`}>
 
         {/* Header: Status & Fee */}
         <div className="flex justify-between items-start mb-4">
@@ -238,18 +238,21 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
         )}
 
         {/* Action Buttons */}
+        {/* Action Buttons */}
         <div className="flex space-x-2">
           {/* View Details Button - Always visible for pickers */}
           {role === UserRole.PICKER && (
             <button
               onClick={handleViewDetails}
-              className="flex-1 bg-slate-900 text-white px-3 py-2 rounded-xl text-xs font-bold hover:bg-black transition flex items-center justify-center shadow-lg group/btn"
+              className="flex-1 bg-slate-900 text-white px-2 py-2 md:px-3 md:py-2 rounded-xl text-[10px] md:text-xs font-bold hover:bg-black transition flex items-center justify-center shadow-lg group/btn"
+              title="View Details"
             >
-              <svg className="w-4 h-4 mr-2 group-hover/btn:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2 group-hover/btn:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
               </svg>
-              View Details
+              <span className="hidden sm:inline">Details</span>
+              <span className="inline sm:hidden">View</span>
             </button>
           )}
 
@@ -259,7 +262,7 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
               className="flex-none bg-white border-2 border-slate-200 text-slate-700 p-2 rounded-xl text-xs font-bold hover:bg-slate-50 hover:border-[#009E49] transition flex items-center justify-center shadow-sm"
               title="Chat with sender"
             >
-              <svg className="w-4 h-4 text-[#009E49]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3 h-3 md:w-4 md:h-4 text-[#009E49]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
               </svg>
             </button>
@@ -269,19 +272,20 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
             (isRequested || requestStatus === 'PENDING') ? (
               <button
                 disabled
-                className="flex-1 bg-amber-100 text-amber-600 px-3 py-2 rounded-xl text-xs font-black border-2 border-amber-200 cursor-not-allowed uppercase tracking-wider flex items-center justify-center"
+                className="flex-1 bg-amber-100 text-amber-600 px-2 py-2 md:px-3 md:py-2 rounded-xl text-[10px] md:text-xs font-black border-2 border-amber-200 cursor-not-allowed uppercase tracking-wider flex items-center justify-center"
               >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                Request Pending
+                <span className="hidden sm:inline">Request Pending</span>
+                <span className="inline sm:hidden">Pending</span>
               </button>
             ) : requestStatus === 'REJECTED' ? (
               <button
                 disabled
-                className="flex-1 bg-red-50 text-red-500 px-3 py-2 rounded-xl text-xs font-black border-2 border-red-100 cursor-not-allowed uppercase tracking-wider flex items-center justify-center"
+                className="flex-1 bg-red-50 text-red-500 px-2 py-2 md:px-3 md:py-2 rounded-xl text-[10px] md:text-xs font-black border-2 border-red-100 cursor-not-allowed uppercase tracking-wider flex items-center justify-center"
               >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
                 Rejected
@@ -289,12 +293,13 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
             ) : onPick && (
               <button
                 onClick={(e) => { e.stopPropagation(); onPick(item.id); }}
-                className="flex-1 bg-[#009E49] text-white px-3 py-2 rounded-xl text-xs font-black hover:bg-[#007A38] transition shadow-lg shadow-green-200 uppercase tracking-wider flex items-center justify-center group/pick"
+                className="flex-1 bg-[#009E49] text-white px-2 py-2 md:px-3 md:py-2 rounded-xl text-[10px] md:text-xs font-black hover:bg-[#007A38] transition shadow-lg shadow-green-200 uppercase tracking-wider flex items-center justify-center group/pick"
               >
-                <svg className="w-4 h-4 mr-2 group-hover/pick:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2 group-hover/pick:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                 </svg>
-                Pick Up
+                <span className="hidden sm:inline">Pick Up</span>
+                <span className="inline sm:hidden">Pick</span>
               </button>
             )
           )}
@@ -302,18 +307,19 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
           {(item.status === ItemStatus.REQUESTED || item.status === ItemStatus.APPROVED) && role === UserRole.PICKER && (
             (currentUserId && item.partnerId === currentUserId) || requestStatus === 'APPROVED' ? (
               <button
-                className="flex-1 bg-green-600 text-white px-3 py-2 rounded-xl text-xs font-black border-2 border-green-600 uppercase tracking-wider flex items-center justify-center shadow-lg shadow-green-200"
+                className="flex-1 bg-green-600 text-white px-2 py-2 md:px-3 md:py-2 rounded-xl text-[10px] md:text-xs font-black border-2 border-green-600 uppercase tracking-wider flex items-center justify-center shadow-lg shadow-green-200"
                 onClick={(e) => { e.stopPropagation(); onUpdateStatus?.(item.id, ItemStatus.PICKED); }}
               >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
                 </svg>
-                Ready for Pickup
+                <span className="hidden sm:inline">Ready for Pickup</span>
+                <span className="inline sm:hidden">Pickup</span>
               </button>
             ) : (
               <button
                 disabled
-                className="flex-1 bg-slate-100 text-slate-500 px-3 py-2 rounded-xl text-xs font-bold border-2 border-slate-200 cursor-not-allowed flex items-center justify-center uppercase tracking-wider"
+                className="flex-1 bg-slate-100 text-slate-500 px-2 py-2 md:px-3 md:py-2 rounded-xl text-[10px] md:text-xs font-bold border-2 border-slate-200 cursor-not-allowed flex items-center justify-center uppercase tracking-wider"
               >
                 Taken
               </button>
@@ -325,7 +331,7 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
               value={item.status}
               onClick={(e) => e.stopPropagation()}
               onChange={(e) => onUpdateStatus(item.id, e.target.value as ItemStatus)}
-              className="flex-1 bg-white border-2 border-slate-200 text-slate-900 px-3 py-2 rounded-xl text-xs font-bold focus:ring-2 focus:ring-[#009E49] appearance-none text-center cursor-pointer shadow-sm"
+              className="flex-1 bg-white border-2 border-slate-200 text-slate-900 px-2 py-2 md:px-3 md:py-2 rounded-xl text-[10px] md:text-xs font-bold focus:ring-2 focus:ring-[#009E49] appearance-none text-center cursor-pointer shadow-sm"
             >
               {Object.values(ItemStatus).map(s => {
                 if (role === UserRole.PICKER && s === ItemStatus.DELIVERED) return null;
@@ -339,7 +345,7 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
           )}
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 
