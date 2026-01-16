@@ -173,15 +173,15 @@ const SenderDashboard: React.FC<SenderDashboardProps> = ({ user }) => {
 
     const StatusGrid = ({ statusItems, emptyMessage }: { statusItems: ShipmentItem[], emptyMessage: string }) => {
         if (statusItems.length === 0) return (
-            <div className="bg-white rounded-3xl border border-slate-100 p-10 text-center animate-in fade-in duration-500">
-                <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+            <div className="bg-white rounded-2xl md:rounded-3xl border border-slate-100 p-6 md:p-10 text-center animate-in fade-in duration-500">
+                <div className="w-12 h-12 md:w-16 md:h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
+                    <svg className="w-6 h-6 md:w-8 md:h-8 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
                 </div>
-                <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">{emptyMessage}</p>
+                <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] md:text-xs">{emptyMessage}</p>
             </div>
         );
         return (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in slide-in-from-bottom-4 duration-500">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 animate-in slide-in-from-bottom-4 duration-500">
                 {statusItems.map(item => (
                     <div key={item.id} className="relative group">
                         <ShipmentCard
@@ -211,90 +211,90 @@ const SenderDashboard: React.FC<SenderDashboardProps> = ({ user }) => {
     };
 
     return (
-        <div className="max-w-[1600px] mx-auto space-y-6 animate-in fade-in duration-700 pb-12 px-4">
+        <div className="max-w-[1600px] mx-auto space-y-4 md:space-y-6 animate-in fade-in duration-700 pb-20 px-3 md:px-4">
             {/* Header Area */}
-            <div className="flex flex-col md:flex-row justify-between items-end gap-4">
-                <div className="space-y-1">
-                    <p className="text-[#009E49] text-[10px] font-black uppercase tracking-[0.3em]">Operational Panel</p>
-                    <h1 className="text-2xl md:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">Sender Dashboard</h1>
-                    <p className="text-slate-500 font-medium text-sm md:text-base">Managing logistics for <span className="text-slate-900 font-bold">{user.firstName} {user.lastName}</span></p>
+            <div className="flex flex-col md:flex-row justify-between items-end gap-3 md:gap-4">
+                <div className="space-y-0.5 md:space-y-1">
+                    <p className="text-[#009E49] text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em]">Operational Panel</p>
+                    <h1 className="text-xl md:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">Sender Dashboard</h1>
+                    <p className="text-slate-500 font-medium text-xs md:text-base">Managing logistics for <span className="text-slate-900 font-bold">{user.firstName} {user.lastName}</span></p>
                 </div>
                 <button
                     onClick={() => navigate('/post-item')}
-                    className="bg-slate-900 text-white px-6 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-indigo-600 transform hover:-translate-y-1 transition-all shadow-xl shadow-slate-200 flex items-center gap-3 w-full md:w-auto justify-center"
+                    className="bg-slate-900 text-white px-4 py-2.5 md:px-6 md:py-3 rounded-2xl font-black uppercase text-[9px] md:text-[10px] tracking-widest hover:bg-indigo-600 transform hover:-translate-y-1 transition-all shadow-lg hover:shadow-xl shadow-slate-200 flex items-center gap-2 md:gap-3 w-full md:w-auto justify-center"
                 >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" /></svg>
+                    <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" /></svg>
                     Initiate New Shipment
                 </button>
             </div>
 
             {/* Premium Stats Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                 {/* ... stats ... */}
-                <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-shadow group">
-                    <div className="flex justify-between items-start mb-3">
-                        <div className="p-2 bg-amber-50 rounded-xl text-amber-600">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                <div className="bg-white p-3 md:p-5 rounded-2xl md:rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-shadow group">
+                    <div className="flex justify-between items-start mb-2 md:mb-3">
+                        <div className="p-1.5 md:p-2 bg-amber-50 rounded-lg md:rounded-xl text-amber-600">
+                            <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                         </div>
                     </div>
-                    <p className="text-slate-400 text-[9px] font-black uppercase tracking-widest truncate">Awaiting</p>
-                    <p className="text-2xl md:text-3xl font-black text-slate-900 mt-1">{actionCount}</p>
+                    <p className="text-slate-400 text-[8px] md:text-[9px] font-black uppercase tracking-widest truncate">Awaiting</p>
+                    <p className="text-xl md:text-3xl font-black text-slate-900 mt-0.5 md:mt-1">{actionCount}</p>
                 </div>
                 {/* ... other stats ... */}
-                <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
-                    <div className="flex justify-between items-start mb-3">
-                        <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                <div className="bg-white p-3 md:p-5 rounded-2xl md:rounded-3xl border border-slate-100 shadow-sm">
+                    <div className="flex justify-between items-start mb-2 md:mb-3">
+                        <div className="p-1.5 md:p-2 bg-indigo-50 rounded-lg md:rounded-xl text-indigo-600">
+                            <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                         </div>
                     </div>
-                    <p className="text-slate-400 text-[9px] font-black uppercase tracking-widest truncate">Pipeline</p>
-                    <p className="text-2xl md:text-3xl font-black text-slate-900 mt-1">{pipelineCount}</p>
+                    <p className="text-slate-400 text-[8px] md:text-[9px] font-black uppercase tracking-widest truncate">Pipeline</p>
+                    <p className="text-xl md:text-3xl font-black text-slate-900 mt-0.5 md:mt-1">{pipelineCount}</p>
                 </div>
 
-                <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
-                    <div className="flex justify-between items-start mb-3">
-                        <div className="p-2 bg-blue-50 rounded-xl text-blue-600">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                <div className="bg-white p-3 md:p-5 rounded-2xl md:rounded-3xl border border-slate-100 shadow-sm">
+                    <div className="flex justify-between items-start mb-2 md:mb-3">
+                        <div className="p-1.5 md:p-2 bg-blue-50 rounded-lg md:rounded-xl text-blue-600">
+                            <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                         </div>
                     </div>
-                    <p className="text-slate-400 text-[9px] font-black uppercase tracking-widest truncate">Market</p>
-                    <p className="text-2xl md:text-3xl font-black text-slate-900 mt-1">{marketplaceCount}</p>
+                    <p className="text-slate-400 text-[8px] md:text-[9px] font-black uppercase tracking-widest truncate">Market</p>
+                    <p className="text-xl md:text-3xl font-black text-slate-900 mt-0.5 md:mt-1">{marketplaceCount}</p>
                 </div>
 
-                <div className="bg-indigo-600 p-5 rounded-3xl shadow-xl text-white">
-                    <p className="text-indigo-200 text-[9px] font-black uppercase tracking-widest truncate">Spend</p>
-                    <div className="flex items-baseline gap-2 mt-1">
-                        <p className="text-2xl md:text-3xl font-black">{totalSpent.toLocaleString()}</p>
-                        <p className="text-[10px] font-bold opacity-50 uppercase">ETB</p>
+                <div className="bg-indigo-600 p-3 md:p-5 rounded-2xl md:rounded-3xl shadow-xl text-white">
+                    <p className="text-indigo-200 text-[8px] md:text-[9px] font-black uppercase tracking-widest truncate">Spend</p>
+                    <div className="flex items-baseline gap-2 mt-0.5 md:mt-1">
+                        <p className="text-xl md:text-3xl font-black">{totalSpent.toLocaleString()}</p>
+                        <p className="text-[8px] md:text-[10px] font-bold opacity-50 uppercase">ETB</p>
                     </div>
                 </div>
             </div>
 
             {/* Granular Tab Navigation */}
-            <div className="overflow-x-auto pb-4 -mb-4">
-                <div className="flex gap-2 bg-slate-100 p-1.5 rounded-xl w-fit">
+            <div className="overflow-x-auto pb-2 -mb-2 no-scrollbar">
+                <div className="flex gap-2 bg-slate-100 p-1 rounded-xl w-fit">
                     <button
                         onClick={() => setActiveTab('ACTION')}
-                        className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'ACTION' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        className={`px-3 py-2 md:px-4 md:py-2.5 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'ACTION' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
                         <span className={`w-1.5 h-1.5 rounded-full ${actionCount > 0 ? 'bg-amber-500 animate-pulse' : 'bg-slate-300'}`}></span>
                         Action {actionCount > 0 && `(${actionCount})`}
                     </button>
                     <button
                         onClick={() => setActiveTab('PIPELINE')}
-                        className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === 'PIPELINE' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        className={`px-3 py-2 md:px-4 md:py-2.5 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === 'PIPELINE' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
                         Pipeline ({pipelineCount})
                     </button>
                     <button
                         onClick={() => setActiveTab('MARKETPLACE')}
-                        className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === 'MARKETPLACE' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        className={`px-3 py-2 md:px-4 md:py-2.5 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === 'MARKETPLACE' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
                         Market ({marketplaceCount})
                     </button>
                     <button
                         onClick={() => setActiveTab('HISTORY')}
-                        className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === 'HISTORY' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        className={`px-3 py-2 md:px-4 md:py-2.5 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === 'HISTORY' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
                         History ({historyCount})
                     </button>
@@ -308,28 +308,28 @@ const SenderDashboard: React.FC<SenderDashboardProps> = ({ user }) => {
 
                         {/* Waiting Confirmation Section */}
                         {groupedItems[ItemStatus.WAITING_CONFIRMATION].length > 0 && (
-                            <div className="bg-white p-5 rounded-3xl border border-amber-100 shadow-sm relative overflow-hidden">
+                            <div className="bg-white p-4 md:p-5 rounded-3xl border border-amber-100 shadow-sm relative overflow-hidden">
                                 <div className="absolute top-0 left-0 w-full h-2 bg-amber-400"></div>
-                                <div className="flex justify-between items-center mb-6">
-                                    <div className="flex items-center gap-4">
-                                        <div className="p-3 bg-amber-50 text-amber-600 rounded-xl">
-                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                <div className="flex justify-between items-center mb-4 md:mb-6">
+                                    <div className="flex items-center gap-3 md:gap-4">
+                                        <div className="p-2 md:p-3 bg-amber-50 text-amber-600 rounded-xl">
+                                            <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                         </div>
                                         <div>
-                                            <h3 className="text-xl font-black text-slate-900">Confirm Deliveries</h3>
-                                            <p className="text-slate-500 font-medium text-sm">Partners have reported delivery. Please confirm receipt.</p>
+                                            <h3 className="text-lg md:text-xl font-black text-slate-900">Confirm Deliveries</h3>
+                                            <p className="text-slate-500 font-medium text-xs md:text-sm">Partners reported delivery.</p>
                                         </div>
                                     </div>
                                     {selectedIds.size > 0 && (
                                         <button
                                             onClick={handleBulkConfirm}
-                                            className="px-6 py-3 bg-amber-500 text-white font-black uppercase text-xs tracking-widest rounded-xl hover:bg-amber-600 shadow-lg shadow-amber-200 transition-all animate-in zoom-in"
+                                            className="px-4 py-2 md:px-6 md:py-3 bg-amber-500 text-white font-black uppercase text-[10px] md:text-xs tracking-widest rounded-xl hover:bg-amber-600 shadow-lg shadow-amber-200 transition-all animate-in zoom-in"
                                         >
                                             Confirm ({selectedIds.size})
                                         </button>
                                     )}
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                                     {groupedItems[ItemStatus.WAITING_CONFIRMATION].map(item => (
                                         <ShipmentCard
                                             key={item.id}
@@ -349,32 +349,32 @@ const SenderDashboard: React.FC<SenderDashboardProps> = ({ user }) => {
                             const item = items.find(i => i.id === itemId);
                             if (!item) return null;
                             return (
-                                <div key={itemId} className="bg-white p-5 rounded-3xl border border-indigo-100 shadow-sm">
-                                    <div className="flex items-center gap-4 mb-6">
-                                        <div className="p-3 bg-amber-50 text-amber-600 rounded-xl">
-                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                                <div key={itemId} className="bg-white p-4 md:p-5 rounded-3xl border border-indigo-100 shadow-sm">
+                                    <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6">
+                                        <div className="p-2 md:p-3 bg-amber-50 text-amber-600 rounded-xl">
+                                            <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
                                         </div>
                                         <div>
-                                            <h3 className="text-xl font-black text-slate-900">Incoming Requests</h3>
-                                            <p className="text-slate-500 font-medium text-sm">Pickers requesting: <span className="font-bold text-indigo-600">{item.description}</span></p>
+                                            <h3 className="text-lg md:text-xl font-black text-slate-900">Incoming Requests</h3>
+                                            <p className="text-slate-500 font-medium text-xs md:text-sm">Pickers requesting: <span className="font-bold text-indigo-600">{item.description}</span></p>
                                         </div>
                                     </div>
-                                    <div className="space-y-4">
+                                    <div className="space-y-3 md:space-y-4">
                                         {(Array.isArray(reqs) ? reqs : []).map((req: any) => (
-                                            <div key={req.id} className="flex flex-col md:flex-row md:items-center justify-between p-6 bg-slate-50 rounded-2xl gap-4">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 font-bold">
+                                            <div key={req.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 md:p-6 bg-slate-50 rounded-2xl gap-4 border border-slate-100">
+                                                <div className="flex items-center gap-3 md:gap-4">
+                                                    <div className="w-10 h-10 md:w-12 md:h-12 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 font-bold text-sm md:text-base">
                                                         {req.picker.firstName[0]}{req.picker.lastName[0]}
                                                     </div>
                                                     <div>
-                                                        <p className="font-black text-slate-900 text-lg">{req.picker.firstName} {req.picker.lastName}</p>
-                                                        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{req.picker.verificationStatus} Partner</p>
+                                                        <p className="font-black text-slate-900 text-sm md:text-lg">{req.picker.firstName} {req.picker.lastName}</p>
+                                                        <p className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">{req.picker.verificationStatus} Partner</p>
                                                     </div>
                                                 </div>
-                                                <div className="flex gap-3 w-full md:w-auto">
-                                                    <button onClick={() => navigate(`/picker-profile/${req.picker.id}`)} className="px-6 py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl text-xs hover:bg-slate-100">Review Profile</button>
-                                                    <button onClick={() => handleRejectRequest(req.id)} className="px-6 py-3 bg-red-50 text-red-600 font-bold rounded-xl text-xs hover:bg-red-100">Decline</button>
-                                                    <button onClick={() => handleApproveRequest(req.id)} className="px-6 py-3 bg-[#009E49] text-white font-bold rounded-xl text-xs hover:bg-[#007A38] shadow-lg shadow-green-900/20">Approve & Assign</button>
+                                                <div className="flex gap-2 w-full md:w-auto">
+                                                    <button onClick={() => navigate(`/picker-profile/${req.picker.id}`)} className="flex-1 md:flex-none px-3 py-2 md:px-6 md:py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl text-[10px] md:text-xs hover:bg-slate-100">Review</button>
+                                                    <button onClick={() => handleRejectRequest(req.id)} className="flex-1 md:flex-none px-3 py-2 md:px-6 md:py-3 bg-red-50 text-red-600 font-bold rounded-xl text-[10px] md:text-xs hover:bg-red-100">Decline</button>
+                                                    <button onClick={() => handleApproveRequest(req.id)} className="flex-1 md:flex-none px-3 py-2 md:px-6 md:py-3 bg-[#009E49] text-white font-bold rounded-xl text-[10px] md:text-xs hover:bg-[#007A38] shadow-lg shadow-green-900/20">Approve</button>
                                                 </div>
                                             </div>
                                         ))}
@@ -416,7 +416,7 @@ const SenderDashboard: React.FC<SenderDashboardProps> = ({ user }) => {
             {/* Picker Profile Modal */}
             {selectedPicker && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="bg-white w-full max-w-lg rounded-[3rem] shadow-2xl overflow-hidden relative animate-in zoom-in duration-300">
+                    <div className="bg-white w-full max-w-lg rounded-3xl md:rounded-[3rem] shadow-2xl overflow-hidden relative animate-in zoom-in duration-300">
                         <button
                             onClick={() => setSelectedPicker(null)}
                             className="absolute top-6 right-6 p-2 hover:bg-slate-100 rounded-full transition-colors z-10"
@@ -424,42 +424,42 @@ const SenderDashboard: React.FC<SenderDashboardProps> = ({ user }) => {
                             <svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
 
-                        <div className="p-10">
-                            <div className="flex flex-col items-center text-center mb-8">
-                                <div className="relative mb-6">
-                                    <div className="w-32 h-32 rounded-[2.5rem] border-4 border-white shadow-xl bg-slate-200 flex items-center justify-center text-4xl font-black text-slate-400">
+                        <div className="p-6 md:p-10">
+                            <div className="flex flex-col items-center text-center mb-6 md:mb-8">
+                                <div className="relative mb-4 md:mb-6">
+                                    <div className="w-20 h-20 md:w-32 md:h-32 rounded-3xl md:rounded-[2.5rem] border-4 border-white shadow-xl bg-slate-200 flex items-center justify-center text-2xl md:text-4xl font-black text-slate-400">
                                         {selectedPicker.firstName?.[0]}{selectedPicker.lastName?.[0]}
                                     </div>
-                                    <div className="absolute -bottom-2 -right-2 bg-[#009E49] text-white p-2 rounded-xl shadow-lg">
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    <div className="absolute -bottom-2 -right-2 bg-[#009E49] text-white p-1.5 md:p-2 rounded-xl shadow-lg">
+                                        <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                     </div>
                                 </div>
-                                <h3 className="text-2xl font-black text-slate-900">{selectedPicker.firstName} {selectedPicker.lastName}</h3>
-                                <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.2em] mt-1">Verified Logistics Partner</p>
+                                <h3 className="text-xl md:text-2xl font-black text-slate-900">{selectedPicker.firstName} {selectedPicker.lastName}</h3>
+                                <p className="text-slate-400 font-bold uppercase text-[9px] md:text-[10px] tracking-[0.2em] mt-1">Verified Logistics Partner</p>
 
-                                <div className="flex items-center gap-2 mt-4 bg-amber-50 px-4 py-2 rounded-full">
-                                    <svg className="w-4 h-4 text-amber-500 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3-.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
-                                    <span className="text-lg font-black text-slate-900">{Math.random() > 0.5 ? '4.9' : '5.0'}</span>
-                                    <span className="text-slate-400 text-xs font-bold font-medium uppercase tracking-widest ml-1">Reliability</span>
+                                <div className="flex items-center gap-2 mt-3 md:mt-4 bg-amber-50 px-3 py-1.5 md:px-4 md:py-2 rounded-full">
+                                    <svg className="w-3.5 h-3.5 md:w-4 md:h-4 text-amber-500 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3-.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                                    <span className="text-base md:text-lg font-black text-slate-900">{Math.random() > 0.5 ? '4.9' : '5.0'}</span>
+                                    <span className="text-slate-400 text-[10px] md:text-xs font-bold font-medium uppercase tracking-widest ml-1">Reliability</span>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4 mb-8">
-                                <div className="bg-slate-50 p-4 rounded-2xl">
-                                    <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Success Rate</p>
-                                    <p className="text-lg font-black text-slate-900">100%</p>
+                            <div className="grid grid-cols-2 gap-3 md:gap-4 mb-4 md:mb-8">
+                                <div className="bg-slate-50 p-3 md:p-4 rounded-2xl">
+                                    <p className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase mb-0.5 md:mb-1">Success Rate</p>
+                                    <p className="text-base md:text-lg font-black text-slate-900">100%</p>
                                 </div>
-                                <div className="bg-slate-50 p-4 rounded-2xl">
-                                    <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Units Delivered</p>
-                                    <p className="text-lg font-black text-slate-900">{Math.floor(Math.random() * 50) + 1}</p>
+                                <div className="bg-slate-50 p-3 md:p-4 rounded-2xl">
+                                    <p className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase mb-0.5 md:mb-1">Units Delivered</p>
+                                    <p className="text-base md:text-lg font-black text-slate-900">{Math.floor(Math.random() * 50) + 1}</p>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="p-6 bg-slate-50 flex gap-4">
+                        <div className="p-4 md:p-6 bg-slate-50 flex gap-3 md:gap-4">
                             <button
                                 onClick={() => setSelectedPicker(null)}
-                                className="flex-1 py-4 bg-white text-slate-900 font-black uppercase text-[10px] tracking-widest rounded-2xl border border-slate-200 hover:bg-slate-100 transition-colors"
+                                className="flex-1 py-3 md:py-4 bg-white text-slate-900 font-black uppercase text-[9px] md:text-[10px] tracking-widest rounded-2xl border border-slate-200 hover:bg-slate-100 transition-colors"
                             >
                                 Dismiss
                             </button>
@@ -468,7 +468,7 @@ const SenderDashboard: React.FC<SenderDashboardProps> = ({ user }) => {
                                     showToast("Messaging available after approval.", 'INFO');
                                     setSelectedPicker(null);
                                 }}
-                                className="flex-1 py-4 bg-indigo-600 text-white font-black uppercase text-[10px] tracking-widest rounded-2xl shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all hover:-translate-y-1"
+                                className="flex-1 py-3 md:py-4 bg-indigo-600 text-white font-black uppercase text-[9px] md:text-[10px] tracking-widest rounded-2xl shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all hover:-translate-y-1"
                             >
                                 Contact Partner
                             </button>

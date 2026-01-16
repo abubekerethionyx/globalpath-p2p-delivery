@@ -28,6 +28,7 @@ const PostShipmentPage: React.FC<PostShipmentPageProps> = ({ user }) => {
   const [activeSub, setActiveSub] = useState<SubscriptionTransaction | null>(null);
   const [loadingQuota, setLoadingQuota] = useState(true);
   const [loadingShipment, setLoadingShipment] = useState(isEditMode);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [countries, setCountries] = useState<string[]>([]);
   const [form, setForm] = useState({
     category: '',
@@ -134,6 +135,7 @@ const PostShipmentPage: React.FC<PostShipmentPageProps> = ({ user }) => {
       formData.append('images', file);
     });
 
+    setIsSubmitting(true);
     try {
       if (isEditMode && id) {
         await ShipmentService.updateShipment(id, formData as any);
@@ -147,6 +149,7 @@ const PostShipmentPage: React.FC<PostShipmentPageProps> = ({ user }) => {
       console.error(e);
       const errorMessage = e?.response?.data?.message || e?.message || 'Unknown error occurred';
       showToast(isEditMode ? `Failed to update shipment: ${errorMessage}` : `Failed to post shipment: ${errorMessage}`, 'ERROR');
+      setIsSubmitting(false);
     }
   };
 
@@ -353,8 +356,13 @@ const PostShipmentPage: React.FC<PostShipmentPageProps> = ({ user }) => {
 
           <div className="flex gap-4 pt-4">
             <button type="button" onClick={onCancel} className="flex-1 py-4 border border-slate-200 rounded-2xl font-bold text-slate-500 hover:bg-slate-50 transition">Cancel</button>
-            <button type="submit" className="flex-1 py-4 bg-[#009E49] text-white rounded-2xl font-bold hover:bg-[#007A38] transition shadow-lg shadow-green-100">
-              {isEditMode ? 'Update Shipment' : 'Post Request'}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 py-4 bg-[#009E49] text-white rounded-2xl font-bold hover:bg-[#007A38] transition shadow-lg shadow-green-100 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {isSubmitting && <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>}
+              {isSubmitting ? 'Saving...' : (isEditMode ? 'Update Shipment' : 'Post Request')}
             </button>
           </div>
         </form>

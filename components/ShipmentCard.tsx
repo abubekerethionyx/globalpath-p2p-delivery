@@ -183,25 +183,26 @@ const ShipmentCard: React.FC<ShipmentCardProps> = ({
         </div>
 
         {/* Route Visualization - More Compact */}
-        <div className="relative flex items-center justify-between bg-gradient-to-r from-slate-50 to-green-50 p-3 rounded-2xl border border-slate-100 mb-4">
-          <div className="flex-1 min-w-0">
-            <p className="text-[9px] text-slate-400 uppercase font-bold mb-0.5">From</p>
-            <p className="font-black text-slate-800 truncate text-sm">{item.pickupCountry}</p>
+        {/* Route Visualization - Compact Horizontal for All Screens */}
+        <div className="flex items-center justify-between bg-gradient-to-r from-slate-50 to-green-50 p-2 md:p-3 rounded-2xl border border-slate-100 mb-4 gap-2">
+          <div className="flex-1 min-w-0 text-left">
+            <p className="text-[8px] md:text-[9px] text-slate-400 uppercase font-bold mb-0.5">From</p>
+            <p className="font-black text-slate-800 truncate text-[10px] md:text-sm leading-tight">{item.pickupCountry}</p>
           </div>
 
-          <div className="flex flex-col items-center px-3">
+          <div className="flex flex-col items-center px-1 md:px-3 shrink-0">
             <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-[#009E49]" />
-              <div className="h-px w-8 bg-gradient-to-r from-[#009E49] to-[#FDD100]" />
-              <svg className="w-4 h-4 text-[#FDD100]" fill="currentColor" viewBox="0 0 20 20">
+              <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-[#009E49]" />
+              <div className="h-px w-4 md:w-8 bg-gradient-to-r from-[#009E49] to-[#FDD100]" />
+              <svg className="w-3 h-3 md:w-4 md:h-4 text-[#FDD100]" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
               </svg>
             </div>
           </div>
 
           <div className="flex-1 text-right min-w-0">
-            <p className="text-[9px] text-slate-400 uppercase font-bold mb-0.5">To</p>
-            <p className="font-black text-slate-800 truncate text-sm">{item.destCountry}</p>
+            <p className="text-[8px] md:text-[9px] text-slate-400 uppercase font-bold mb-0.5">To</p>
+            <p className="font-black text-slate-800 truncate text-[10px] md:text-sm leading-tight">{item.destCountry}</p>
           </div>
         </div>
 

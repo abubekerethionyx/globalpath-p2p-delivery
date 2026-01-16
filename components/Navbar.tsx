@@ -161,7 +161,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onNavigate, currentPage
                   </button>
 
                   {isNotifOpen && (
-                    <div className="absolute right-0 mt-4 w-80 translate-x-4 md:translate-x-0">
+                    <div className="fixed inset-x-4 top-24 md:absolute md:inset-x-auto md:top-full md:right-0 md:mt-4 md:w-80 z-[101]">
                       <div className="fixed inset-0 z-[-1]" onClick={() => setIsNotifOpen(false)}></div>
                       <div className="bg-white/90 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/50 overflow-hidden animate-in fade-in-0 zoom-in-95 duration-300">
                         <div className="p-6 bg-slate-900/5 backdrop-blur-sm flex justify-between items-center border-b border-white/50">

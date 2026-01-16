@@ -200,7 +200,7 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser, pu
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto space-y-6 animate-in fade-in duration-700 pb-24 px-4">
+    <div className="max-w-[1400px] mx-auto space-y-4 md:space-y-6 animate-in fade-in duration-700 pb-24 px-3 md:px-4">
       {/* Navigation Header */}
       <div className="flex items-center justify-between">
         <button onClick={() => navigate('/dashboard')} className="flex items-center text-slate-400 hover:text-slate-900 font-black uppercase text-[10px] tracking-[0.2em] transition group">
@@ -221,7 +221,7 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser, pu
 
           {/* Partner Action Buttons */}
           {item.partnerId === currentUser.id && (
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap justify-end">
               {item.status === ItemStatus.APPROVED && (
                 <button
                   onClick={() => handleUpdateStatus(ItemStatus.PICKED)}
@@ -304,27 +304,31 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser, pu
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
         {/* Left Column: Core Info & Timeline */}
         <div className="lg:col-span-8 space-y-6">
 
           {/* Main Card */}
-          <div className={`bg-white rounded-[2.5rem] border overflow-hidden transition-all shadow-sm ${isDelivered ? 'border-[#009E49]/30 shadow-green-50' : 'border-slate-100'}`}>
-            <div className="p-8 md:p-10 relative">
-              {/* Visual Route Strip */}
-              <div className="flex items-center gap-4 mb-8 bg-slate-50 p-4 rounded-3xl border border-slate-100/50">
-                <div className="flex-1 text-center">
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Origin Node</p>
-                  <p className="text-sm font-black text-slate-900">{item.pickupCountry}</p>
+          <div className={`bg-white rounded-2xl md:rounded-[2.5rem] border overflow-hidden transition-all shadow-sm ${isDelivered ? 'border-[#009E49]/30 shadow-green-50' : 'border-slate-100'}`}>
+            <div className="p-4 md:p-10 relative">
+              {/* Visual Route Strip - Ultra Compact Mobile */}
+              <div className="flex items-center justify-between gap-2 mb-4 md:mb-8 bg-slate-50 p-3 md:p-4 rounded-2xl md:rounded-3xl border border-slate-100/50">
+                <div className="flex-1 text-left md:text-center min-w-0">
+                  <p className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Origin</p>
+                  <p className="text-xs md:text-sm font-black text-slate-900 truncate">{item.pickupCountry}</p>
                 </div>
-                <div className="flex-none flex items-center px-4">
-                  <div className="w-2 h-2 rounded-full bg-[#009E49]"></div>
-                  <div className={`h-px w-20 md:w-40 border-t-2 border-dashed ${isDelivered ? 'border-[#009E49]' : 'border-slate-200'}`}></div>
-                  <div className={`w-2 h-2 rounded-full ${isDelivered ? 'bg-[#009E49]' : 'border-2 border-slate-200'}`}></div>
+
+                <div className="flex-none flex flex-col items-center px-2">
+                  <div className="flex items-center gap-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#009E49]"></div>
+                    <div className={`h-px w-8 md:w-20 border-t-2 border-dashed ${isDelivered ? 'border-[#009E49]' : 'border-slate-300'}`}></div>
+                    <svg className={`w-3 h-3 ${isDelivered ? 'text-[#009E49]' : 'text-slate-300'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+                  </div>
                 </div>
-                <div className="flex-1 text-center">
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Target Node</p>
-                  <p className="text-sm font-black text-slate-900">{item.destCountry}</p>
+
+                <div className="flex-1 text-right md:text-center min-w-0">
+                  <p className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Target</p>
+                  <p className="text-xs md:text-sm font-black text-slate-900 truncate">{item.destCountry}</p>
                 </div>
               </div>
 
@@ -337,14 +341,14 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser, pu
                 </div>
               )}
 
-              <div className="flex flex-col md:flex-row justify-between items-start gap-10">
-                <div className="flex-1 space-y-6">
+              <div className="flex flex-col md:flex-row justify-between items-start gap-6 md:gap-10">
+                <div className="flex-1 space-y-4 md:space-y-6 w-full">
                   <div>
-                    <span className="inline-block bg-[#009E49]/10 text-[#009E49] text-[9px] font-black px-3 py-1 rounded-lg uppercase tracking-widest mb-3">
-                      {item.category || 'Standard Shipment'}
+                    <span className="inline-block bg-[#009E49]/10 text-[#009E49] text-[8px] md:text-[9px] font-black px-2 py-0.5 rounded-lg uppercase tracking-widest mb-2">
+                      {item.category || 'Shipment'}
                     </span>
-                    <h1 className="text-4xl font-black text-slate-900 leading-[1.1] tracking-tight">
-                      {item.description || "General Logistics Cargo"}
+                    <h1 className="text-xl md:text-4xl font-black text-slate-900 leading-[1.1] tracking-tight line-clamp-2">
+                      {item.description || "Logistics Cargo"}
                     </h1>
                   </div>
 
@@ -391,33 +395,42 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser, pu
                   )}
                 </div>
 
-                {/* Progress Vertical */}
-                <div className="flex-none md:w-64 space-y-6 bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-4">Protocol Status</p>
-                  <div className="space-y-6 relative">
-                    <div className="absolute left-3 top-2 bottom-8 w-px bg-slate-100" />
+                {/* Progress Vertical/Horizontal */}
+                <div className="flex-none w-full md:w-64 bg-slate-50/50 p-3 md:p-6 rounded-2xl md:rounded-[2rem] border border-slate-100">
+                  <p className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 md:mb-4">Protocol Status</p>
+
+                  {/* Container changes from vertical stack to horizontal scroll on mobile */}
+                  <div className="flex md:flex-col gap-4 md:gap-6 overflow-x-auto pb-4 md:pb-0 relative md:static scrollbar-hide snap-x">
+                    <div className="hidden md:block absolute left-3 top-2 bottom-8 w-px bg-slate-100" />
+
                     {steps.map((step, idx) => {
                       const isActive = item.status === step.status;
                       const isPast = idx <= currentIdx;
                       return (
-                        <div key={step.status} className="relative pl-8 group">
-                          <div className={`absolute left-0 w-6 h-6 rounded-full border-2 flex items-center justify-center z-10 transition-all duration-500 bg-white ${isActive ? 'border-[#009E49] shadow-[0_0_8px_rgba(0,158,73,0.3)]' : isPast ? 'border-[#009E49]' : 'border-slate-200'
-                            }`}>
+                        <div key={step.status} className="relative md:pl-8 group flex-none w-[120px] md:w-auto snap-center text-center md:text-left">
+                          {/* Desktop Dot */}
+                          <div className={`hidden md:flex absolute left-0 w-6 h-6 rounded-full border-2 items-center justify-center z-10 transition-all duration-500 bg-white ${isActive ? 'border-[#009E49] shadow-[0_0_8px_rgba(0,158,73,0.3)]' : isPast ? 'border-[#009E49]' : 'border-slate-200'}`}>
                             {isPast && (
                               <div className={`w-2.5 h-2.5 rounded-full ${isActive ? 'bg-[#009E49] animate-pulse' : 'bg-[#009E49]'}`}></div>
                             )}
                           </div>
+
+                          {/* Mobile Dot (Top centered) */}
+                          <div className={`md:hidden mx-auto w-4 h-4 rounded-full border mb-2 flex items-center justify-center bg-white ${isActive ? 'border-[#009E49] shadow' : isPast ? 'border-[#009E49]' : 'border-slate-200'}`}>
+                            {isPast && <div className="w-2 h-2 rounded-full bg-[#009E49]"></div>}
+                          </div>
+
                           <div>
-                            <h4 className={`text-[10px] font-black uppercase tracking-tight ${isActive ? 'text-[#009E49] scale-110 origin-left' : isPast ? 'text-slate-900' : 'text-slate-300'} transition-all`}>{step.label}</h4>
-                            <p className={`text-[8px] font-bold text-slate-400 leading-none mt-1 transition-opacity whitespace-nowrap ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>{step.desc}</p>
+                            <h4 className={`text-[9px] md:text-[10px] font-black uppercase tracking-tight ${isActive ? 'text-[#009E49]' : isPast ? 'text-slate-900' : 'text-slate-300'}`}>{step.label}</h4>
+                            <p className={`text-[8px] font-bold text-slate-400 leading-none mt-1 whitespace-nowrap md:whitespace-normal`}>{isActive ? 'Current Step' : isPast ? 'Completed' : 'Pending'}</p>
 
                             {/* Action Button for Sender in Waiting State */}
                             {isActive && step.status === ItemStatus.WAITING_CONFIRMATION && currentUser.id === item.senderId && (
                               <button
                                 onClick={() => handleUpdateStatus(ItemStatus.DELIVERED)}
-                                className="mt-2 bg-[#009E49] text-white text-[8px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg shadow-lg shadow-green-200 hover:bg-[#007A38] transition animate-bounce"
+                                className="mt-2 bg-[#009E49] text-white text-[7px] md:text-[8px] font-black uppercase tracking-widest px-2 py-1 md:px-3 md:py-1.5 rounded-lg shadow-lg shadow-green-200 hover:bg-[#007A38] transition animate-bounce w-full"
                               >
-                                Confirm Receipt
+                                {isDelivered ? 'Done' : 'Confirm'}
                               </button>
                             )}
                           </div>
@@ -431,7 +444,7 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser, pu
           </div>
 
           {/* Detailed Logistics Block */}
-          <div className="bg-slate-900 rounded-[2.5rem] p-10 text-white relative overflow-hidden shadow-2xl">
+          <div className="bg-slate-900 rounded-2xl md:rounded-[2.5rem] p-5 md:p-10 text-white relative overflow-hidden shadow-2xl">
             <div className="absolute top-0 right-0 p-10 opacity-10 pointer-events-none">
               <svg className="w-32 h-32" fill="currentColor" viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
             </div>
@@ -444,7 +457,7 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser, pu
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
               <div className="space-y-8">
                 <div>
                   <p className="text-[#009E49] text-[9px] font-black uppercase tracking-[0.3em] mb-4">Recipient Protocol</p>
@@ -528,12 +541,12 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser, pu
           )}
 
           {/* Sender */}
-          <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm">
-            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-6">Shipment Sender</p>
+          <div className="bg-white p-4 md:p-6 rounded-2xl md:rounded-[2.5rem] border border-slate-100 shadow-sm">
+            <p className="text-[8px] md:text-[9px] font-black uppercase tracking-widest text-slate-400 mb-4">Shipment Sender</p>
             {item.sender ? (
-              <div className="space-y-6">
-                <div className="flex items-center gap-4">
-                  <img src={item.sender.avatar} className="w-14 h-14 rounded-2xl border border-slate-100 object-cover shadow-sm" alt={item.sender.firstName} />
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <img src={item.sender.avatar} className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl border border-slate-100 object-cover shadow-sm" alt={item.sender.firstName} />
                   <div className="space-y-0.5">
                     <p className="font-black text-slate-900 flex items-center gap-1.5 uppercase tracking-tighter text-sm">
                       {item.sender.firstName} {item.sender.lastName}
@@ -599,15 +612,15 @@ const ShipmentDetailPage: React.FC<ShipmentDetailPageProps> = ({ currentUser, pu
           </div>
 
           {/* Picker */}
-          <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm">
-            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-6">Assigned Partner</p>
+          <div className="bg-white p-4 md:p-6 rounded-2xl md:rounded-[2.5rem] border border-slate-100 shadow-sm">
+            <p className="text-[8px] md:text-[9px] font-black uppercase tracking-widest text-slate-400 mb-4">Assigned Partner</p>
             {item.partner ? (
-              <div className="space-y-6">
+              <div className="space-y-4">
                 <div
-                  className="flex items-center gap-4 cursor-pointer group/profile"
+                  className="flex items-center gap-3 cursor-pointer group/profile"
                   onClick={() => navigate(`/picker-profile/${item.partner!.id}`)}
                 >
-                  <img src={item.partner.avatar} className="w-14 h-14 rounded-2xl border border-slate-100 object-cover shadow-sm group-hover/profile:scale-105 transition-transform" alt={item.partner.firstName} />
+                  <img src={item.partner.avatar} className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl border border-slate-100 object-cover shadow-sm group-hover/profile:scale-105 transition-transform" alt={item.partner.firstName} />
                   <div className="space-y-0.5">
                     <p className="font-black text-slate-900 flex items-center gap-1.5 uppercase tracking-tighter text-sm group-hover/profile:text-[#009E49] transition-colors">
                       {item.partner.firstName} {item.partner.lastName}
