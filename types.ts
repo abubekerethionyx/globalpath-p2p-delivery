@@ -19,7 +19,8 @@ export enum ItemStatus {
 export enum VerificationStatus {
   UNVERIFIED = 'UNVERIFIED',
   PENDING = 'PENDING',
-  VERIFIED = 'VERIFIED'
+  VERIFIED = 'VERIFIED',
+  REJECTED = 'REJECTED'
 }
 
 export enum TicketStatus {
@@ -129,6 +130,7 @@ export interface User {
   // Added livenessVideo property to track video verification status
   livenessVideo?: string;
   dateOfBirth?: string;
+  rejectionReason?: string;
   createdAt?: string;
   // Privacy Settings
   hidePhoneNumber?: boolean;

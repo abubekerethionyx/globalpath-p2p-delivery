@@ -232,79 +232,82 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
     const needsVerification = user.role === UserRole.PICKER;
 
     return (
-        <div className="space-y-8 animate-in pb-24 max-w-5xl mx-auto">
+        <div className="space-y-4 md:space-y-8 animate-in pb-24 max-w-5xl mx-auto px-3 md:px-0 pt-2 md:pt-0">
             {/* Header */}
             <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-3 md:space-x-4">
                     <button
                         onClick={() => navigate(-1)}
-                        className="p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition"
+                        className="p-2 md:p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition"
                     >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
+                        <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
                     </button>
                     <div>
-                        <h1 className="text-2xl font-black text-slate-900">Account Settings</h1>
-                        <p className="text-slate-500 font-bold text-[10px] uppercase tracking-widest">Profile ID: {user.id.split('-')[0]}</p>
+                        <h1 className="text-xl md:text-2xl font-black text-slate-900">Account Settings</h1>
+                        <p className="text-slate-500 font-bold text-[8px] md:text-[10px] uppercase tracking-widest">Profile ID: {user.id.split('-')[0]}</p>
                     </div>
                 </div>
                 {!isEditing && (
                     <button
                         onClick={() => setIsEditing(true)}
-                        className="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-black transition shadow-xl shadow-slate-100 flex items-center gap-2"
+                        className="bg-slate-900 text-white px-4 py-2 md:px-6 md:py-2.5 rounded-xl font-black uppercase text-[9px] md:text-[10px] tracking-widest hover:bg-black transition shadow-xl shadow-slate-100 flex items-center gap-2"
                     >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                        Edit Profile
+                        <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                        <span className="hidden md:inline">Edit Profile</span>
+                        <span className="md:hidden">Edit</span>
                     </button>
                 )}
             </div>
 
             {/* Verification Progress Manifest - Only for Pickers */}
             {needsVerification && (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    <div className={`lg:col-span-12 p-8 rounded-[2rem] border-2 flex flex-col md:flex-row items-center justify-between shadow-sm gap-8 transition-all ${user.verificationStatus === VerificationStatus.VERIFIED
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
+                    <div className={`lg:col-span-12 p-4 md:p-8 rounded-2xl md:rounded-[2rem] border-2 flex flex-col md:flex-row items-center justify-between shadow-sm gap-4 md:gap-8 transition-all ${user.verificationStatus === VerificationStatus.VERIFIED
                         ? 'bg-green-50/50 border-green-100'
                         : user.verificationStatus === VerificationStatus.PENDING
                             ? 'bg-amber-50/50 border-amber-100'
                             : 'bg-red-50/50 border-red-100'
                         }`}>
-                        <div className="flex items-center gap-6 flex-1">
-                            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-md flex-shrink-0 ${user.verificationStatus === VerificationStatus.VERIFIED
+                        <div className="flex items-center gap-4 md:gap-6 flex-1 w-full md:w-auto">
+                            <div className={`w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl flex items-center justify-center shadow-md flex-shrink-0 ${user.verificationStatus === VerificationStatus.VERIFIED
                                 ? 'bg-[#009E49] text-white'
                                 : user.verificationStatus === VerificationStatus.PENDING
                                     ? 'bg-amber-500 text-white'
                                     : 'bg-[#EF3340] text-white'
                                 }`}>
                                 {user.verificationStatus === VerificationStatus.VERIFIED ? (
-                                    <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                                    <svg className="w-6 h-6 md:w-8 md:h-8" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
                                 ) : user.verificationStatus === VerificationStatus.PENDING ? (
-                                    <svg className="w-8 h-8 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                                    <svg className="w-6 h-6 md:w-8 md:h-8 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
                                 ) : (
-                                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                    <svg className="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                                 )}
                             </div>
                             <div className="flex-1">
-                                <div className="flex items-center justify-between mb-2">
-                                    <p className={`font-black text-base uppercase tracking-tight leading-none ${vData.tierColor}`}>
+                                <div className="flex items-center justify-between mb-1.5 md:mb-2">
+                                    <p className={`font-black text-sm md:text-base uppercase tracking-tight leading-none ${vData.tierColor}`}>
                                         {vData.tier} Status
                                     </p>
-                                    <span className="text-[10px] font-black text-slate-400">{vData.percent}% Profile Strength</span>
+                                    <span className="text-[9px] md:text-[10px] font-black text-slate-400">{vData.percent}% Profile Strength</span>
                                 </div>
-                                <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                                <div className="w-full h-1 md:h-1.5 bg-slate-200 rounded-full overflow-hidden">
                                     <div className="h-full bg-slate-900 transition-all duration-1000" style={{ width: `${vData.percent}%` }}></div>
                                 </div>
-                                <p className="text-[10px] font-bold text-slate-400 mt-2">
+                                <p className="text-[9px] md:text-[10px] font-bold text-slate-400 mt-1.5 md:mt-2">
                                     {user.verificationStatus === VerificationStatus.VERIFIED
                                         ? 'Your account is fully verified.'
                                         : user.verificationStatus === VerificationStatus.PENDING
                                             ? 'We are currently reviewing your documents.'
-                                            : 'Complete your verification to unlock more features.'}
+                                            : user.verificationStatus === VerificationStatus.REJECTED
+                                                ? 'Identity verification was rejected. Please review your documents and resubmit.'
+                                                : 'Complete your verification to unlock more features.'}
                                 </p>
                             </div>
                         </div>
 
-                        <div className="flex flex-wrap gap-2 md:max-w-xs justify-end">
+                        <div className="flex flex-wrap gap-1.5 md:gap-2 md:max-w-xs justify-start md:justify-end w-full md:w-auto">
                             {vData.checks.map((check, i) => (
-                                <div key={i} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border transition-all ${check.status ? 'bg-green-100 border-green-200 text-green-700' : 'bg-slate-50 border-slate-100 text-slate-300'}`}>
+                                <div key={i} className={`flex items-center gap-1.5 px-2.5 py-1 md:px-3 md:py-1.5 rounded-lg text-[8px] md:text-[9px] font-black uppercase tracking-widest border transition-all ${check.status ? 'bg-green-100 border-green-200 text-green-700' : 'bg-slate-50 border-slate-100 text-slate-300'}`}>
                                     {check.status ? (
                                         <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
                                     ) : (
@@ -319,14 +322,14 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
             )}
 
             {/* Profile Avatar and Basic Info */}
-            <div className="bg-white rounded-[2rem] border border-slate-100 p-6 shadow-sm relative overflow-hidden group">
+            <div className="bg-white rounded-2xl md:rounded-[2rem] border border-slate-100 p-4 md:p-6 shadow-sm relative overflow-hidden group">
                 <div className="absolute top-0 right-0 p-10 opacity-[0.03] pointer-events-none group-hover:scale-110 transition-transform duration-700">
-                    <svg className="w-48 h-48 text-slate-900" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
+                    <svg className="w-32 h-32 md:w-48 md:h-48 text-slate-900" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
                 </div>
 
-                <div className="flex flex-col md:flex-row items-center md:items-start gap-10 relative z-10">
+                <div className="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-10 relative z-10">
                     <div className="relative">
-                        <div className="w-32 h-32 rounded-[2rem] overflow-hidden border-4 border-slate-50 shadow-xl group/avatar relative">
+                        <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl md:rounded-[2rem] overflow-hidden border-4 border-slate-50 shadow-xl group/avatar relative">
                             {uploadingAvatar ? (
                                 <div className="absolute inset-0 bg-slate-900/50 flex items-center justify-center z-20">
                                     <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent"></div>
@@ -336,7 +339,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
                                     onClick={() => fileInputRef.current?.click()}
                                     className="absolute inset-0 bg-black/40 opacity-0 group-hover/avatar:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer text-white text-[8px] font-black uppercase tracking-widest gap-1 z-10"
                                 >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                    <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                                     Update Photo
                                 </div>
                             )}
@@ -354,53 +357,53 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
                             accept="image/*"
                         />
                         {user.verificationStatus === VerificationStatus.VERIFIED && (
-                            <div className="absolute -bottom-1 -right-1 bg-[#009E49] text-white w-8 h-8 rounded-xl flex items-center justify-center border-2 border-white shadow-lg">
-                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                            <div className="absolute -bottom-1 -right-1 bg-[#009E49] text-white w-6 h-6 md:w-8 md:h-8 rounded-lg md:rounded-xl flex items-center justify-center border-2 border-white shadow-lg">
+                                <svg className="w-3 h-3 md:w-4 md:h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
                             </div>
                         )}
                     </div>
 
-                    <div className="flex-1 text-center md:text-left pt-2">
-                        <div className="flex flex-col md:flex-row items-center gap-4 mb-2">
-                            <h2 className="text-3xl font-black text-slate-900 tracking-tight">{user.firstName} {user.lastName}</h2>
-                            <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest shadow-sm ${user.role === UserRole.PICKER ? 'bg-indigo-600 text-white' :
+                    <div className="flex-1 text-center md:text-left pt-0 md:pt-2 w-full">
+                        <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 mb-2">
+                            <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tight">{user.firstName} {user.lastName}</h2>
+                            <span className={`px-2 py-0.5 md:px-3 md:py-1 rounded-lg text-[8px] md:text-[9px] font-black uppercase tracking-widest shadow-sm ${user.role === UserRole.PICKER ? 'bg-indigo-600 text-white' :
                                 user.role === UserRole.SENDER ? 'bg-[#009E49] text-white' : 'bg-slate-900 text-white'
                                 }`}>
                                 {user.role} Account
                             </span>
                         </div>
-                        <p className="text-slate-500 font-bold mb-8 uppercase text-xs tracking-widest flex items-center justify-center md:justify-start gap-2">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                        <p className="text-slate-500 font-bold mb-4 md:mb-8 uppercase text-[10px] md:text-xs tracking-widest flex items-center justify-center md:justify-start gap-1.5 md:gap-2">
+                            <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                             {user.email}
                         </p>
 
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                <p className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-1">Balance</p>
-                                <p className="text-lg font-black text-[#009E49]">{(user.walletBalance ?? 0).toLocaleString()} <span className="text-[9px] opacity-30">ETB</span></p>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-3">
+                            <div className="bg-slate-50 p-3 md:p-4 rounded-xl md:rounded-2xl border border-slate-100">
+                                <p className="text-[7px] md:text-[8px] font-black uppercase tracking-widest text-slate-400 mb-0.5 md:mb-1">Balance</p>
+                                <p className="text-base md:text-lg font-black text-[#009E49]">{(user.walletBalance ?? 0).toLocaleString()} <span className="text-[8px] md:text-[9px] opacity-30">ETB</span></p>
                             </div>
-                            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                <p className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-1">λ Credits</p>
-                                <p className="text-lg font-black text-indigo-600">{(user.coinsBalance ?? 0).toLocaleString()} <span className="text-[9px] opacity-30">λ</span></p>
+                            <div className="bg-slate-50 p-3 md:p-4 rounded-xl md:rounded-2xl border border-slate-100">
+                                <p className="text-[7px] md:text-[8px] font-black uppercase tracking-widest text-slate-400 mb-0.5 md:mb-1">λ Credits</p>
+                                <p className="text-base md:text-lg font-black text-indigo-600">{(user.coinsBalance ?? 0).toLocaleString()} <span className="text-[8px] md:text-[9px] opacity-30">λ</span></p>
                             </div>
                             {user.role === UserRole.PICKER && (
                                 <>
-                                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                        <p className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-1">Rating</p>
+                                    <div className="bg-slate-50 p-3 md:p-4 rounded-xl md:rounded-2xl border border-slate-100">
+                                        <p className="text-[7px] md:text-[8px] font-black uppercase tracking-widest text-slate-400 mb-0.5 md:mb-1">Rating</p>
                                         <div className="flex items-center gap-1">
-                                            <svg className="w-3.5 h-3.5 text-amber-500 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3-.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
-                                            <span className="text-lg font-black text-slate-900">{user.rating?.toFixed(1) || '0.0'}</span>
+                                            <svg className="w-3 md:w-3.5 h-3 md:h-3.5 text-amber-500 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3-.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                                            <span className="text-base md:text-lg font-black text-slate-900">{user.rating?.toFixed(1) || '0.0'}</span>
                                         </div>
                                     </div>
-                                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                        <p className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-1">Deliveries</p>
-                                        <p className="text-lg font-black text-slate-900">{user.completedDeliveries || 0}</p>
+                                    <div className="bg-slate-50 p-3 md:p-4 rounded-xl md:rounded-2xl border border-slate-100">
+                                        <p className="text-[7px] md:text-[8px] font-black uppercase tracking-widest text-slate-400 mb-0.5 md:mb-1">Deliveries</p>
+                                        <p className="text-base md:text-lg font-black text-slate-900">{user.completedDeliveries || 0}</p>
                                     </div>
                                 </>
                             )}
-                            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 col-span-1">
-                                <p className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-1">Activity</p>
-                                <p className="text-lg font-black text-slate-900">{user.itemsCountThisMonth || 0} <span className="text-[9px] opacity-30">UNIT</span></p>
+                            <div className="bg-slate-50 p-3 md:p-4 rounded-xl md:rounded-2xl border border-slate-100 col-span-2 md:col-span-1">
+                                <p className="text-[7px] md:text-[8px] font-black uppercase tracking-widest text-slate-400 mb-0.5 md:mb-1">Activity</p>
+                                <p className="text-base md:text-lg font-black text-slate-900">{user.itemsCountThisMonth || 0} <span className="text-[8px] md:text-[9px] opacity-30">UNIT</span></p>
                             </div>
                         </div>
                     </div>
@@ -408,26 +411,26 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
             </div>
 
             {/* Comprehensive Detail Registry */}
-            <div className="bg-white rounded-[2rem] border border-slate-100 p-6 shadow-sm">
-                <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-50">
-                    <div className="flex items-center gap-4">
-                        <div className="p-2.5 bg-slate-900 text-white rounded-xl">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+            <div className="bg-white rounded-2xl md:rounded-[2rem] border border-slate-100 p-4 md:p-6 shadow-sm">
+                <div className="flex items-center justify-between mb-4 md:mb-6 pb-3 md:pb-4 border-b border-slate-50">
+                    <div className="flex items-center gap-3 md:gap-4">
+                        <div className="p-2 md:p-2.5 bg-slate-900 text-white rounded-xl">
+                            <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                         </div>
-                        <h3 className="text-xl font-black text-slate-900 tracking-tight">Personal Information</h3>
+                        <h3 className="text-lg md:text-xl font-black text-slate-900 tracking-tight">Personal Information</h3>
                     </div>
                     {isEditing && (
                         <div className="flex gap-2">
                             <button
                                 onClick={handleCancel}
-                                className="px-5 py-2 rounded-xl border border-slate-200 text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition"
+                                className="px-3 py-1.5 md:px-5 md:py-2 rounded-xl border border-slate-200 text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleSave}
                                 disabled={loading}
-                                className="bg-[#009E49] text-white px-6 py-2.5 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-[#007A38] transition shadow-lg shadow-green-100 disabled:opacity-50"
+                                className="bg-[#009E49] text-white px-4 py-2 md:px-6 md:py-2.5 rounded-xl font-black uppercase text-[9px] md:text-[10px] tracking-widest hover:bg-[#007A38] transition shadow-lg shadow-green-100 disabled:opacity-50"
                             >
                                 {loading ? 'Saving...' : 'Save Changes'}
                             </button>
@@ -435,7 +438,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
                     )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-4 md:gap-x-8 md:gap-y-6">
                     <InfoField label="First Name" value={user.firstName} field="firstName" isEditing={isEditing} editedUser={editedUser} setEditedUser={setEditedUser} />
                     <InfoField label="Last Name" value={user.lastName} field="lastName" isEditing={isEditing} editedUser={editedUser} setEditedUser={setEditedUser} />
                     <InfoField label="Email Address" value={user.email} field="email" type="email" isEditing={isEditing} editedUser={editedUser} setEditedUser={setEditedUser} />
@@ -465,40 +468,40 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
                 </div>
 
                 {/* Additional Metadata */}
-                <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                <div className="mt-6 md:mt-8 grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 p-4 md:p-6 bg-slate-50 rounded-xl md:rounded-2xl border border-slate-100">
                     <div>
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Joined</p>
-                        <p className="text-xs font-bold text-slate-900">{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Joined at System Launch'}</p>
+                        <p className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Joined</p>
+                        <p className="text-[10px] md:text-xs font-bold text-slate-900">{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Joined at System Launch'}</p>
                     </div>
                     <div>
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Account Role</p>
-                        <p className="text-xs font-bold text-slate-900">{user.role} ACCESS</p>
+                        <p className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Account Role</p>
+                        <p className="text-[10px] md:text-xs font-bold text-slate-900">{user.role} ACCESS</p>
                     </div>
-                    <div>
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Monthly Activity</p>
-                        <p className="text-xs font-bold text-slate-900">{user.itemsCountThisMonth} Active Units</p>
+                    <div className="col-span-2 md:col-span-1 border-t border-slate-200 md:border-t-0 pt-2 md:pt-0 mt-2 md:mt-0">
+                        <p className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Monthly Activity</p>
+                        <p className="text-[10px] md:text-xs font-bold text-slate-900">{user.itemsCountThisMonth} Active Units</p>
                     </div>
                 </div>
             </div>
 
             {/* Verification Documents - Only for Pickers */}
             {needsVerification && (
-                <div className="bg-slate-900 rounded-[2rem] p-8 text-white shadow-2xl relative overflow-hidden">
+                <div className="bg-slate-900 rounded-2xl md:rounded-[2rem] p-6 md:p-8 text-white shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
-                        <svg className="w-40 h-40" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" /></svg>
+                        <svg className="w-32 h-32 md:w-40 md:h-40" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" /></svg>
                     </div>
 
-                    <h3 className="text-xl font-black mb-6 tracking-tight flex items-center gap-4">
-                        <div className="w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center text-[#FDD100]">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                    <h3 className="text-lg md:text-xl font-black mb-4 md:mb-6 tracking-tight flex items-center gap-3 md:gap-4">
+                        <div className="w-8 h-8 md:w-9 md:h-9 bg-white/10 rounded-xl flex items-center justify-center text-[#FDD100]">
+                            <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
                         </div>
                         Identity Verification
                     </h3>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
-                        <div className="space-y-4">
-                            <div className="p-5 bg-white/5 rounded-2xl border border-white/10">
-                                <p className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-500 mb-1.5">ID Type</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 relative z-10">
+                        <div className="space-y-3 md:space-y-4">
+                            <div className="p-4 md:p-5 bg-white/5 rounded-xl md:rounded-2xl border border-white/10">
+                                <p className="text-[7px] md:text-[8px] font-black uppercase tracking-[0.2em] text-slate-500 mb-1.5">ID Type</p>
                                 {isEditing ? (
                                     <select
                                         value={editedUser.idType || 'NATIONAL_ID'}
@@ -509,11 +512,11 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
                                         <option value="PASSPORT">Passport</option>
                                     </select>
                                 ) : (
-                                    <p className="text-base font-black">{user.idType?.replace('_', ' ') || 'Not Set'}</p>
+                                    <p className="text-sm md:text-base font-black">{user.idType?.replace('_', ' ') || 'Not Set'}</p>
                                 )}
                             </div>
-                            <div className="p-5 bg-white/5 rounded-2xl border border-white/10">
-                                <p className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-500 mb-1.5">
+                            <div className="p-4 md:p-5 bg-white/5 rounded-xl md:rounded-2xl border border-white/10">
+                                <p className="text-[7px] md:text-[8px] font-black uppercase tracking-[0.2em] text-slate-500 mb-1.5">
                                     {(editedUser.idType || user.idType) === 'NATIONAL_ID' ? 'ID Number' : 'Passport Number'}
                                 </p>
                                 {isEditing ? (
@@ -531,7 +534,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
                                         placeholder="ENTER ID NUMBER"
                                     />
                                 ) : (
-                                    <p className="text-base font-black tracking-widest font-mono">
+                                    <p className="text-sm md:text-base font-black tracking-widest font-mono">
                                         {((user.idType) === 'NATIONAL_ID' ? user.nationalId : user.passportNumber) || 'UNSET'}
                                     </p>
                                 )}
@@ -539,7 +542,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
                         </div>
 
                         {/* Document Uploads */}
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-3 md:gap-4">
                             {[
                                 { key: 'idFront', label: "ID Front", url: user.idFrontUrl },
                                 { key: 'idBack', label: "ID Back", url: user.idBackUrl },
@@ -559,17 +562,17 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
                                             )
                                         ) : (
                                             <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/5 text-white/10">
-                                                <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M16 8l-4-4m0 0L8 4m4 0v12" /></svg>
-                                                <p className="text-[7px] font-black uppercase tracking-widest">Upload Document</p>
+                                                <svg className="w-5 h-5 md:w-6 md:h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M16 8l-4-4m0 0L8 4m4 0v12" /></svg>
+                                                <p className="text-[6px] md:text-[7px] font-black uppercase tracking-widest">Upload Document</p>
                                             </div>
                                         )}
                                         {isEditing && (
                                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                                                <p className="text-[9px] font-black text-white uppercase tracking-widest">Update</p>
+                                                <p className="text-[8px] md:text-[9px] font-black text-white uppercase tracking-widest">Update</p>
                                             </div>
                                         )}
                                         <div className="absolute inset-x-0 bottom-0 bg-black/60 backdrop-blur-sm px-2 py-1.5 text-center">
-                                            <p className="text-[7px] font-black uppercase tracking-widest">{doc.label}</p>
+                                            <p className="text-[6px] md:text-[7px] font-black uppercase tracking-widest">{doc.label}</p>
                                         </div>
                                     </div>
                                     <input
@@ -584,7 +587,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
                         </div>
 
                         {isEditing && (
-                            <div className="col-span-full mt-6 p-5 bg-white/5 rounded-2xl border border-white/10 space-y-3">
+                            <div className="col-span-full mt-4 md:mt-6 p-4 md:p-5 bg-white/5 rounded-2xl border border-white/10 space-y-3">
                                 <div className="flex items-start gap-3">
                                     <input
                                         type="checkbox"
@@ -593,7 +596,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
                                         onChange={e => setAgreedToTerms(e.target.checked)}
                                         className="mt-1"
                                     />
-                                    <label htmlFor="terms" className="text-[9px] font-bold text-slate-400 leading-relaxed uppercase tracking-widest cursor-pointer">
+                                    <label htmlFor="terms" className="text-[8px] md:text-[9px] font-bold text-slate-400 leading-relaxed uppercase tracking-widest cursor-pointer">
                                         I declare that all provided documents are authentic and I agree to the Terms of Service.
                                     </label>
                                 </div>
@@ -605,7 +608,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
                                         onChange={e => setAgreedToBackgroundCheck(e.target.checked)}
                                         className="mt-1"
                                     />
-                                    <label htmlFor="background" className="text-[9px] font-bold text-slate-400 leading-relaxed uppercase tracking-widest cursor-pointer">
+                                    <label htmlFor="background" className="text-[8px] md:text-[9px] font-bold text-slate-400 leading-relaxed uppercase tracking-widest cursor-pointer">
                                         I authorize the system to perform a background verification on my history.
                                     </label>
                                 </div>
@@ -617,46 +620,46 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
 
             {/* Emergency Contact - Pickers Only */}
             {user.role === UserRole.PICKER && (
-                <div className="bg-red-50/50 rounded-[2rem] border border-red-100 p-6 flex flex-col md:flex-row items-center justify-between gap-8">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-[#EF3340] text-white rounded-xl flex items-center justify-center shadow-lg shadow-red-200">
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                <div className="bg-red-50/50 rounded-2xl md:rounded-[2rem] border border-red-100 p-4 md:p-6 flex flex-col md:flex-row items-center justify-between gap-4 md:gap-8">
+                    <div className="flex items-center gap-4 w-full md:w-auto">
+                        <div className="w-10 h-10 md:w-12 md:h-12 bg-[#EF3340] text-white rounded-xl flex items-center justify-center shadow-lg shadow-red-200 flex-shrink-0">
+                            <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                         </div>
                         <div>
-                            <h4 className="text-lg font-black text-slate-900 tracking-tight">Emergency Contact</h4>
-                            <p className="text-xs font-medium text-slate-500">Who should we contact in an emergency?</p>
+                            <h4 className="text-base md:text-lg font-black text-slate-900 tracking-tight">Emergency Contact</h4>
+                            <p className="text-[10px] md:text-xs font-medium text-slate-500">Who should we contact in an emergency?</p>
                         </div>
                     </div>
-                    <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex-1 flex items-center justify-around gap-6">
+                    <div className="bg-white p-4 rounded-xl md:rounded-2xl shadow-sm border border-slate-100 w-full md:flex-1 flex items-center justify-around gap-4 md:gap-6">
                         <div className="text-center">
-                            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Contact Name</p>
-                            <p className="text-sm font-black text-slate-800">{user.emergencyContact || 'Not Provided'}</p>
+                            <p className="text-[7px] md:text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Contact Name</p>
+                            <p className="text-xs md:text-sm font-black text-slate-800">{user.emergencyContact || 'Not Provided'}</p>
                         </div>
                         <div className="w-px h-6 bg-slate-100"></div>
                         <div className="text-center">
-                            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Contact Phone</p>
-                            <p className="text-sm font-black text-slate-800 font-mono tracking-tighter">{user.emergencyContactPhone || 'Not Provided'}</p>
+                            <p className="text-[7px] md:text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Contact Phone</p>
+                            <p className="text-xs md:text-sm font-black text-slate-800 font-mono tracking-tighter">{user.emergencyContactPhone || 'Not Provided'}</p>
                         </div>
                     </div>
                 </div>
             )}
 
             {/* Privacy Settings */}
-            <div className={`bg-white rounded-[2rem] p-6 border transition-all ${isEditing ? 'border-indigo-100 shadow-xl' : 'border-slate-100'}`}>
-                <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+            <div className={`bg-white rounded-2xl md:rounded-[2rem] p-4 md:p-6 border transition-all ${isEditing ? 'border-indigo-100 shadow-xl' : 'border-slate-100'}`}>
+                <div className="flex items-center justify-between mb-4 md:mb-6">
+                    <div className="flex items-center gap-3 md:gap-4">
+                        <div className="w-8 h-8 md:w-10 md:h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
+                            <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                         </div>
                         <div>
-                            <h3 className="text-xl font-black text-slate-900 tracking-tight">Privacy Settings</h3>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Manage what others see</p>
+                            <h3 className="text-lg md:text-xl font-black text-slate-900 tracking-tight">Privacy Settings</h3>
+                            <p className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5 md:mt-1">Manage what others see</p>
                         </div>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                    <div className="space-y-3 md:space-y-4">
                         {[
                             { label: 'Show Email', field: 'hideEmail', desc: 'Allow others to see your email address.' },
                             { label: 'Show Phone', field: 'hidePhoneNumber', desc: 'Display your phone number to active partners.' },
@@ -667,30 +670,30 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUserUpdate }) => {
                             const isActive = item.fieldReversed ? !isHidden : !isHidden;
 
                             return (
-                                <div key={item.field} className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
-                                    <div className="flex-1">
-                                        <p className="text-sm font-black text-slate-900">{item.label}</p>
-                                        <p className="text-[10px] font-medium text-slate-500 mt-1">{item.desc}</p>
+                                <div key={item.field} className="flex items-center justify-between p-3 md:p-4 bg-slate-50/50 rounded-xl md:rounded-2xl border border-slate-100">
+                                    <div className="flex-1 mr-4">
+                                        <p className="text-xs md:text-sm font-black text-slate-900">{item.label}</p>
+                                        <p className="text-[9px] md:text-[10px] font-medium text-slate-500 mt-0.5 md:mt-1">{item.desc}</p>
                                     </div>
                                     <button
                                         disabled={!isEditing}
                                         onClick={() => setEditedUser({ ...editedUser, [item.field]: !isHidden })}
-                                        className={`w-10 h-6 rounded-full relative transition-all duration-300 ${!isEditing ? 'opacity-50 grayscale' : ''} ${isActive ? 'bg-[#009E49]' : 'bg-slate-200'}`}
+                                        className={`w-8 h-5 md:w-10 md:h-6 rounded-full relative transition-all duration-300 ${!isEditing ? 'opacity-50 grayscale' : ''} ${isActive ? 'bg-[#009E49]' : 'bg-slate-200'}`}
                                     >
-                                        <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-300 transform ${isActive ? 'translate-x-4' : 'translate-x-0'}`} />
+                                        <div className={`absolute top-0.5 left-0.5 w-4 h-4 md:w-5 md:h-5 bg-white rounded-full shadow-md transition-transform duration-300 transform ${isActive ? 'translate-x-3 md:translate-x-4' : 'translate-x-0'}`} />
                                     </button>
                                 </div>
                             );
                         })}
                     </div>
 
-                    <div className="p-6 bg-amber-50 rounded-[1.5rem] border border-amber-200 flex flex-col justify-center text-center">
-                        <div className="w-10 h-10 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                    <div className="p-4 md:p-6 bg-amber-50 rounded-xl md:rounded-[1.5rem] border border-amber-200 flex flex-col justify-center text-center">
+                        <div className="w-8 h-8 md:w-10 md:h-10 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-2 md:mb-3">
+                            <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                         </div>
-                        <h4 className="text-[10px] font-black text-amber-900 uppercase tracking-widest mb-1">Privacy Note</h4>
-                        <p className="text-xs font-medium text-amber-700 leading-relaxed">
-                            Hiding your rating or delivery history may decrease your <span className="font-black">booking request success</span> by up to <span className="font-black text-lg">40%</span>.
+                        <h4 className="text-[8px] md:text-[10px] font-black text-amber-900 uppercase tracking-widest mb-0.5 md:mb-1">Privacy Note</h4>
+                        <p className="text-[10px] md:text-xs font-medium text-amber-700 leading-relaxed">
+                            Hiding your rating or delivery history may decrease your <span className="font-black">booking request success</span> by up to <span className="font-black text-base md:text-lg">40%</span>.
                         </p>
                     </div>
                 </div>

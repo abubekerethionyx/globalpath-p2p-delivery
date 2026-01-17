@@ -131,6 +131,9 @@ def create_user(data):
     from app.models.enums import VerificationStatus, UserRole
     
     user_role = data.get('role', 'SENDER')
+    if not user_role:
+        user_role = 'SENDER'
+        
     # Determine if user is a picker
     is_picker = False
     if isinstance(user_role, str):
@@ -180,12 +183,19 @@ def create_user(data):
     return user
 
   
-def authenticate_user(email, password):
+def authenticate_user(email, password, role=None):
+    from app.models.enums import UserRole
     user = User.query.filter_by(email=email).first()
     if user and user.check_password(password):
         if not user.is_email_verified:
-           pass
+            pass
             # return {"unverified": True, "message": "Email not verified. Please check your inbox."}
+        
+        # Update dynamic role if provided and user is not an admin
+        if role and role in ['SENDER', 'PICKER'] and user.role != UserRole.ADMIN:
+            user.role = UserRole(role)
+            db.session.commit()
+
         access_token = create_access_token(identity=user.id)
         return {"token": access_token, "user": user}
     return None
@@ -195,9 +205,26 @@ def update_user(user_id, data):
     if user:
         # Date fields that need careful handling
         date_fields = ['passport_expiry', 'date_of_birth']
+        from app.models.enums import UserRole, VerificationStatus
         for key, value in data.items():
             if key == 'password':
                 user.set_password(value)
+            elif key == 'role':
+                if isinstance(value, str):
+                    try:
+                        user.role = UserRole(value)
+                    except ValueError:
+                        pass
+                else:
+                    user.role = value
+            elif key == 'verification_status':
+                if isinstance(value, str):
+                    try:
+                        user.verification_status = VerificationStatus(value)
+                    except ValueError:
+                        pass
+                else:
+                    user.verification_status = value
             elif key in date_fields:
                 if value and isinstance(value, str) and value.strip():
                     try:

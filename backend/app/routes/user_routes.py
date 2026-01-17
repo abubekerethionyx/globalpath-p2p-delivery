@@ -75,7 +75,8 @@ def login():
     if not data or not data.get('email') or not data.get('password'):
         return jsonify({'message': 'Email and password are required'}), 400
     
-    result = user_service.authenticate_user(data['email'], data['password'])
+    role = data.get('role') # Dynamic role selection at login
+    result = user_service.authenticate_user(data['email'], data['password'], role)
     if not result:
         return jsonify({'message': 'Invalid credentials'}), 401
     
@@ -107,6 +108,32 @@ def google_login():
     return jsonify({
         'token': result['token'],
         'user': user_schema.dump(result['user'])
+    }), 200
+
+@bp.route('/switch-role', methods=['POST'])
+@jwt_required()
+def switch_role():
+    current_user_id = get_jwt_identity()
+    data = request.get_json()
+    role = data.get('role')
+    
+    if not role or role not in ['SENDER', 'PICKER']:
+        return jsonify({'message': 'Invalid role choice'}), 400
+        
+    user = user_service.get_user(current_user_id)
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+        
+    if user.role != UserRole.ADMIN:
+        user.role = UserRole(role)
+        db.session.commit()
+    
+    from flask_jwt_extended import create_access_token
+    new_token = create_access_token(identity=user.id)
+    
+    return jsonify({
+        'token': new_token,
+        'user': user_schema.dump(user)
     }), 200
 
 @bp.route('/', methods=['GET'])
@@ -167,6 +194,19 @@ def update_user(user_id):
     user = user_service.update_user(user_id, data)
     if not user:
         return jsonify({'message': 'User not found'}), 404
+        
+    # Send notification if rejected with a reason
+    if data.get('verification_status') == 'REJECTED':
+        reason = data.get('rejection_reason', 'Identity documents do not meet protocol standards.')
+        from app.models.notification import create_notification
+        create_notification(
+            user_id=user_id,
+            title="Verification Rejected",
+            message=f"Your identity verification was rejected. Reason: {reason}",
+            type='ERROR',
+            link='/profile'
+        )
+        
     return jsonify(user_schema.dump(user))
 
 @bp.route('/<user_id>', methods=['DELETE'])

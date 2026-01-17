@@ -118,7 +118,12 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete, publicSettings }) =
       }
 
       if (isLogin) {
-        const response = await AuthService.login(formData.email, formData.password);
+        if (!role) {
+          setError("Please select a role to login as.");
+          setIsLoading(false);
+          return;
+        }
+        const response = await AuthService.login(formData.email, formData.password, role);
         if (response.user) {
           onAuthComplete(response.user);
         } else {
@@ -144,7 +149,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete, publicSettings }) =
           email: formData.email,
           password: formData.password,
           phoneNumber: formData.phoneNumber,
-          role: role
+          role: UserRole.SENDER // Default role on signup
         });
 
 
@@ -160,7 +165,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete, publicSettings }) =
 
         if (otpRequired === false) {
           // Auto login if OTP is not required
-          const loginResp = await AuthService.login(formData.email, formData.password);
+          const loginResp = await AuthService.login(formData.email, formData.password, UserRole.SENDER);
           if (loginResp.user) {
             onAuthComplete(loginResp.user);
           } else {
@@ -269,9 +274,9 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete, publicSettings }) =
               </div>
             ) : (
               <>
-                {(!isLogin || tempGoogleToken) && !showForgot && (
+                {(isLogin || tempGoogleToken) && !showForgot && (
                   <div className="space-y-4">
-                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Choose Your Identity</p>
+                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Login As</p>
                     <div className="grid grid-cols-2 gap-4">
                       <button
                         type="button"
@@ -281,7 +286,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete, publicSettings }) =
                         <div className={`w-10 h-10 rounded-xl mb-3 flex items-center justify-center transition-colors ${role === UserRole.SENDER ? 'bg-[#009E49] text-white' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200'}`}>
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
                         </div>
-                        <p className="text-sm font-black text-slate-900 leading-tight">I want to Send</p>
+                        <p className="text-sm font-black text-slate-900 leading-tight">Sender</p>
                       </button>
                       <button
                         type="button"
@@ -291,7 +296,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete, publicSettings }) =
                         <div className={`w-10 h-10 rounded-xl mb-3 flex items-center justify-center transition-colors ${role === UserRole.PICKER ? 'bg-[#009E49] text-white' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200'}`}>
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
                         </div>
-                        <p className="text-sm font-black text-slate-900 leading-tight">I want to Deliver</p>
+                        <p className="text-sm font-black text-slate-900 leading-tight">Picker</p>
                       </button>
                     </div>
                   </div>

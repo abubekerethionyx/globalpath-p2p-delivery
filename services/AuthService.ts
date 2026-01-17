@@ -47,8 +47,8 @@ export const AuthService = {
         return response.data;
     },
 
-    login: async (email: string, password: string): Promise<{ token: string; user: User }> => {
-        const response = await api.post('/users/login', { email, password });
+    login: async (email: string, password: string, role?: string): Promise<{ token: string; user: User }> => {
+        const response = await api.post('/users/login', { email, password, role });
         if (response.data.token) {
             localStorage.setItem('token', response.data.token);
             // Transform snake_case to camelCase before storing
@@ -105,6 +105,17 @@ export const AuthService = {
 
     googleLogin: async (token: string, role?: string): Promise<{ token?: string; user?: User; needs_role?: boolean; email?: string }> => {
         const response = await api.post('/users/google-login', { token, role });
+        if (response.data.token) {
+            localStorage.setItem('token', response.data.token);
+            const transformedUser = transformUserData(response.data.user);
+            localStorage.setItem('user', JSON.stringify(transformedUser));
+            return { token: response.data.token, user: transformedUser };
+        }
+        return response.data;
+    },
+
+    switchRole: async (role: string): Promise<{ token: string; user: User }> => {
+        const response = await api.post('/users/switch-role', { role });
         if (response.data.token) {
             localStorage.setItem('token', response.data.token);
             const transformedUser = transformUserData(response.data.user);

@@ -25,6 +25,7 @@ import PickerProfilePage from './pages/PickerProfilePage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
+import AdminLoginPage from './pages/AdminLoginPage';
 
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
@@ -104,11 +105,7 @@ const App: React.FC = () => {
     if (u.role === UserRole.ADMIN) {
       navigate('/admin');
     } else if (u.role === UserRole.PICKER) {
-      if (u.verificationStatus === VerificationStatus.UNVERIFIED) {
-        navigate('/profile');
-      } else {
-        navigate('/marketplace');
-      }
+      navigate('/marketplace');
     } else {
       navigate('/dashboard');
     }
@@ -154,6 +151,7 @@ const App: React.FC = () => {
             <Routes>
               <Route path="/" element={user ? <Navigate to="/dashboard" /> : <LandingPage onNavigate={(page) => navigate(page === 'landing' ? '/' : `/${page}`)} />} />
               <Route path="/login" element={<AuthPage onAuthComplete={handleAuthComplete} publicSettings={publicSettings} />} />
+              <Route path="/admin-access" element={<AdminLoginPage onAuthComplete={handleAuthComplete} />} />
               <Route path="/packaging" element={<PackagingPage user={user} onPlanChanged={refreshUser} />} />
               <Route path="/feed" element={<FeedPage user={user} />} />
               <Route path="/travel/:id" element={<TravelDetailPage user={user} />} />
@@ -213,6 +211,8 @@ const App: React.FC = () => {
                 <div className="flex items-center gap-1">
                   <span>Built by</span>
                   <a href="https://ethionyx.com/" target="_blank" rel="noopener noreferrer" className="text-[#009E49] hover:underline">EthioNyx</a>
+                  <span className="mx-2 text-slate-200">|</span>
+                  <button onClick={() => navigate('/admin-access')} className="hover:text-slate-900 transition-colors">Admin Access</button>
                 </div>
                 <p className="md:mt-0">Connecting Ethiopia to the World 🌍</p>
               </div>

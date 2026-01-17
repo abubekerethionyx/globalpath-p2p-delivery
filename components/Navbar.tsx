@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { User, UserRole } from '../types';
+import { AuthService } from '../services/AuthService';
 import { NotificationService, Notification } from '../services/NotificationService';
 import { PublicSettings } from '../services/AdminService';
 
@@ -16,6 +17,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onNavigate, currentPage
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -145,7 +147,10 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onNavigate, currentPage
                 {/* Notification Bell */}
                 <div className="relative">
                   <button
-                    onClick={() => setIsNotifOpen(!isNotifOpen)}
+                    onClick={() => {
+                      setIsNotifOpen(!isNotifOpen);
+                      setIsProfileOpen(false);
+                    }}
                     className={`p-2.5 rounded-xl transition-all duration-300 ${isNotifOpen ? 'bg-slate-900 text-white shadow-xl rotate-12' : 'bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-900'}`}
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -187,21 +192,82 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onNavigate, currentPage
                   )}
                 </div>
 
-                {/* Profile */}
-                <div className="relative group">
-                  <div className="p-0.5 rounded-2xl bg-gradient-to-tr from-[#009E49] to-[#FDD100] p-[2px] cursor-pointer hover:shadow-xl hover:scale-[1.05] transition-all duration-300" onClick={() => handleNavigate('profile')}>
+                {/* Profile Dropdown */}
+                <div className="relative">
+                  <div
+                    className="p-0.5 rounded-2xl bg-gradient-to-tr from-[#009E49] to-[#FDD100] p-[2px] cursor-pointer hover:shadow-xl hover:scale-[1.05] transition-all duration-300"
+                    onClick={() => {
+                      setIsProfileOpen(!isProfileOpen);
+                      setIsNotifOpen(false);
+                    }}
+                  >
                     <img
                       className="h-10 w-10 rounded-[0.9rem] object-cover border-2 border-white"
                       src={user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.firstName}`}
                       alt="Avatar"
                     />
                   </div>
-                </div>
 
-                {/* Logout - Desktop Only */}
-                <button onClick={onLogout} className="hidden lg:flex p-2.5 text-slate-300 hover:text-[#EF3340] hover:bg-red-50 rounded-xl transition-all">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-                </button>
+                  {isProfileOpen && (
+                    <div className="absolute top-full right-0 mt-4 w-64 z-[101]">
+                      <div className="fixed inset-0 z-[-1]" onClick={() => setIsProfileOpen(false)}></div>
+                      <div className="bg-white/95 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/50 overflow-hidden animate-in fade-in-0 zoom-in-95 duration-300">
+                        {/* User Summary */}
+                        <div className="p-6 bg-slate-900/5 backdrop-blur-sm border-b border-white/50">
+                          <p className="text-sm font-black text-slate-900 leading-none">{user.firstName} {user.lastName}</p>
+                          <p className="text-[10px] font-black text-[#009E49] uppercase tracking-widest mt-1.5">{user.role} Account</p>
+                        </div>
+
+                        <div className="p-2 space-y-1">
+                          {/* Role Switcher */}
+                          {user.role !== UserRole.ADMIN && (
+                            <button
+                              onClick={async () => {
+                                const newRole = user.role === UserRole.SENDER ? UserRole.PICKER : UserRole.SENDER;
+                                try {
+                                  await AuthService.switchRole(newRole);
+                                  window.location.reload();
+                                } catch (err) {
+                                  console.error("Failed to switch role", err);
+                                }
+                              }}
+                              className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all ${user.role === UserRole.SENDER ? 'bg-amber-50 text-amber-700 hover:bg-amber-100' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'}`}
+                            >
+                              <div className={`p-2 rounded-lg ${user.role === UserRole.SENDER ? 'bg-amber-200/50' : 'bg-emerald-200/50'}`}>
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                                </svg>
+                              </div>
+                              <span className="text-xs font-black uppercase tracking-widest">
+                                {user.role === UserRole.SENDER ? 'Picker Mode' : 'Sender Mode'}
+                              </span>
+                            </button>
+                          )}
+
+                          <button
+                            onClick={() => { handleNavigate('profile'); setIsProfileOpen(false); }}
+                            className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all text-left"
+                          >
+                            <div className="p-2 bg-slate-100 rounded-lg text-slate-400">
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                            </div>
+                            <span className="text-xs font-black uppercase tracking-widest">Protocol Stats</span>
+                          </button>
+
+                          <button
+                            onClick={onLogout}
+                            className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-red-500 hover:bg-red-50 transition-all text-left"
+                          >
+                            <div className="p-2 bg-red-100/50 rounded-lg">
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7" /></svg>
+                            </div>
+                            <span className="text-xs font-black uppercase tracking-widest">Terminate Session</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
@@ -254,6 +320,29 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onNavigate, currentPage
                   </button>
                 );
               })}
+              {user && user.role !== UserRole.ADMIN && (
+                <button
+                  onClick={async () => {
+                    const newRole = user.role === UserRole.SENDER ? UserRole.PICKER : UserRole.SENDER;
+                    try {
+                      await AuthService.switchRole(newRole);
+                      window.location.reload();
+                    } catch (err) {
+                      console.error("Failed to switch role", err);
+                    }
+                  }}
+                  className={`p-6 rounded-[2rem] flex flex-col gap-3 items-center justify-center transition-all ${user.role === UserRole.SENDER ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}
+                >
+                  <div className={`p-4 rounded-2xl ${user.role === UserRole.SENDER ? 'bg-amber-100' : 'bg-emerald-100'}`}>
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                  </div>
+                  <span className="text-[9px] font-black uppercase tracking-widest">
+                    Switch to {user.role === UserRole.SENDER ? 'Picker' : 'Sender'}
+                  </span>
+                </button>
+              )}
               {user && (
                 <button onClick={() => handleNavigate('profile')} className={`p-6 rounded-[2rem] flex flex-col gap-3 items-center justify-center ${currentPage === 'profile' ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-400'}`}>
                   <div className={`p-4 rounded-2xl ${currentPage === 'profile' ? 'bg-white/20' : 'bg-white shadow-sm'}`}>

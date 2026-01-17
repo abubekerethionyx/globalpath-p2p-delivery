@@ -19,6 +19,7 @@ class VerificationStatus(enum.Enum):
     UNVERIFIED = 'UNVERIFIED'
     PENDING = 'PENDING'
     VERIFIED = 'VERIFIED'
+    REJECTED = 'REJECTED'
 
 class TicketStatus(enum.Enum):
     OPEN = 'OPEN'

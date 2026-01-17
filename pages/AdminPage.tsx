@@ -21,12 +21,15 @@ type AdminTab = 'analytics' | 'users' | 'items' | 'travels' | 'packages' | 'bill
 const AdminPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AdminTab>('analytics');
 
-  const handleVerify = async (userId: string, status: VerificationStatus) => {
+  const handleVerify = async (userId: string, status: VerificationStatus, reason?: string) => {
     try {
       if (status === VerificationStatus.VERIFIED) {
         await UserService.verifyUser(userId);
       } else {
-        await UserService.updateUser(userId, { verification_status: status } as any);
+        await UserService.updateUser(userId, {
+          verification_status: status,
+          rejection_reason: reason // Passing it to the update data even if not in model, backend will pick it up
+        } as any);
       }
     } catch (error) {
       console.error("Failed to update verification status", error);
