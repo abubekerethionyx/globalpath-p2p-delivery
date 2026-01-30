@@ -129,7 +129,22 @@ const App: React.FC = () => {
     return '';
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  // Role-Based Protected Route Component
+  const ProtectedRoute: React.FC<{
+    element: React.ReactElement;
+    allowedRoles?: UserRole[];
+  }> = ({ element, allowedRoles }) => {
+    if (!user) return <Navigate to="/login" state={{ from: location }} />;
+
+    if (allowedRoles && !allowedRoles.includes(user.role)) {
+      // Redirect to appropriate dashboard if role not allowed
+      return <Navigate to="/dashboard" />;
+    }
+
+    return element;
+  };
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-50 font-black text-slate-400 uppercase tracking-widest animate-pulse">Initializing Protocol...</div>;
 
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
@@ -149,41 +164,45 @@ const App: React.FC = () => {
 
           <main className={`flex-1 w-full relative pt-20 ${location.pathname === '/' || location.pathname === '/landing' || location.pathname === '/admin' ? '' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'}`}>
             <Routes>
+              {/* Public Routes */}
               <Route path="/" element={user ? <Navigate to="/dashboard" /> : <LandingPage onNavigate={(page) => navigate(page === 'landing' ? '/' : `/${page}`)} />} />
               <Route path="/login" element={<AuthPage onAuthComplete={handleAuthComplete} publicSettings={publicSettings} />} />
               <Route path="/admin-access" element={<AdminLoginPage onAuthComplete={handleAuthComplete} />} />
-              <Route path="/packaging" element={<PackagingPage user={user} onPlanChanged={refreshUser} />} />
-              <Route path="/feed" element={<FeedPage user={user} />} />
-              <Route path="/travel/:id" element={<TravelDetailPage user={user} />} />
-              <Route path="/my-travels" element={user ? <MyTravelsPage user={user} /> : <Navigate to="/login" />} />
               <Route path="/terms" element={<TermsPage />} />
               <Route path="/privacy" element={<PrivacyPage />} />
-
-              {/* Protected Routes */}
-              <Route path="/dashboard" element={user ? <DashboardPage user={user} publicSettings={publicSettings} /> : <Navigate to="/login" />} />
-              <Route path="/shipment-detail/:id" element={user ? <ShipmentDetailPage currentUser={user} publicSettings={publicSettings} /> : <Navigate to="/login" />} />
-              <Route path="/marketplace" element={user ? <MarketplacePage user={user} publicSettings={publicSettings} /> : <Navigate to="/login" />} />
-              <Route path="/billing" element={user ? <BillingPage user={user} /> : <Navigate to="/login" />} />
-              <Route path="/post-item" element={user ? <PostShipmentPage user={user} /> : <Navigate to="/login" />} />
-              <Route path="/post-shipment/:id" element={user ? <PostShipmentPage user={user} /> : <Navigate to="/login" />} />
-              <Route path="/messages" element={
-                user ? (
-                  (publicSettings.require_subscription_for_chat && user.isSubscriptionActive === false && user.role !== UserRole.ADMIN) ? (
-                    <Navigate to="/packaging" />
-                  ) : (
-                    <MessagesPage user={user} />
-                  )
-                ) : (
-                  <Navigate to="/login" />
-                )
-              } />
-              <Route path="/support" element={user ? <SupportPage user={user} /> : <Navigate to="/login" />} />
-              <Route path="/notifications" element={user ? <NotificationsPage user={user} /> : <Navigate to="/login" />} />
-              <Route path="/profile" element={user ? <ProfilePage user={user} onUserUpdate={(updatedUser) => setUser(updatedUser)} /> : <Navigate to="/login" />} />
-
-              <Route path="/admin" element={user && user.role === UserRole.ADMIN ? <AdminPage /> : <Navigate to="/dashboard" />} />
-              <Route path="/picker-profile/:id" element={user ? <PickerProfilePage /> : <Navigate to="/login" />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+              {/* Shared Protected Routes */}
+              <Route path="/dashboard" element={<ProtectedRoute element={<DashboardPage user={user!} publicSettings={publicSettings} />} />} />
+              <Route path="/profile" element={<ProtectedRoute element={<ProfilePage user={user!} onUserUpdate={(updatedUser) => setUser(updatedUser)} />} />} />
+              <Route path="/notifications" element={<ProtectedRoute element={<NotificationsPage user={user!} />} />} />
+              <Route path="/support" element={<ProtectedRoute element={<SupportPage user={user!} />} />} />
+              <Route path="/billing" element={<ProtectedRoute element={<BillingPage user={user!} />} />} />
+              <Route path="/packaging" element={<ProtectedRoute element={<PackagingPage user={user!} onPlanChanged={refreshUser} />} />} />
+              <Route path="/feed" element={<ProtectedRoute element={<FeedPage user={user!} />} />} />
+
+              {/* Picker-Specific Routes */}
+              <Route path="/marketplace" element={<ProtectedRoute allowedRoles={[UserRole.PICKER, UserRole.ADMIN]} element={<MarketplacePage user={user!} publicSettings={publicSettings} />} />} />
+              <Route path="/my-travels" element={<ProtectedRoute allowedRoles={[UserRole.PICKER, UserRole.ADMIN]} element={<MyTravelsPage user={user!} />} />} />
+              <Route path="/picker-profile/:id" element={<ProtectedRoute allowedRoles={[UserRole.PICKER, UserRole.ADMIN, UserRole.SENDER]} element={<PickerProfilePage />} />} />
+              <Route path="/travel/:id" element={<ProtectedRoute element={<TravelDetailPage user={user!} />} />} />
+
+              {/* Sender-Specific Routes */}
+              <Route path="/post-item" element={<ProtectedRoute allowedRoles={[UserRole.SENDER, UserRole.ADMIN]} element={<PostShipmentPage user={user!} />} />} />
+              <Route path="/post-shipment/:id" element={<ProtectedRoute allowedRoles={[UserRole.SENDER, UserRole.ADMIN]} element={<PostShipmentPage user={user!} />} />} />
+              <Route path="/shipment-detail/:id" element={<ProtectedRoute element={<ShipmentDetailPage currentUser={user!} publicSettings={publicSettings} />} />} />
+
+              {/* Messages with Subscription Logic */}
+              <Route path="/messages" element={
+                <ProtectedRoute element={
+                  (publicSettings.require_subscription_for_chat && user?.isSubscriptionActive === false && user?.role !== UserRole.ADMIN)
+                    ? <Navigate to="/packaging" />
+                    : <MessagesPage user={user!} />
+                } />
+              } />
+
+              {/* Admin-Only Routes */}
+              <Route path="/admin" element={<ProtectedRoute allowedRoles={[UserRole.ADMIN]} element={<AdminPage />} />} />
 
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>

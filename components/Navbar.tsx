@@ -62,11 +62,11 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onNavigate, currentPage
   const navLinks = [
     { id: 'feed', label: 'Feed', roles: [UserRole.PICKER, UserRole.SENDER, UserRole.ADMIN, null], icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg> },
     { id: 'dashboard', label: 'Dashboard', roles: [UserRole.PICKER, UserRole.SENDER], icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg> },
-    { id: 'my-travels', label: 'My Travels', roles: [UserRole.PICKER], icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg> },
+    { id: 'my-travels', label: 'Travels', roles: [UserRole.PICKER], icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg> },
     { id: 'marketplace', label: 'Market', roles: [UserRole.PICKER], icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg> },
     { id: 'messages', label: 'Messages', roles: [UserRole.PICKER, UserRole.SENDER], dot: true, icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg> },
-    { id: 'billing', label: 'Finance', roles: [UserRole.PICKER, UserRole.SENDER], icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
-    { id: 'packaging', label: 'Pricing', roles: [UserRole.PICKER, UserRole.SENDER, UserRole.ADMIN, null], icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg> },
+    { id: 'billing', label: 'Wallet', roles: [UserRole.PICKER, UserRole.SENDER], icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
+    { id: 'packaging', label: 'Plans', roles: [UserRole.PICKER, UserRole.SENDER, UserRole.ADMIN, null], icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg> },
     { id: 'support', label: 'Support', roles: [UserRole.PICKER, UserRole.SENDER, UserRole.ADMIN], icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" /></svg> },
   ];
 
@@ -75,7 +75,15 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onNavigate, currentPage
     setIsMobileMenuOpen(false);
   };
 
-  const currentRoleLinks = navLinks.filter(link => user ? link.roles.includes(user.role) : link.roles.includes(null));
+  const allCurrentRoleLinks = navLinks.filter(link => user ? link.roles.includes(user.role) : link.roles.includes(null));
+
+  // Determine primary vs overflow links for desktop based on role complexity
+  const isPicker = user?.role === UserRole.PICKER;
+  const desktopPrimaryLinks = isPicker
+    ? allCurrentRoleLinks.filter(l => ['marketplace', 'my-travels', 'messages', 'dashboard'].includes(l.id))
+    : allCurrentRoleLinks.filter(l => !['billing', 'packaging', 'support'].includes(l.id));
+
+  const desktopOverflowLinks = allCurrentRoleLinks.filter(l => !desktopPrimaryLinks.find(pl => pl.id === l.id));
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ${isScrolled ? 'py-1' : 'py-2'}`}>
@@ -98,7 +106,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onNavigate, currentPage
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center bg-slate-100/50 p-1.5 rounded-2xl border border-white/50">
-            {currentRoleLinks.map(link => (
+            {desktopPrimaryLinks.map(link => (
               <button
                 key={link.id}
                 onClick={() => handleNavigate(link.id)}
@@ -219,6 +227,22 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onNavigate, currentPage
                         </div>
 
                         <div className="p-2 space-y-1">
+                          {/* Overflow Links (Desktop Only) */}
+                          <div className="md:block hidden bg-slate-50 rounded-2xl p-1 mb-1">
+                            {desktopOverflowLinks.map(link => (
+                              <button
+                                key={link.id}
+                                onClick={() => { handleNavigate(link.id); setIsProfileOpen(false); }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-[1.2rem] transition-all text-left ${currentPage === link.id ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:bg-white/50 hover:text-slate-900'}`}
+                              >
+                                <div className={`p-1.5 rounded-lg ${currentPage === link.id ? 'bg-slate-900 text-white' : 'bg-slate-200/50 text-slate-400'}`}>
+                                  {link.icon}
+                                </div>
+                                <span className="text-[10px] font-black uppercase tracking-widest">{link.label}</span>
+                              </button>
+                            ))}
+                          </div>
+
                           {/* Role Switcher */}
                           {user.role !== UserRole.ADMIN && (
                             <button
@@ -239,7 +263,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onNavigate, currentPage
                                 </svg>
                               </div>
                               <span className="text-xs font-black uppercase tracking-widest">
-                                {user.role === UserRole.SENDER ? 'Picker Mode' : 'Sender Mode'}
+                                {user.role === UserRole.SENDER ? 'Switch to Picker' : 'Switch to Sender'}
                               </span>
                             </button>
                           )}
@@ -251,7 +275,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onNavigate, currentPage
                             <div className="p-2 bg-slate-100 rounded-lg text-slate-400">
                               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                             </div>
-                            <span className="text-xs font-black uppercase tracking-widest">Protocol Stats</span>
+                            <span className="text-xs font-black uppercase tracking-widest">Profile Identity</span>
                           </button>
 
                           <button
@@ -261,7 +285,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onNavigate, currentPage
                             <div className="p-2 bg-red-100/50 rounded-lg">
                               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7" /></svg>
                             </div>
-                            <span className="text-xs font-black uppercase tracking-widest">Terminate Session</span>
+                            <span className="text-xs font-black uppercase tracking-widest">Sign Out</span>
                           </button>
                         </div>
                       </div>
@@ -358,7 +382,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout, onNavigate, currentPage
               {user ? (
                 <button onClick={onLogout} className="w-full py-5 bg-red-50 text-[#EF3340] rounded-3xl text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-3">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7" /></svg>
-                  Terminate Session
+                  Sign Out
                 </button>
               ) : (
                 <button onClick={() => handleNavigate('login')} className="w-full py-5 bg-slate-900 text-white rounded-3xl text-[11px] font-black uppercase tracking-widest shadow-2xl">

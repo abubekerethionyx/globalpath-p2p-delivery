@@ -17,6 +17,21 @@ api.interceptors.request.use(
         return config;
     },
     (error) => {
+        if (error.response && error.response.status === 401) {
+            // Don't redirect if it's a login attempt (invalid credentials)
+            const isLoginRequest = error.config.url?.includes('/users/login') ||
+                error.config.url?.includes('/users/google-login');
+
+            if (!isLoginRequest) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+
+                // Only redirect if not already on login page
+                if (window.location.pathname !== '/login') {
+                    window.location.href = '/login';
+                }
+            }
+        }
         return Promise.reject(error);
     }
 );

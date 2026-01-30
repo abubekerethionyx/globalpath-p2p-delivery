@@ -100,9 +100,6 @@ def google_login():
     result = user_service.google_login(token, role)
     if not result:
         return jsonify({'message': 'Google authentication failed'}), 401
-        
-    if result.get('needs_role'):
-        return jsonify(result), 200
  
 
     return jsonify({

@@ -20,7 +20,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete, publicSettings }) =
   const [showForgot, setShowForgot] = useState(false);
   const [showOTP, setShowOTP] = useState(false);
   const [otp, setOtp] = useState('');
-  const [role, setRole] = useState<UserRole | null>(null);
+  const [role, setRole] = useState<UserRole | null>(UserRole.SENDER);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -30,7 +30,6 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete, publicSettings }) =
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [tempGoogleToken, setTempGoogleToken] = useState<string | null>(null);
 
   const handleForgot = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,13 +72,8 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete, publicSettings }) =
     setIsLoading(true);
     setError('');
     try {
-      const response = await AuthService.googleLogin(credentialResponse.credential);
-      if (response.needs_role) {
-        setTempGoogleToken(credentialResponse.credential);
-        setFormData({ ...formData, email: response.email || '' });
-        setIsLogin(false); // Move to "Create Account" view to show role selection
-        showToast("Please select your role to complete registration.", 'INFO');
-      } else if (response.user) {
+      const response = await AuthService.googleLogin(credentialResponse.credential, role || UserRole.SENDER);
+      if (response.user) {
         onAuthComplete(response.user);
       }
     } catch (err: any) {
@@ -102,39 +96,15 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete, publicSettings }) =
     setError('');
     setIsLoading(true);
     try {
-      if (tempGoogleToken) {
-        if (!role) {
-          setError("Please select a role.");
-          setIsLoading(false);
-          return;
-        }
-        const response = await AuthService.googleLogin(tempGoogleToken, role);
-        if (response.user) {
-          onAuthComplete(response.user);
-        } else {
-          setError("Failed to complete Google registration.");
-        }
-        return;
-      }
 
       if (isLogin) {
-        if (!role) {
-          setError("Please select a role to login as.");
-          setIsLoading(false);
-          return;
-        }
-        const response = await AuthService.login(formData.email, formData.password, role);
+        const response = await AuthService.login(formData.email, formData.password, role || UserRole.SENDER);
         if (response.user) {
           onAuthComplete(response.user);
         } else {
           setError("Login failed.");
         }
       } else {
-        if (!role) {
-          setError("Please select a role.");
-          setIsLoading(false);
-          return;
-        }
 
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         if (!emailRegex.test(formData.email)) {
@@ -229,11 +199,6 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete, publicSettings }) =
               <h3 className="text-xl font-black text-slate-900">Reset Password</h3>
               <p className="text-sm text-slate-500 mt-1">Enter your email for instructions.</p>
             </div>
-          ) : tempGoogleToken ? (
-            <div className="mb-10 border-b border-slate-100 pb-2">
-              <h3 className="text-xl font-black text-slate-900">Complete Registration</h3>
-              <p className="text-sm text-slate-500 mt-1">Please select your preferred role for {formData.email}</p>
-            </div>
           ) : (
             <div className="flex items-center space-x-8 mb-10 border-b border-slate-100 pb-2">
               <button
@@ -274,8 +239,8 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete, publicSettings }) =
               </div>
             ) : (
               <>
-                {(isLogin || tempGoogleToken) && !showForgot && (
-                  <div className="space-y-4">
+                {isLogin && !showForgot && (
+                  <div className="space-y-4 mb-6">
                     <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Login As</p>
                     <div className="grid grid-cols-2 gap-4">
                       <button
@@ -301,9 +266,8 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete, publicSettings }) =
                     </div>
                   </div>
                 )}
-
                 <div className="space-y-4">
-                  {!isLogin && !showForgot && !tempGoogleToken && (
+                  {!isLogin && !showForgot && (
                     <div className="grid grid-cols-2 gap-4">
                       <input
                         type="text" required
@@ -329,13 +293,13 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete, publicSettings }) =
                     </div>
                   )}
                   <input
-                    type="email" required readOnly={!!tempGoogleToken}
-                    className={`w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm outline-none transition-all ${tempGoogleToken ? 'cursor-not-allowed text-slate-500' : ''}`}
+                    type="email" required
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm outline-none transition-all"
                     placeholder="Email Address"
                     value={formData.email}
                     onChange={e => setFormData({ ...formData, email: e.target.value })}
                   />
-                  {!showForgot && !tempGoogleToken && (
+                  {!showForgot && (
                     <div>
                       <input
                         type="password" required
@@ -355,10 +319,10 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete, publicSettings }) =
                     disabled={isLoading}
                     className="w-full bg-slate-900 text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:bg-black shadow-xl transition-all active:scale-95 disabled:opacity-50"
                   >
-                    {isLoading ? 'Wait...' : tempGoogleToken ? 'Complete Registration' : showForgot ? 'Send Link' : isLogin ? 'Enter Platform' : 'Create My Account'}
+                    {isLoading ? 'Wait...' : showForgot ? 'Send Link' : isLogin ? 'Enter Platform' : 'Create My Account'}
                   </button>
 
-                  {isLogin && !tempGoogleToken && publicSettings?.enable_google_login !== false && (
+                  {isLogin && publicSettings?.enable_google_login !== false && (
                     <div className="flex flex-col items-center space-y-4">
                       <div className="flex items-center w-full">
                         <div className="flex-1 h-[1px] bg-slate-100"></div>
@@ -388,8 +352,8 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete, publicSettings }) =
                   </div>
                 )}
 
-                {(showForgot || tempGoogleToken) && (
-                  <button type="button" onClick={() => { setShowForgot(false); setTempGoogleToken(null); setIsLogin(true); }} className="w-full text-slate-500 font-bold text-xs mt-4 hover:text-slate-900">
+                {showForgot && (
+                  <button type="button" onClick={() => { setShowForgot(false); setIsLogin(true); }} className="w-full text-slate-500 font-bold text-xs mt-4 hover:text-slate-900">
                     Back to Login
                   </button>
                 )}

@@ -360,9 +360,9 @@ def google_login(token, role=None):
         user = User.query.filter_by(email=email).first()
 
         if not user:
-            # If it's a new user but no role was provided, tell the frontend to ask for a role
+            # Default to SENDER if no role is provided
             if not role:
-                return {"needs_role": True, "email": email}
+                role = UserRole.SENDER
                 
             # Create new user with provided role
             # Determine verification status based on role
