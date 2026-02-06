@@ -31,6 +31,14 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthComplete, publicSettings }) =
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('expired') === 'true') {
+      setError("Your session has expired. Please sign in again.");
+      showToast("Session expired safe-lock engaged.", 'ERROR');
+    }
+  }, [showToast]);
+
   const handleForgot = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.email) {

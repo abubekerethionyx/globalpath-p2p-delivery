@@ -51,10 +51,16 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                                 </div>
                             </button>
                             <button
-                                onClick={() => onNavigate('packaging')}
+                                onClick={() => onNavigate('feed')}
                                 className="w-full sm:w-auto bg-white text-slate-900 border-2 border-slate-100 px-8 py-4 rounded-full text-sm font-black uppercase tracking-widest hover:bg-slate-50 hover:border-slate-200 transition-all flex items-center justify-center gap-3"
                             >
-                                <svg className="w-5 h-5 text-[#FDD100]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                <svg className="w-5 h-5 text-[#009E49]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
+                                See Live Travels
+                            </button>
+                            <button
+                                onClick={() => onNavigate('packaging')}
+                                className="w-full sm:w-auto bg-white text-slate-100 border-2 border-slate-100/10 px-6 py-4 rounded-full text-xs font-black uppercase tracking-widest hover:bg-slate-50 hover:text-slate-900 transition-all flex items-center justify-center gap-3 opacity-60 hover:opacity-100"
+                            >
                                 Partner with Us
                             </button>
                         </div>

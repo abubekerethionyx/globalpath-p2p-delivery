@@ -17,18 +17,44 @@ api.interceptors.request.use(
         return config;
     },
     (error) => {
-        if (error.response && error.response.status === 401) {
-            // Don't redirect if it's a login attempt (invalid credentials)
-            const isLoginRequest = error.config.url?.includes('/users/login') ||
-                error.config.url?.includes('/users/google-login');
+        return Promise.reject(error);
+    }
+);
 
-            if (!isLoginRequest) {
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response) {
+            const { status, data, config } = error.response;
 
-                // Only redirect if not already on login page
-                if (window.location.pathname !== '/login') {
-                    window.location.href = '/login';
+            // Check for various ways the API might signal an expired token
+            const message = (typeof data === 'string' ? data : data?.message || data?.error || '').toLowerCase();
+            const isTokenExpired = status === 401 ||
+                (status === 500 && (
+                    message.includes('token has expired') ||
+                    message.includes('signature has expired') ||
+                    message.includes('expired')
+                ));
+
+            if (isTokenExpired) {
+                // Don't redirect if it's a login attempt (invalid credentials)
+                const isLoginRequest = config.url?.includes('/users/login') ||
+                    config.url?.includes('/users/google-login');
+
+                if (!isLoginRequest) {
+                    // Clear local storage regardless of whether we redirect
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+
+                    // If we're not already on the login page, and NOT on the feed page, redirect
+                    const currentPath = window.location.pathname;
+                    if (currentPath !== '/login' && currentPath !== '/feed') {
+                        // Optional: save the current path to redirect back after login
+                        if (currentPath !== '/') {
+                            localStorage.setItem('redirectAfterLogin', currentPath);
+                        }
+                        window.location.href = '/login?expired=true';
+                    }
                 }
             }
         }

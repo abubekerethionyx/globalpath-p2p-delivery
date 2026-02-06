@@ -97,7 +97,14 @@ const App: React.FC = () => {
   const handleLogout = () => {
     AuthService.logout();
     setUser(null);
-    navigate('/');
+
+    // Check if current page is public. If NOT, then go to landing.
+    const publicPaths = ['/feed', '/packaging', '/support', '/terms', '/privacy'];
+    const isPublic = publicPaths.some(path => location.pathname.startsWith(path)) || location.pathname === '/';
+
+    if (!isPublic) {
+      navigate('/');
+    }
   };
 
   const handleAuthComplete = (u: User) => {
@@ -179,13 +186,13 @@ const App: React.FC = () => {
               <Route path="/support" element={<ProtectedRoute element={<SupportPage user={user!} />} />} />
               <Route path="/billing" element={<ProtectedRoute element={<BillingPage user={user!} />} />} />
               <Route path="/packaging" element={<ProtectedRoute element={<PackagingPage user={user!} onPlanChanged={refreshUser} />} />} />
-              <Route path="/feed" element={<ProtectedRoute element={<FeedPage user={user!} />} />} />
+              <Route path="/feed" element={<FeedPage user={user} />} />
 
               {/* Picker-Specific Routes */}
               <Route path="/marketplace" element={<ProtectedRoute allowedRoles={[UserRole.PICKER, UserRole.ADMIN]} element={<MarketplacePage user={user!} publicSettings={publicSettings} />} />} />
               <Route path="/my-travels" element={<ProtectedRoute allowedRoles={[UserRole.PICKER, UserRole.ADMIN]} element={<MyTravelsPage user={user!} />} />} />
               <Route path="/picker-profile/:id" element={<ProtectedRoute allowedRoles={[UserRole.PICKER, UserRole.ADMIN, UserRole.SENDER]} element={<PickerProfilePage />} />} />
-              <Route path="/travel/:id" element={<ProtectedRoute element={<TravelDetailPage user={user!} />} />} />
+              <Route path="/travel/:id" element={<TravelDetailPage user={user} />} />
 
               {/* Sender-Specific Routes */}
               <Route path="/post-item" element={<ProtectedRoute allowedRoles={[UserRole.SENDER, UserRole.ADMIN]} element={<PostShipmentPage user={user!} />} />} />
